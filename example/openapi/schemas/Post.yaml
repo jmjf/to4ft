@@ -1,0 +1,58 @@
+openapi: 3.1.0
+servers:
+  - url: http://127.0.0.0:3000
+info: 
+   title: Test API
+   version: 1.0.0
+   license:
+      name: MIT
+      identifier: MIT
+
+components:
+  parameters:
+    PostIdParam:
+      in: path
+      name: postId
+      schema:
+        type: object
+        properties:
+          postId:
+            $ref: Fields.yaml#/components/schemas/PostId
+            description: A unique identifier for a post from parameters
+        required: 
+          -  postId
+  schemas:
+    Post:
+      title: Post
+      type: object
+      properties:
+        postId:
+          $ref: Fields.yaml#/components/schemas/PostId
+          description: Uniquely identifies a blog post
+        titleTx:
+          $ref: Fields.yaml#/components/schemas/TitleTx
+          default: hello
+        postTx:
+          $ref: Fields.yaml#/components/schemas/PostTx
+        author:
+          $ref: User.yaml#/components/schemas/User
+        comments:
+          type: 'array'
+          items:
+            $ref: Comment.yaml#/components/schemas/Comment
+        statusCd:
+          $ref: Fields.yaml#/components/schemas/PostStatus
+          default: draft
+        statusTs:
+          $ref: Fields.yaml#/components/schemas/GenericTs
+          description: The date and time when the post was put in the current status
+      required:
+        - postId
+        - titleTx
+        - postTx
+        - postStatus
+    PostsResponse:
+      title: PostsResponse
+      type: array
+      items: 
+        $ref: '#/components/schemas/Post'

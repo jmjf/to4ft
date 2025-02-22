@@ -1,0 +1,16 @@
+openapi: 3.1.0
+servers:
+  - url: http://127.0.0.0:3000
+info: 
+   title: Test API
+   version: 1.0.0
+   license:
+      name: MIT
+      identifier: MIT
+
+components: 
+  responses:
+    HTTP404NotFound:
+      description: The specified resource was not found
+    HTTP500InternalServerError:
+      description: Something went terribly wrong      

@@ -1,0 +1,15 @@
+get:
+  operationId: getPosts
+  tags: 
+    -  Posts
+  security: []
+  summary: GET all posts
+  responses:
+    '200':
+      description: result
+      content:
+        application/json:
+          schema:
+            $ref: ../schemas/Post.yaml#/components/schemas/PostsResponse
+    '4xx':
+        description: error

@@ -1,0 +1,17 @@
+get:
+  operationId: getPostById
+  tags:
+    - Posts
+  security: []
+  summary: GET post endpoint for tson issue
+  parameters:
+    - $ref: ../schemas/Post.yaml#/components/parameters/PostIdParam
+  responses:
+    '200':
+      description: result
+      content:
+        application/json:
+          schema:
+            $ref: ../schemas/Post.yaml#/components/schemas/Post
+    '4xx':
+        description: error
