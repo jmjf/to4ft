@@ -1,0 +1,80 @@
+{
+	"$schema": "node_modules/@biomejs/biome/configuration_schema.json",
+	"files": {
+		"ignore": ["cdk*", ".infrastructure", ".devcontainer", "dist", "notes", "openapi", "env", "coverage", ".private"],
+		"ignoreUnknown": true,
+		"include": ["src", "example", "tests", "tests-e2e"]
+	},
+	"linter": {
+		"enabled": true,
+		"rules": {
+			"recommended": true,
+			"complexity": {
+				"useDateNow": "error"
+			},
+			"correctness": {
+				"noConstantMathMinMaxClamp": "error",
+				"noUndeclaredVariables": "error",
+				"noUnusedImports": "error",
+				"useArrayLiterals": "warn",
+				"useImportExtensions": {
+					"level": "error",
+					"options": {
+						"suggestedExtensions": {
+							"ts": {
+								"module": "js",
+								"component": "js"
+							}
+						}
+					}
+				}
+			},
+			"style": {
+				"noDefaultExport": "error",
+				"noNamespace": "warn",
+				"noNamespaceImport": "warn",
+				"noYodaExpression": "error",
+				"useCollapsedElseIf": "error",
+				"useDefaultSwitchClause": "error",
+				"useForOf": "error",
+				"useShorthandArrayType": "error"
+			}
+		}
+	},
+	"organizeImports": {
+		"enabled": true
+	},
+	"formatter": {
+		"enabled": true,
+		"indentStyle": "tab",
+		"indentWidth": 3,
+		"lineEnding": "lf",
+		"lineWidth": 120
+	},
+	"javascript": {
+		"formatter": {
+			"quoteStyle": "single",
+			"quoteProperties": "asNeeded",
+			"trailingCommas": "all",
+			"semicolons": "always",
+			"arrowParentheses": "always",
+			"enabled": true,
+			"indentStyle": "tab",
+			"indentWidth": 3,
+			"lineEnding": "lf",
+			"lineWidth": 120
+		}
+	},
+	"json": {
+		"parser": {
+			"allowTrailingCommas": false
+		},
+		"formatter": {
+			"enabled": true,
+			"indentStyle": "tab",
+			"indentWidth": 3,
+			"lineEnding": "lf",
+			"lineWidth": 120
+		}
+	}
+}
