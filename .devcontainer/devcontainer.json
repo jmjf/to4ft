@@ -13,8 +13,8 @@
             "streetsidesoftware.code-spell-checker",
             "mattdd.gitless",
             "DavidAnson.vscode-markdownlint",
-            "dbaeumer.vscode-eslint",
-            "ms-vscode.vscode-typescript-next"
+            "ms-vscode.vscode-typescript-next",
+            "biomejs.biome"
          ]
       }
    },
