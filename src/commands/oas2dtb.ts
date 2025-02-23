@@ -1,24 +1,34 @@
 import type { oas2dtbOptions } from '../cli.ts';
-import { ensureDirectoryExists, getInputFiles } from '../lib/getInputFiles.ts';
-import type { JSONSchema7Definition, JSONSchema7Object } from 'json-schema';
+import { ensureDirectoryExists, getInputFiles } from '../lib/fsHelpers.ts';
+import type { JSONSchema7, JSONSchema7Object } from 'json-schema';
 import { $RefParser } from '@apidevtools/json-schema-ref-parser';
 import { schema2typebox } from '../lib/schema-to-typebox.ts';
 import { writeFileSync } from 'node:fs';
-import { getDerefImportStatements } from '../lib/generateTypebox.ts';
+import { getDerefImportStatements } from '../lib/getImports.ts';
+import {
+	isOpenAPIComponents,
+	type OpenAPIParametersItem,
+	type OpenAPIHeadersItem,
+	type OpenAPIRequestBodiesItem,
+	type OpenAPIResponsesItem,
+	type OpenAPISchemasItem,
+} from '../lib/typeGuards.ts';
 
 function hasMember(obj: JSONSchema7Object, memberNm: string): obj is JSONSchema7Object {
 	return obj[memberNm] !== undefined;
 }
 
 const schemaGetters = {
-	schemas: (schema: JSONSchema7Object) => schema,
-	parameters: (parameters: JSONSchema7Object) => parameters.schema,
-	requestBodies: (requestBodies: JSONSchema7Object) => (requestBodies.content as JSONSchema7Object)?.schema,
-	// TODO:
-	// responses
-	responses: (responses: JSONSchema7Object) =>
-		((responses.content as JSONSchema7Object)?.['application/json'] as JSONSchema7Object)?.schema,
-	// headers
+	headers: (headers: OpenAPIHeadersItem) => headers.schema,
+	parameters: (parameters: OpenAPIParametersItem) => parameters.schema,
+	requestBodies: (requestBodies: OpenAPIRequestBodiesItem) => requestBodies.content?.schema,
+	responses: (responses: OpenAPIResponsesItem) =>
+		responses.content
+			? (responses.content['application/json']?.schema ??
+				responses.content['application/x-www-form-urlencoded']?.schema ??
+				responses.content['application/xml']?.schema)
+			: undefined,
+	schemas: (schema: OpenAPISchemasItem) => schema,
 };
 
 export async function oas2dtb(opts: oas2dtbOptions) {
@@ -41,23 +51,22 @@ export async function oas2dtb(opts: oas2dtbOptions) {
 		for (const path of refPaths) {
 			// parse that file
 			const pathParser = new $RefParser();
-			const pathParsed = (await pathParser.dereference(path)) as JSONSchema7Object;
+			const pathParsed = (await pathParser.dereference(path)) as JSONSchema7;
 
-			if ((pathParsed?.components as JSONSchema7Object) === undefined) continue;
-			// If the file has components.schemas, get the components entries
-			const componentsEntries = Object.entries(pathParsed.components as JSONSchema7Object);
+			// Does it not have components? (skip it)
+			if (!isOpenAPIComponents(pathParsed)) continue;
+
+			const componentsEntries = Object.entries(pathParsed.components);
 			for (const [componentType, componentContents] of componentsEntries) {
+				// Do we not know how to get the schema? (skip it)
 				if (schemaGetters[componentType] === undefined) continue;
-				// If we know how to get the schema for the components entry get the component contents
-				const entries = Object.entries(componentContents as JSONSchema7Definition);
+
+				const entries = Object.entries(componentContents);
 				for (const [objNm, objValue] of entries) {
-					// get the schema
 					const schema = schemaGetters[componentType](objValue);
-					// if there is no schema, skip it -- some responses are schemaless
+					// Is there no schema? (skip it)
 					if (schema === undefined) continue;
-					// convert to TypeBox
-					const tb = schema2typebox(objNm, schema as JSONSchema7Definition);
-					// write it
+					const tb = schema2typebox(objNm, schema);
 					writeFileSync(`${opts.outDir}/${componentType}${objNm}.ts`, `${getDerefImportStatements()}\n\n${tb}`);
 				}
 			}

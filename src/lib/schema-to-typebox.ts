@@ -24,9 +24,9 @@ import {
 	isOneOfSchema,
 	isSchemaWithMultipleTypes,
 	isUnknownSchema,
-} from './schema-matchers.ts';
+} from './typeGuards.ts';
 
-import { refImports } from './generateTypebox.ts';
+import { refImports } from './getImports.ts';
 
 const isBoolean = (a: unknown) => typeof a === 'boolean';
 const isNumber = (a: unknown) => typeof a === 'number';
