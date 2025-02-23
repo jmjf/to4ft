@@ -7,18 +7,18 @@
 
 - Core/common
   - [x] prefix names (`--prefix`)
-  - [] uppercase first character of names from OpenAPI
-  - [] force camelcase
+  - [] uppercase first character of names from OpenAPI (`--up1`)
+  - [] force camelcase (`--camel`; no `_` in names)
   - [x] ensure deep paths exist (mkdir recursive)
-  - [] generate bare bones schemas/types (no descriptions, examples, etc.)
+  - [] generate minimum schemas/types (`--mini`; no descriptions, examples, etc.)
   - [] build and make executable
   - [] tests
   - [wip] documentation
   - [] refactor/extend code from `schema2typebox` (idiomatic, adjustments, etc.)
     - [x] type guards
     - [x] import statement code generation
-    - [] type from TypeBox schema code generation
-    - [] OpenAPI keywords -> TypeBox code generation
+    - [x] type from TypeBox schema, optional, extended OneOf code generation
+    - [wip] other OpenAPI -> TypeBox code generation
 - `oas2dtb`
   - [x] write command spec
   - [x] read file or directory

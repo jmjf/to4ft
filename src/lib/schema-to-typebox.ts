@@ -26,13 +26,11 @@ import {
 	isUnknownSchema,
 } from './typeGuards.ts';
 
-import { refImports } from './getImports.ts';
+import { refImports, genExportedTypeForName, addOptionalModifier, type GeneratedCode } from './codeGenerators.ts';
 
 const isBoolean = (a: unknown) => typeof a === 'boolean';
 const isNumber = (a: unknown) => typeof a === 'number';
 const isString = (a: unknown) => typeof a === 'string';
-
-type Code = string;
 
 /** Generates TypeBox code from a given JSON schema */
 export const schema2typebox = (schemaName: string, parsedSchema: JSONSchema7Definition) => {
@@ -45,7 +43,7 @@ export const schema2typebox = (schemaName: string, parsedSchema: JSONSchema7Defi
 	// 	parsedSchema.$id = exportedName;
 	// }
 	const typeBoxType = collect(parsedSchema);
-	const exportedType = createExportedTypeForName(exportedName);
+	const exportedType = genExportedTypeForName(exportedName);
 
 	return `export const ${exportedName} = ${typeBoxType}\n${exportedType}\n`;
 };
@@ -56,7 +54,7 @@ export const schema2typebox = (schemaName: string, parsedSchema: JSONSchema7Defi
  *
  * @throws Error if an unexpected schema (one with no matching parser) was given
  */
-export const collect = (schema: JSONSchema7Definition, objectNm = ''): Code => {
+export const collect = (schema: JSONSchema7Definition, objectNm = ''): GeneratedCode => {
 	// TODO: boolean schema support..?
 	if (isBoolean(schema)) {
 		return JSON.stringify(schema);
@@ -100,34 +98,6 @@ export const collect = (schema: JSONSchema7Definition, objectNm = ''): Code => {
 	throw new Error(`Unsupported schema. Did not match any type of the parsers. Schema was: ${JSON.stringify(schema)}`);
 };
 
-/**
- * Creates custom typebox code to support the JSON schema keyword 'oneOf'. Based
- * on the suggestion here: https://github.com/xddq/schema2typebox/issues/16#issuecomment-1603731886
- */
-export const createOneOfTypeboxSupportCode = (): Code => {
-	return [
-		"TypeRegistry.Set('ExtendedOneOf', (schema: any, value) => 1 === schema.oneOf.reduce((acc: number, schema: any) => acc + (Value.Check(schema, value) ? 1 : 0), 0))",
-		"const OneOf = <T extends TSchema[]>(oneOf: [...T], options: SchemaOptions = {}) => Type.Unsafe<Static<TUnion<T>>>({ ...options, [Kind]: 'ExtendedOneOf', oneOf })",
-	].reduce((acc, curr) => {
-		return `${acc + curr}\n\n`;
-	}, '');
-};
-
-/**
- * @throws Error
- */
-const createExportedTypeForName = (exportedName: string) => {
-	if (exportedName.length === 0) {
-		throw new Error("Can't create exported type for a name with length 0.");
-	}
-	const typeName = `${exportedName.charAt(0).toUpperCase()}${exportedName.slice(1)}`;
-	return `export type ${typeName} = Static<typeof ${exportedName}>`;
-};
-
-const addOptionalModifier = (code: Code, propertyName: string, requiredProperties: JSONSchema7['required']) => {
-	return requiredProperties?.includes(propertyName) ? code : `Type.Optional(${code})`;
-};
-
 export const parseObject = (schema: ObjectSchema) => {
 	const schemaOptions = parseSchemaOptions(schema);
 	const properties = schema.properties;
@@ -158,7 +128,7 @@ export const parseEnum = (schema: EnumSchema) => {
 	return schemaOptions === undefined ? `Type.Union([${code}])` : `Type.Union([${code}], ${schemaOptions})`;
 };
 
-export const parseConst = (schema: ConstSchema): Code => {
+export const parseConst = (schema: ConstSchema): GeneratedCode => {
 	const schemaOptions = parseSchemaOptions(schema);
 	if (Array.isArray(schema.const)) {
 		const code = schema.const.reduce<string>((acc, schema) => {
@@ -180,11 +150,11 @@ export const parseConst = (schema: ConstSchema): Code => {
 		: `Type.Literal(${schema.const}, ${schemaOptions})`;
 };
 
-export const parseUnknown = (_: UnknownSchema): Code => {
+export const parseUnknown = (_: UnknownSchema): GeneratedCode => {
 	return 'Type.Unknown()';
 };
 
-export const parseType = (type: JSONSchema7Type): Code => {
+export const parseType = (type: JSONSchema7Type): GeneratedCode => {
 	if (isString(type)) {
 		return `Type.Literal("${type}")`;
 	}
@@ -204,7 +174,7 @@ export const parseType = (type: JSONSchema7Type): Code => {
 	return `Type.Object({${code}})`;
 };
 
-export const parseAnyOf = (schema: AnyOfSchema): Code => {
+export const parseAnyOf = (schema: AnyOfSchema): GeneratedCode => {
 	const schemaOptions = parseSchemaOptions(schema);
 	const code = schema.anyOf.reduce<string>((acc, schema) => {
 		return `${acc}${acc === '' ? '' : ',\n'} ${collect(schema)}`;
@@ -212,7 +182,7 @@ export const parseAnyOf = (schema: AnyOfSchema): Code => {
 	return schemaOptions === undefined ? `Type.Union([${code}])` : `Type.Union([${code}], ${schemaOptions})`;
 };
 
-export const parseAllOf = (schema: AllOfSchema): Code => {
+export const parseAllOf = (schema: AllOfSchema): GeneratedCode => {
 	const schemaOptions = parseSchemaOptions(schema);
 	const code = schema.allOf.reduce<string>((acc, schema) => {
 		return `${acc}${acc === '' ? '' : ',\n'} ${collect(schema)}`;
@@ -220,7 +190,7 @@ export const parseAllOf = (schema: AllOfSchema): Code => {
 	return schemaOptions === undefined ? `Type.Intersect([${code}])` : `Type.Intersect([${code}], ${schemaOptions})`;
 };
 
-export const parseOneOf = (schema: OneOfSchema): Code => {
+export const parseOneOf = (schema: OneOfSchema): GeneratedCode => {
 	const schemaOptions = parseSchemaOptions(schema);
 	const code = schema.oneOf.reduce<string>((acc, schema) => {
 		return `${acc}${acc === '' ? '' : ',\n'} ${collect(schema)}`;
@@ -228,14 +198,14 @@ export const parseOneOf = (schema: OneOfSchema): Code => {
 	return schemaOptions === undefined ? `OneOf([${code}])` : `OneOf([${code}], ${schemaOptions})`;
 };
 
-export const parseNot = (schema: NotSchema): Code => {
+export const parseNot = (schema: NotSchema): GeneratedCode => {
 	const schemaOptions = parseSchemaOptions(schema);
 	return schemaOptions === undefined
 		? `Type.Not(${collect(schema.not)})`
 		: `Type.Not(${collect(schema.not)}, ${schemaOptions})`;
 };
 
-export const parseArray = (schema: ArraySchema): Code => {
+export const parseArray = (schema: ArraySchema): GeneratedCode => {
 	const schemaOptions = parseSchemaOptions(schema);
 	if (Array.isArray(schema.items)) {
 		const code = schema.items.reduce<string>((acc, schema) => {
@@ -249,14 +219,14 @@ export const parseArray = (schema: ArraySchema): Code => {
 	return schemaOptions === undefined ? `Type.Array(${itemsType})` : `Type.Array(${itemsType},${schemaOptions})`;
 };
 
-export const parseWithMultipleTypes = (schema: MultipleTypesSchema): Code => {
+export const parseWithMultipleTypes = (schema: MultipleTypesSchema): GeneratedCode => {
 	const code = schema.type.reduce<string>((acc, typeName) => {
 		return `${acc}${acc === '' ? '' : ',\n'} ${parseTypeName(typeName, schema)}`;
 	}, '');
 	return `Type.Union([${code}])`;
 };
 
-export const getRefedNm = (schema: JSONSchema7 = {}): Code => {
+export const getRefedNm = (schema: JSONSchema7 = {}): GeneratedCode => {
 	if (!schema.$ref || schema.$ref.length === 0) return '';
 	console.log('getRefedNm', schema.$ref);
 
@@ -275,13 +245,13 @@ export const getRefedNm = (schema: JSONSchema7 = {}): Code => {
 	return refedNm;
 };
 
-export const parseRefName = (schema: JSONSchema7 = {}): Code => {
+export const parseRefName = (schema: JSONSchema7 = {}): GeneratedCode => {
 	const refedNm = getRefedNm(schema);
 	const schemaOptions = parseSchemaOptions(schema);
 	return schemaOptions === undefined ? `CloneType(${refedNm})` : `CloneType(${refedNm}, ${schemaOptions})`;
 };
 
-export const parseTypeName = (type: JSONSchema7TypeName | undefined, schema: JSONSchema7 = {}): Code => {
+export const parseTypeName = (type: JSONSchema7TypeName | undefined, schema: JSONSchema7 = {}): GeneratedCode => {
 	const schemaOptions = parseSchemaOptions(schema);
 	if (type === 'number' || type === 'integer') {
 		return schemaOptions === undefined ? 'Type.Number()' : `Type.Number(${schemaOptions})`;
@@ -306,7 +276,7 @@ export const parseTypeName = (type: JSONSchema7TypeName | undefined, schema: JSO
 	throw new Error(`Should never happen..? parseType got type: ${type}`);
 };
 
-const parseSchemaOptions = (schema: JSONSchema7): Code | undefined => {
+const parseSchemaOptions = (schema: JSONSchema7): GeneratedCode | undefined => {
 	const properties = Object.entries(schema).filter(([key, _value]) => {
 		return (
 			// NOTE: To be fair, not sure if we should filter out the title. If this

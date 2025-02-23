@@ -3,7 +3,7 @@ import { $RefParser } from '@apidevtools/json-schema-ref-parser';
 import type { JSONSchema7, JSONSchema7Object } from 'json-schema';
 import type { oas2dtbOptions } from '../cli.ts';
 import { ensureDirectoryExists, getInputFiles } from '../lib/fsHelpers.ts';
-import { getDerefImportStatements } from '../lib/getImports.ts';
+import { genDerefImportStatements } from '../lib/codeGenerators.ts';
 import { schema2typebox } from '../lib/schema-to-typebox.ts';
 import {
 	type OpenAPIHeadersItem,
@@ -67,7 +67,7 @@ export async function oas2dtb(opts: oas2dtbOptions) {
 					// Is there no schema? (skip it)
 					if (schema === undefined) continue;
 					const tb = schema2typebox(objNm, schema);
-					writeFileSync(`${opts.outDir}/${componentType}${objNm}.ts`, `${getDerefImportStatements()}\n\n${tb}`);
+					writeFileSync(`${opts.outDir}/${componentType}${objNm}.ts`, `${genDerefImportStatements()}\n\n${tb}`);
 				}
 			}
 		}
