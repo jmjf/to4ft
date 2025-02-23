@@ -1,17 +1,17 @@
+import { writeFileSync } from 'node:fs';
+import { $RefParser } from '@apidevtools/json-schema-ref-parser';
+import type { JSONSchema7, JSONSchema7Object } from 'json-schema';
 import type { oas2dtbOptions } from '../cli.ts';
 import { ensureDirectoryExists, getInputFiles } from '../lib/fsHelpers.ts';
-import type { JSONSchema7, JSONSchema7Object } from 'json-schema';
-import { $RefParser } from '@apidevtools/json-schema-ref-parser';
-import { schema2typebox } from '../lib/schema-to-typebox.ts';
-import { writeFileSync } from 'node:fs';
 import { getDerefImportStatements } from '../lib/getImports.ts';
+import { schema2typebox } from '../lib/schema-to-typebox.ts';
 import {
-	isOpenAPIComponents,
-	type OpenAPIParametersItem,
 	type OpenAPIHeadersItem,
+	type OpenAPIParametersItem,
 	type OpenAPIRequestBodiesItem,
 	type OpenAPIResponsesItem,
 	type OpenAPISchemasItem,
+	isOpenAPIComponents,
 } from '../lib/typeGuards.ts';
 
 function hasMember(obj: JSONSchema7Object, memberNm: string): obj is JSONSchema7Object {

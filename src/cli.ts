@@ -1,8 +1,8 @@
-import { program } from 'commander';
 import { readFileSync } from 'node:fs';
+import { program } from 'commander';
 import { oas2dtb } from './commands/oas2dtb.ts';
-import { oas2rtb } from './commands/oas2rtb.ts';
 import { oas2ro } from './commands/oas2ro.ts';
+import { oas2rtb } from './commands/oas2rtb.ts';
 
 export type oas2rtbOptions = {
 	input: string;

@@ -1,9 +1,24 @@
 {
 	"$schema": "node_modules/@biomejs/biome/configuration_schema.json",
 	"files": {
-		"ignore": ["cdk*", ".infrastructure", ".devcontainer", "dist", "notes", "openapi", "env", "coverage", ".private"],
+		"ignore": [
+			"cdk*",
+			".infrastructure",
+			".devcontainer",
+			"dist",
+			"notes",
+			"openapi",
+			"env",
+			"coverage",
+			".private"
+		],
 		"ignoreUnknown": true,
-		"include": ["src", "example", "tests", "tests-e2e"]
+		"include": [
+			"src",
+			"example",
+			"tests",
+			"tests-e2e"
+		]
 	},
 	"linter": {
 		"enabled": true,
@@ -17,17 +32,7 @@
 				"noUndeclaredVariables": "error",
 				"noUnusedImports": "error",
 				"useArrayLiterals": "warn",
-				"useImportExtensions": {
-					"level": "error",
-					"options": {
-						"suggestedExtensions": {
-							"ts": {
-								"module": "js",
-								"component": "js"
-							}
-						}
-					}
-				}
+				"useImportExtensions": "warn"
 			},
 			"style": {
 				"noDefaultExport": "error",

@@ -1,6 +1,6 @@
 import { existsSync, lstatSync, mkdirSync, readdirSync } from 'node:fs';
 import path from 'node:path';
-import { errorResult, okResult, type Result } from '@jmjf/result';
+import { type Result, errorResult, okResult } from '@jmjf/result';
 
 export function getInputFiles(inPath: string): Result<string[], string> {
 	if (!existsSync(inPath)) {
