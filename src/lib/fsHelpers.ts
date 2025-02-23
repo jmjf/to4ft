@@ -26,6 +26,6 @@ export function getInputFiles(inPath: string): Result<string[], string> {
 
 export function ensureDirectoryExists(dirPath: string) {
 	if (!existsSync(dirPath)) {
-		mkdirSync(dirPath, {recursive: true});
+		mkdirSync(dirPath, { recursive: true });
 	}
 }

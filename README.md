@@ -1,7 +1,5 @@
 # oas2tb4fastify
 
-**NOTE:** Under development; 
-
 - Convert OpenAPI schemas into dereferenced TypeBox types
 - Convert OpenAPI paths into Fastify `RouteOptions` with TypeBox schemas
 
@@ -11,7 +9,7 @@
   - [x] prefix names (`--prefix`)
   - [] uppercase first character of names from OpenAPI
   - [] force camelcase
-  - [] ensure deep paths exist (currently fails if any mid-path nodes don't exist)
+  - [x] ensure deep paths exist (mkdir recursive)
   - [] generate bare bones schemas/types (no descriptions, examples, etc.)
   - [] build and make executable
   - [] tests
@@ -53,6 +51,8 @@
   - [] write files to output directory
 
 ## Credit
+
+`openapi-transformer-toolkit` inspired generating code from OpenAPI specs and got me on the spec-first bandwagon. Thank you Nearform team.
 
 `oas2tb4fastify` copies the core code from `schema2typebox` to do schema translation. Thank you xddq.
 
