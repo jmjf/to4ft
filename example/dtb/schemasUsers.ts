@@ -1,4 +1,4 @@
-import { type Static, Type, } from '@sinclair/typebox';
+import { type Static, Type } from '@sinclair/typebox';
 
 export const tbUsers = Type.Array(
 	Type.Object({

@@ -1,4 +1,4 @@
-import { type Static, Type, } from '@sinclair/typebox';
+import { type Static, Type } from '@sinclair/typebox';
 
 export const tbComment = Type.Object({
 	commentId: Type.Number({ description: 'A unique identifier for a comment (override)', minimum: 1 }),

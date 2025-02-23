@@ -1,4 +1,4 @@
-import { type Static, Type, } from '@sinclair/typebox';
+import { type Static, Type } from '@sinclair/typebox';
 
 export const tbUserQuery = Type.Object({
 	userId: Type.Optional(Type.Number({ description: 'uniquely identifes a user', minimum: 1 })),

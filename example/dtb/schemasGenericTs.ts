@@ -1,4 +1,4 @@
-import { type Static, Type, } from '@sinclair/typebox';
+import { type Static, Type } from '@sinclair/typebox';
 
 export const tbGenericTs = Type.String({
 	description: 'Description not provided',

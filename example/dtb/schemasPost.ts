@@ -1,4 +1,4 @@
-import { type Static, Type, } from '@sinclair/typebox';
+import { type Static, Type } from '@sinclair/typebox';
 
 export const tbPost = Type.Object({
 	postId: Type.Number({ description: 'Uniquely identifies a blog post', minimum: 1 }),
