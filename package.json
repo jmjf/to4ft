@@ -12,8 +12,9 @@
     "oas:split": "npx @redocly/cli split openapi/bundle.json --outDir=openapi/jsonSplit",
     "oas:tson": "npx openapi-transformer-toolkit oas2tson -i openapi/bundle.yaml -o example/oasSchemas",
     "oas:gen": "npm run oas:lint && npm run oas:bundle && npm run oas:doc && npm run oas:tson",
+    "check:gen": "npx @biomejs/biome check --write example",
     "format": "npx @biomejs/biome format --write",
-    "lint:fixtb": "npx @biomejs/biome lint --write example/tb",
+    "lint": "npx @biomejs/biome lint",
     "build": "npx tsc tson-server.ts --outDir ./dist",
     "start": "node ./dist/tson-server.js | npx pino-pretty",
     "everything": "npm run oas2tson && npm run build && npm run start"
