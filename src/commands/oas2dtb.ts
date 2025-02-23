@@ -3,7 +3,7 @@ import { $RefParser } from '@apidevtools/json-schema-ref-parser';
 import type { JSONSchema7, JSONSchema7Object } from 'json-schema';
 import type { oas2dtbOptions } from '../cli.ts';
 import { ensureDirectoryExists, getInputFiles } from '../lib/fsHelpers.ts';
-import { genDerefImportStatements } from '../lib/codeGenerators.ts';
+import { genDerefImportStatements, toLowerFirstChar } from '../lib/codeGenerators.ts';
 import { schema2typebox } from '../lib/schema-to-typebox.ts';
 import {
 	type OpenAPIHeadersItem,
@@ -40,6 +40,8 @@ export async function oas2dtb(opts: oas2dtbOptions) {
 
 	ensureDirectoryExists(opts.outDir);
 
+	opts.prefix = typeof opts.prefix === 'string' ? toLowerFirstChar(opts.prefix) : undefined;
+
 	for (const filePath of inputFilesResult.value) {
 		// parse each file
 		const inputFileParser = new $RefParser();
@@ -66,7 +68,7 @@ export async function oas2dtb(opts: oas2dtbOptions) {
 					const schema = schemaGetters[componentType](objValue);
 					// Is there no schema? (skip it)
 					if (schema === undefined) continue;
-					const tb = schema2typebox(objNm, schema);
+					const tb = schema2typebox(objNm, schema, opts.prefix);
 					writeFileSync(`${opts.outDir}/${componentType}${objNm}.ts`, `${genDerefImportStatements()}\n\n${tb}`);
 				}
 			}

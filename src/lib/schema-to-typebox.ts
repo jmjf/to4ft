@@ -39,8 +39,8 @@ const isNumber = (a: unknown) => typeof a === 'number';
 const isString = (a: unknown) => typeof a === 'string';
 
 /** Generates TypeBox code from a given JSON schema */
-export const schema2typebox = (schemaName: string, parsedSchema: JSONSchema7Definition) => {
-	const exportedName = `tb${schemaName}`;
+export const schema2typebox = (schemaName: string, parsedSchema: JSONSchema7Definition, namePrefix = '') => {
+	const exportedName = `${namePrefix}${schemaName}`;
 
 	// Including id doesn't play nice with fastify
 	// Ensuring that generated typebox code will contain an '$id' field.
@@ -281,32 +281,3 @@ export const parseTypeName = (type: JSONSchema7TypeName | undefined, schema: JSO
 	}
 	throw new Error(`Should never happen..? parseType got type: ${type}`);
 };
-
-// const parseSchemaOptions = (schema: JSONSchema7): GeneratedCode | undefined => {
-// 	const properties = Object.entries(schema).filter(([key, _value]) => {
-// 		return (
-// 			// NOTE: To be fair, not sure if we should filter out the title. If this
-// 			// makes problems one day, think about not filtering it.
-// 			key !== 'title' &&
-// 			key !== 'type' &&
-// 			key !== 'items' &&
-// 			key !== 'allOf' &&
-// 			key !== 'anyOf' &&
-// 			key !== 'oneOf' &&
-// 			key !== 'not' &&
-// 			key !== 'properties' &&
-// 			key !== 'required' &&
-// 			key !== 'const' &&
-// 			key !== 'enum' &&
-// 			key !== '$ref'
-// 		);
-// 	});
-// 	if (properties.length === 0) {
-// 		return undefined;
-// 	}
-// 	const result = properties.reduce<Record<string, unknown>>((acc, [key, value]) => {
-// 		acc[key] = value;
-// 		return acc;
-// 	}, {});
-// 	return JSON.stringify(result);
-// };

@@ -22,6 +22,18 @@ export type GeneratedCode = string;
 // }
 
 /*
+ * UTILITIES
+ */
+
+export function toLowerFirstChar(str: string): string {
+	return `${str.charAt(0).toLowerCase()}${str.slice(1)}`;
+}
+
+export function toUpperFirstChar(str: string): string {
+	return `${str.charAt(0).toUpperCase()}${str.slice(1)}`;
+}
+
+/*
  * IMPORTS
  */
 
@@ -90,7 +102,7 @@ export function genExportedTypeForName(exportedName: string): GeneratedCode {
 	if (exportedName.length === 0) {
 		throw new Error("Can't create exported type for a name with length 0.");
 	}
-	const typeName = `${exportedName.charAt(0).toUpperCase()}${exportedName.slice(1)}`;
+	const typeName = toUpperFirstChar(exportedName);
 	return `export type ${typeName} = Static<typeof ${exportedName}>`;
 }
 
