@@ -7,13 +7,54 @@
 
 ## Roadmap
 
-- [x] `oas2dtb`
-- [] `oas2rtb`
-- [] `oas2ro`
+- Core/common
+  - [x] prefix names (`--prefix`)
+  - [] uppercase first character of names from OpenAPI
+  - [] force camelcase
+  - [] ensure deep paths exist (currently fails if any mid-path nodes don't exist)
+  - [] generate bare bones schemas/types (no descriptions, examples, etc.)
+  - [] build and make executable
+  - [] tests
+  - [wip] documentation
+  - [] refactor/extend code from `schema2typebox` (idiomatic, adjustments, etc.)
+    - [x] type guards
+    - [x] import statement code generation
+    - [] type from TypeBox schema code generation
+    - [] OpenAPI keywords -> TypeBox code generation
+- `oas2dtb`
+  - [x] write command spec
+  - [x] read file or directory
+  - [x] find schemas to process
+  - [x] generate TypeBox code
+  - [x] write files to output directory
+- `oas2rtb`
+  - [x] write command spec
+  - [] read file or directory
+  - [] find schemas to process
+  - [] generate TypeBox code
+  - [] write files to output directory
+- `oas2ro`
+  - [x] write command spec
+  - [] read file or directory
+  - [] find paths to process
+  - [] generate partial `RouteOptions`
+    - [] url
+    - [] method
+    - [] operationId
+    - [] tags
+    - [] summary
+    - [] description
+    - [] schema
+      - [] querystring
+      - [] headers
+      - [] params
+      - [] body
+      - [] response
+  - [] write files to output directory
 
 ## Credit
 
-`oas2tb4fastify` copies the core code from `schema2TypeBox` to do schema translation. Thank you xddq.
+`oas2tb4fastify` copies the core code from `schema2typebox` to do schema translation. Thank you xddq.
 
 ## Motivation
 
