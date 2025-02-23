@@ -25,12 +25,12 @@ export type GeneratedCode = string;
  * UTILITIES
  */
 
-export function toLowerFirstChar(str: string): string {
-	return `${str.charAt(0).toLowerCase()}${str.slice(1)}`;
+export function toLowerFirstChar(s: string): string {
+	return `${s.charAt(0).toLowerCase()}${s.slice(1)}`;
 }
 
-export function toUpperFirstChar(str: string): string {
-	return `${str.charAt(0).toUpperCase()}${str.slice(1)}`;
+export function toUpperFirstChar(s: string): string {
+	return `${s.charAt(0).toUpperCase()}${s.slice(1)}`;
 }
 
 /*
@@ -66,7 +66,7 @@ function genImportsFromMap(): string[] {
  * SCHEMA PARSING
  */
 
-const stdKeysToRemove = [
+const stdIgnoreKeys = [
 	'title',
 	'type',
 	'items',
@@ -80,14 +80,14 @@ const stdKeysToRemove = [
 	'enum',
 	'$ref',
 ];
-export function parseSchemaOptions(schema: JSONSchema7, extraKeysToRemove = [] as string[]): GeneratedCode | undefined {
-	const keysToRemove = [...stdKeysToRemove, ...extraKeysToRemove];
-	const properties = Object.entries(schema).filter(([key, _value]) => !keysToRemove.includes(key));
-	if (properties.length === 0) {
+export function parseSchemaOptions(schema: JSONSchema7, extraIgnoreKeys = [] as string[]): GeneratedCode | undefined {
+	const ignoreKeys = [...stdIgnoreKeys, ...extraIgnoreKeys];
+	const propertiesEntries = Object.entries(schema).filter(([key, _value]) => !ignoreKeys.includes(key));
+	if (propertiesEntries.length === 0) {
 		return undefined;
 	}
 
-	const result = properties.reduce<Record<string, unknown>>((acc, [key, value]) => {
+	const result = propertiesEntries.reduce<Record<string, unknown>>((acc, [key, value]) => {
 		acc[key] = value;
 		return acc;
 	}, {});
@@ -98,20 +98,20 @@ export function parseSchemaOptions(schema: JSONSchema7, extraKeysToRemove = [] a
  * TYPEBOX EXTRAS
  */
 
-export function genExportedTypeForName(exportedName: string): GeneratedCode {
-	if (exportedName.length === 0) {
+export function genExportedTypeForName(exportedNm: string): GeneratedCode {
+	if (exportedNm.length === 0) {
 		throw new Error("Can't create exported type for a name with length 0.");
 	}
-	const typeName = toUpperFirstChar(exportedName);
-	return `export type ${typeName} = Static<typeof ${exportedName}>`;
+	const typeNm = toUpperFirstChar(exportedNm);
+	return `export type ${typeNm} = Static<typeof ${exportedNm}>`;
 }
 
 export function addOptionalModifier(
-	code: GeneratedCode,
-	propertyName: string,
-	requiredProperties: JSONSchema7['required'],
+	codeTx: GeneratedCode,
+	propertyNm: string,
+	requiredPropertyNms: JSONSchema7['required'],
 ): GeneratedCode {
-	return requiredProperties?.includes(propertyName) ? code : `Type.Optional(${code})`;
+	return requiredPropertyNms?.includes(propertyNm) ? codeTx : `Type.Optional(${codeTx})`;
 }
 
 /**

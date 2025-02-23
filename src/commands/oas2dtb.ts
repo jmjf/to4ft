@@ -38,7 +38,7 @@ export async function oas2dtb(opts: oas2dtbOptions) {
 		return;
 	}
 
-	ensureDirectoryExists(opts.outDir);
+	ensureDirectoryExists(opts.outdir);
 
 	opts.prefix = typeof opts.prefix === 'string' ? toLowerFirstChar(opts.prefix) : undefined;
 
@@ -69,7 +69,7 @@ export async function oas2dtb(opts: oas2dtbOptions) {
 					// Is there no schema? (skip it)
 					if (schema === undefined) continue;
 					const tb = schema2typebox(objNm, schema, opts.prefix);
-					writeFileSync(`${opts.outDir}/${componentType}${objNm}.ts`, `${genDerefImportStatements()}\n\n${tb}`);
+					writeFileSync(`${opts.outdir}/${componentType}${objNm}.ts`, `${genDerefImportStatements()}\n\n${tb}`);
 				}
 			}
 		}

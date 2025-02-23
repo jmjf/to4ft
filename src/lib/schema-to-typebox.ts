@@ -250,33 +250,33 @@ export const getRefedNm = (schema: JSONSchema7 = {}): GeneratedCode => {
 	return refedNm;
 };
 
-export const parseRefName = (schema: JSONSchema7 = {}): GeneratedCode => {
+export function parseRefName(schema: JSONSchema7 = {}): GeneratedCode {
 	const refedNm = getRefedNm(schema);
 	const schemaOptions = parseSchemaOptions(schema);
 	return schemaOptions === undefined ? `CloneType(${refedNm})` : `CloneType(${refedNm}, ${schemaOptions})`;
-};
+}
 
-export const parseTypeName = (type: JSONSchema7TypeName | undefined, schema: JSONSchema7 = {}): GeneratedCode => {
+export function parseTypeName(typeNm: JSONSchema7TypeName | undefined, schema: JSONSchema7 = {}): GeneratedCode {
 	const schemaOptions = parseSchemaOptions(schema);
-	if (type === 'number' || type === 'integer') {
+	if (typeNm === 'number' || typeNm === 'integer') {
 		return schemaOptions === undefined ? 'Type.Number()' : `Type.Number(${schemaOptions})`;
 	}
-	if (type === 'string') {
+	if (typeNm === 'string') {
 		return schemaOptions === undefined ? 'Type.String()' : `Type.String(${schemaOptions})`;
 	}
-	if (type === 'boolean') {
+	if (typeNm === 'boolean') {
 		return schemaOptions === undefined ? 'Type.Boolean()' : `Type.Boolean(${schemaOptions})`;
 	}
-	if (type === 'null') {
+	if (typeNm === 'null') {
 		return schemaOptions === undefined ? 'Type.Null()' : `Type.Null(${schemaOptions})`;
 	}
-	if (type === 'object') {
+	if (typeNm === 'object') {
 		return parseObject(schema as ObjectSchema);
 		// We don't want to trust on build time checking here, json can contain anything
 		// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
 	}
-	if (type === 'array') {
+	if (typeNm === 'array') {
 		return parseArray(schema as ArraySchema);
 	}
-	throw new Error(`Should never happen..? parseType got type: ${type}`);
-};
+	throw new Error(`Should never happen..? parseType got type: ${typeNm}`);
+}

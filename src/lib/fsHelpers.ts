@@ -2,25 +2,25 @@ import { existsSync, lstatSync, mkdirSync, readdirSync } from 'node:fs';
 import path from 'node:path';
 import { type Result, errorResult, okResult } from '@jmjf/result';
 
-export function getInputFiles(inPath: string): Result<string[], string> {
-	if (!existsSync(inPath)) {
-		return errorResult(`ERROR: ${inPath} not found`);
+export function getInputFiles(inPathNm: string): Result<string[], string> {
+	if (!existsSync(inPathNm)) {
+		return errorResult(`getInputFiles ERROR: ${inPathNm} not found`);
 	}
 
-	if (!lstatSync(inPath).isDirectory()) {
-		return okResult([path.resolve(inPath)]);
+	if (!lstatSync(inPathNm).isDirectory()) {
+		return okResult([path.resolve(inPathNm)]);
 	}
 
 	try {
-		const fileNames = readdirSync(inPath).filter((fn) =>
+		const fileNames = readdirSync(inPathNm).filter((fn) =>
 			['.yaml', '.yml', '.json'].includes(path.extname(fn).toLowerCase()),
 		);
 		if (fileNames.length === 0) {
-			return errorResult(`ERROR: no YAML or JSON files found in ${inPath}`);
+			return errorResult(`getInputFiles ERROR: no YAML or JSON files found in ${inPathNm}`);
 		}
-		return okResult(fileNames.map((fn) => path.resolve(inPath, fn)) as string[]);
+		return okResult(fileNames.map((fn) => path.resolve(inPathNm, fn)) as string[]);
 	} catch (e) {
-		return errorResult(`ERROR: ${e.name} ${e.code} reading directory ${inPath}`);
+		return errorResult(`getInputFiles ERROR: ${e.name} ${e.code} reading directory ${inPathNm}`);
 	}
 }
 
