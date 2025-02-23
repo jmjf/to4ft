@@ -26,7 +26,13 @@ import {
 	isUnknownSchema,
 } from './typeGuards.ts';
 
-import { refImports, genExportedTypeForName, addOptionalModifier, type GeneratedCode } from './codeGenerators.ts';
+import {
+	refImports,
+	genExportedTypeForName,
+	addOptionalModifier,
+	parseSchemaOptions,
+	type GeneratedCode,
+} from './codeGenerators.ts';
 
 const isBoolean = (a: unknown) => typeof a === 'boolean';
 const isNumber = (a: unknown) => typeof a === 'number';
@@ -276,31 +282,31 @@ export const parseTypeName = (type: JSONSchema7TypeName | undefined, schema: JSO
 	throw new Error(`Should never happen..? parseType got type: ${type}`);
 };
 
-const parseSchemaOptions = (schema: JSONSchema7): GeneratedCode | undefined => {
-	const properties = Object.entries(schema).filter(([key, _value]) => {
-		return (
-			// NOTE: To be fair, not sure if we should filter out the title. If this
-			// makes problems one day, think about not filtering it.
-			key !== 'title' &&
-			key !== 'type' &&
-			key !== 'items' &&
-			key !== 'allOf' &&
-			key !== 'anyOf' &&
-			key !== 'oneOf' &&
-			key !== 'not' &&
-			key !== 'properties' &&
-			key !== 'required' &&
-			key !== 'const' &&
-			key !== 'enum' &&
-			key !== '$ref'
-		);
-	});
-	if (properties.length === 0) {
-		return undefined;
-	}
-	const result = properties.reduce<Record<string, unknown>>((acc, [key, value]) => {
-		acc[key] = value;
-		return acc;
-	}, {});
-	return JSON.stringify(result);
-};
+// const parseSchemaOptions = (schema: JSONSchema7): GeneratedCode | undefined => {
+// 	const properties = Object.entries(schema).filter(([key, _value]) => {
+// 		return (
+// 			// NOTE: To be fair, not sure if we should filter out the title. If this
+// 			// makes problems one day, think about not filtering it.
+// 			key !== 'title' &&
+// 			key !== 'type' &&
+// 			key !== 'items' &&
+// 			key !== 'allOf' &&
+// 			key !== 'anyOf' &&
+// 			key !== 'oneOf' &&
+// 			key !== 'not' &&
+// 			key !== 'properties' &&
+// 			key !== 'required' &&
+// 			key !== 'const' &&
+// 			key !== 'enum' &&
+// 			key !== '$ref'
+// 		);
+// 	});
+// 	if (properties.length === 0) {
+// 		return undefined;
+// 	}
+// 	const result = properties.reduce<Record<string, unknown>>((acc, [key, value]) => {
+// 		acc[key] = value;
+// 		return acc;
+// 	}, {});
+// 	return JSON.stringify(result);
+// };

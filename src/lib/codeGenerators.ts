@@ -21,7 +21,9 @@ export type GeneratedCode = string;
 // 	return code;
 // }
 
-// IMPORTS
+/*
+ * IMPORTS
+ */
 
 const typeboxImports = [
 	'import {type Static, Type, SchemaOptions, CloneType, Kind, TypeRegistry} from "@sinclair/typebox"',
@@ -48,7 +50,41 @@ function genImportsFromMap(): string[] {
 	return imports;
 }
 
-// TYPEBOX-ISMS
+/*
+ * SCHEMA PARSING
+ */
+
+const stdKeysToRemove = [
+	'title',
+	'type',
+	'items',
+	'allOf',
+	'anyOf',
+	'oneOf',
+	'not',
+	'properties',
+	'required',
+	'const',
+	'enum',
+	'$ref',
+];
+export function parseSchemaOptions(schema: JSONSchema7, extraKeysToRemove = [] as string[]): GeneratedCode | undefined {
+	const keysToRemove = [...stdKeysToRemove, ...extraKeysToRemove];
+	const properties = Object.entries(schema).filter(([key, _value]) => !keysToRemove.includes(key));
+	if (properties.length === 0) {
+		return undefined;
+	}
+
+	const result = properties.reduce<Record<string, unknown>>((acc, [key, value]) => {
+		acc[key] = value;
+		return acc;
+	}, {});
+	return JSON.stringify(result);
+}
+
+/*
+ * TYPEBOX EXTRAS
+ */
 
 export function genExportedTypeForName(exportedName: string): GeneratedCode {
 	if (exportedName.length === 0) {

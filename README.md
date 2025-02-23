@@ -6,11 +6,13 @@
 ## Roadmap
 
 - Core/common
-  - [x] prefix names (`--prefix`)
-  - [] uppercase first character of names from OpenAPI (`--up1`)
-  - [] force camelcase (`--camel`; no `_` in names)
+  - [x] `--prefix` -- prefix generated TypeBox schema and type names
   - [x] ensure deep paths exist (mkdir recursive)
-  - [] generate minimum schemas/types (`--mini`; no descriptions, examples, etc.)
+  - [] `--up1` -- uppercase first character of names from OpenAPI
+  - [] ensure identifiers are valid JavaScript (replace invalid chars with `_`)
+  - [] `--camel` -- force camelcase (no `_` in names)
+  - [] `--minkeys` -- generate minimum schemas/types (no descriptions, examples, etc.)
+  - [] `--dropkeys` -- remove selected keywords
   - [] build and make executable
   - [] tests
   - [wip] documentation
@@ -18,6 +20,7 @@
     - [x] type guards
     - [x] import statement code generation
     - [x] type from TypeBox schema, optional, extended OneOf code generation
+    - [x] schema options code generation (setup for `--minkeys` and `--dropkeys`)
     - [wip] other OpenAPI -> TypeBox code generation
 - `oas2dtb`
   - [x] write command spec
