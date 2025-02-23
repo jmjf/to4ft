@@ -24,6 +24,9 @@ import {
 	isOneOfSchema,
 	isSchemaWithMultipleTypes,
 	isUnknownSchema,
+	isBoolean,
+	isNumber,
+	isString,
 } from './typeGuards.ts';
 
 import {
@@ -33,10 +36,6 @@ import {
 	parseSchemaOptions,
 	type GeneratedCode,
 } from './codeGenerators.ts';
-
-const isBoolean = (a: unknown) => typeof a === 'boolean';
-const isNumber = (a: unknown) => typeof a === 'number';
-const isString = (a: unknown) => typeof a === 'string';
 
 /** Generates TypeBox code from a given JSON schema */
 export const schema2typebox = (schemaName: string, parsedSchema: JSONSchema7Definition, namePrefix = '') => {

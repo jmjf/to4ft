@@ -4,6 +4,17 @@
  */
 import type { JSONSchema7, JSONSchema7Definition, JSONSchema7Type, JSONSchema7TypeName } from 'json-schema';
 
+// schema2typebox imported these from fp-ts. They didn't play nice with --experimental-strip-types, so I rewrote them.
+export function isBoolean(a: unknown) {
+	return typeof a === 'boolean';
+}
+export function isNumber(a: unknown) {
+	return typeof a === 'number';
+}
+export function isString(a: unknown) {
+	return typeof a === 'string';
+}
+
 export type ObjectSchema = JSONSchema7 & { type: 'object' };
 export function isObjectSchema(schema: JSONSchema7): schema is ObjectSchema {
 	return schema.type !== undefined && schema.type === 'object';
