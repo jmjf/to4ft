@@ -16,6 +16,7 @@
     "format": "npx @biomejs/biome format --write",
     "lint": "npx @biomejs/biome lint",
     "build": "npx tsc tson-server.ts --outDir ./dist",
+    "run:dtb": "cd src && node --experimental-strip-types cli.ts oas2dtb -i ../example/openapi/openapi.yaml -o ../example/dtb",
     "start": "node ./dist/tson-server.js | npx pino-pretty",
     "everything": "npm run oas2tson && npm run build && npm run start"
   },
