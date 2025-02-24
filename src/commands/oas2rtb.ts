@@ -28,9 +28,6 @@ const schemaGetters = {
 };
 
 export async function oas2rtb(opts: oas2rtbOptions) {
-	console.log('oas2rtb not implemented');
-	console.log(opts);
-
 	const inputFilesResult = getInputFiles(opts.input);
 	if (inputFilesResult.error !== null) {
 		console.log(inputFilesResult.error);
@@ -54,13 +51,10 @@ export async function oas2rtb(opts: oas2rtbOptions) {
 	// build a list of unique paths needed
 	let refPathNms: string[] = [];
 	for (const filePath of fileNms) {
-		const inputFileParser = new $RefParser();
-		await inputFileParser.dereference(filePath);
-		refPathNms = [...refPathNms, ...inputFileParser.$refs.paths()];
+		refPathNms.push(...(await $RefParser.resolve(filePath)).paths());
 	}
 	// dedupe the array
 	refPathNms = dedupeArray<string>(refPathNms);
-	console.log('refPathNms', refPathNms);
 
 	// then for each referenced file
 	for (const refPathNm of refPathNms) {

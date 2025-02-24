@@ -43,17 +43,22 @@ export async function oas2dtb(opts: oas2dtbOptions) {
 	opts.prefix = toLowerFirstChar(opts.prefix);
 
 	for (const filePath of inputFilesResult.value.fileNms) {
-		// parse each file
-		const inputFileParser = new $RefParser();
-		await inputFileParser.dereference(filePath);
-		// get the paths used in $refs
-		const refPathNms = inputFileParser.$refs.paths();
+		// get the paths used in $refs in the file
+		const refPathNms = (await $RefParser.resolve(filePath)).paths();
+
+		// to preserve property overrides, something like
+		// await $RefParser.dereference('example/openapi/openapi.yaml',
+		// {preservedProperties: ['description','summary','default','minLength','maxLength','minimum','maximum']})
+		// need to decide what it makes sense to preserve,
+		// description, summary, default, example, examples, deprecated,
 
 		// then for each referenced file
 		for (const refPathNm of refPathNms) {
 			// parse that file
 			const refParser = new $RefParser();
 			const derefedSchema = (await refParser.dereference(refPathNm)) as JSONSchema7;
+			// while inputFileParser.$refs.get(refPathNm) gets the file contents, internal refs aren't dereferenced
+			// so code generation fails unless we do it file by file.
 
 			// Does it not have components? (skip it)
 			if (!isOpenAPIComponents(derefedSchema)) continue;
