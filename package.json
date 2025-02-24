@@ -7,18 +7,13 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "oas:lint": "npx @redocly/cli lint openapi/openapi.yaml",
-    "oas:bundle": "npx @redocly/cli bundle openapi/openapi.yaml -o=openapi/bundle.json && npx @redocly/cli bundle openapi/openapi.yaml -o=openapi/bundle.yaml",
     "oas:doc": "npx @redocly/cli build-docs openapi/openapi.yaml -o=openapi/api-docs.html",
-    "oas:split": "npx @redocly/cli split openapi/bundle.json --outDir=openapi/jsonSplit",
-    "oas:tson": "npx openapi-transformer-toolkit oas2tson -i openapi/bundle.yaml -o example/oasSchemas",
-    "oas:gen": "npm run oas:lint && npm run oas:bundle && npm run oas:doc && npm run oas:tson",
+    "run:dtb": "cd src && node --experimental-strip-types cli.ts oas2dtb -i ../example/openapi/openapi.yaml -o ../example/dtb && npm run check:ex",
+    "run:rtb": "cd src && node --experimental-strip-types cli.ts oas2rtb -i ../example/openapi/openapi.yaml -o ../example/rtb && npm run check:ex",
     "check:ex": "npx @biomejs/biome check --write example",
     "format": "npx @biomejs/biome format --write",
     "lint": "npx @biomejs/biome lint",
-    "build": "npx tsc tson-server.ts --outDir ./dist",
-    "run:dtb": "cd src && node --experimental-strip-types cli.ts oas2dtb -i ../example/openapi/openapi.yaml -o ../example/dtb && npm run check:ex",
-    "start": "node ./dist/tson-server.js | npx pino-pretty",
-    "everything": "npm run oas2tson && npm run build && npm run start"
+    "build": "npx tsc tson-server.ts --outDir ./dist"
   },
   "author": "",
   "license": "MIT",

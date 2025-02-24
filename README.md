@@ -7,33 +7,37 @@
 
 - Core/common
   - [x] `--prefix` -- prefix generated TypeBox schema and type names
+  - [x] Ensure prefix first character is lower case to avoid name collisions
   - [x] ensure deep paths exist (mkdir recursive)
   - [] `--up1` -- uppercase first character of names from OpenAPI
   - [] ensure identifiers are valid JavaScript (replace invalid chars with `_`)
-  - [] `--camel` -- force camelcase (no `_` in names)
+  - [] `--camel` -- force camelcase (squeeze out `_` in names)
   - [] `--minkeys` -- generate minimum schemas/types (no descriptions, examples, etc.)
   - [] `--dropkeys` -- remove selected keywords
   - [] build and make executable
   - [] tests
   - [wip] documentation
-  - [] refactor/extend code from `schema2typebox` (idiomatic, adjustments, etc.)
+  - [x] refactor/extend code from `schema2typebox` (idiomatic, adjustments, etc.)
     - [x] type guards
     - [x] import statement code generation
     - [x] type from TypeBox schema, optional, extended OneOf code generation
     - [x] schema options code generation (setup for `--minkeys` and `--dropkeys`)
-    - [wip] other OpenAPI -> TypeBox code generation
+    - [x] other OpenAPI -> TypeBox code generation
 - `oas2dtb`
   - [x] write command spec
   - [x] read file or directory
   - [x] find schemas to process
   - [x] generate TypeBox code
   - [x] write files to output directory
+  - [x] `run:dtb` npm script (temporary)
+  - [] if possible, ensure local schema options are honored (currently, deref overrides); esp. important for default overrides, etc.
 - `oas2rtb`
   - [x] write command spec
-  - [] read file or directory
-  - [] find schemas to process
-  - [] generate TypeBox code
-  - [] write files to output directory
+  - [x] read file or directory
+  - [x] find schemas to process
+  - [x] generate TypeBox code
+  - [x] write files to output directory
+  - [x] `run:rtb` npm script (temporary)
 - `oas2ro`
   - [x] write command spec
   - [] read file or directory
@@ -57,7 +61,7 @@
 
 `openapi-transformer-toolkit` inspired generating code from OpenAPI specs and got me on the spec-first bandwagon. Thank you Nearform team.
 
-`oas2tb4fastify` copies the core code from `schema2typebox` to do schema translation. Thank you xddq.
+`oas2tb4fastify` borrows heavily from the core code from `schema2typebox` to do schema translation. Thank you xddq.
 
 ## Motivation
 
@@ -118,7 +122,7 @@ Example: `oas2tb4fastify oas2dtb -i example/openapi/openapi.yaml -o example/dtb 
 
 `--prefix` (optional; default `tb`) -- characters to prefix on OpenAPI names in generated code
 
-Be aware of possible name collisions and un-camelcase naming patterns. For example, if `components.schemas` defines `User1` and `user2` then
+Be aware of possible camelcase inconsistencies. For example, if `components.schemas` defines `User1` and `user2` then
 
 ```typescript
 // if --prefix hi
@@ -129,14 +133,31 @@ const hiuser2 ...; // camelcase inconsistency can be confusing
 type Hiuser2 ...;  // camelcase inconsistency can be confusing
 
 // if --prefix Hi
-const HiUser1 ...;
-type HiUser1 ...;  // name collision can be confusing
+const hiUser1 ...; // prefix first character forced to lowercase to avoid name collision
+type HiUser1 ...;  
 
-const Hiuser2 ...; // camelcase inconsistency can be confusing
-type Hiuser2 ...;  // name collision can be confusing
+const hiuser2 ...; // camelcase inconsistency can be confusing
+type Hiuser2 ...;  
 ```
 
 **Recommendation:** Use leading lowercase for `--prefix`. Name OpenAPI items with leading uppercase.
+
+#### Example output
+
+Generated from `openapi/schema/User.yaml` `components/schemas/User`. Currently, the description for `userId` is from the `$ref`ed schema (local options ignored).
+
+```typescript
+import { type Static, Type } from '@sinclair/typebox';
+
+export const tbUser = Type.Object({
+   userId: Type.Number({ description: 'uniquely identifes a user', minimum: 1 }),
+   userNm: Type.String({ minLength: 3, description: 'User name must be at least 3 characters', example: 'Joe' }),
+   emailAddrTx: Type.Optional(
+      Type.String({ format: 'emailAddr', description: 'An email address', example: 'joe@mailinator.com' }),
+   ),
+});
+export type TbUser = Static<typeof tbUser>;
+```
 
 ### `oas2rtb`
 
@@ -149,6 +170,24 @@ Example: `oas2tb4fastify oas2rtb -i example/openapi/openapi.yaml -o example/rtb 
 **WARNING:** If your schema `$ref`s `examples`, `links`, or other OpenAPI fields that do not generate types, `oas2tb4fastify` will not convert them and may produce unpredictable results.
 
 `oas2rtb` uses the same options as `oas2dtb`.
+
+#### Example output
+
+Generated from `openapi/schema/User.yaml` `components/schemas/User`. Note the description for `userId` is from the `description` in `User.yaml` (local options honored).
+
+```typescript
+import { CloneType, type Static, Type } from '@sinclair/typebox';
+import { tbEmailAddrTx } from './schemasEmailAddrTx.js';
+import { tbUserId } from './schemasUserId.js';
+import { tbUserNm } from './schemasUserNm.js';
+
+export const tbUser = Type.Object({
+   userId: CloneType(tbUserId, { description: 'A unique identifier for a user (override)' }),
+   userNm: CloneType(tbUserNm),
+   emailAddrTx: Type.Optional(CloneType(tbEmailAddrTx)),
+});
+export type TbUser = Static<typeof tbUser>;
+```
 
 ### `oas2ro`
 

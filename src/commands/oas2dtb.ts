@@ -4,7 +4,7 @@ import type { JSONSchema7, JSONSchema7Object } from 'json-schema';
 import type { oas2dtbOptions } from '../cli.ts';
 import { ensureDirectoryExists, getInputFiles } from '../lib/fsHelpers.ts';
 import { genDerefImportStatements, toLowerFirstChar } from '../lib/codeGenerators.ts';
-import { schema2typebox } from '../lib/schema-to-typebox.ts';
+import { schema2typebox } from '../lib/codeGenerators.ts';
 import {
 	type OpenAPIHeadersItem,
 	type OpenAPIParametersItem,
@@ -40,36 +40,36 @@ export async function oas2dtb(opts: oas2dtbOptions) {
 
 	ensureDirectoryExists(opts.outdir);
 
-	opts.prefix = typeof opts.prefix === 'string' ? toLowerFirstChar(opts.prefix) : undefined;
+	opts.prefix = toLowerFirstChar(opts.prefix);
 
-	for (const filePath of inputFilesResult.value) {
+	for (const filePath of inputFilesResult.value.fileNms) {
 		// parse each file
 		const inputFileParser = new $RefParser();
 		await inputFileParser.dereference(filePath);
 		// get the paths used in $refs
-		const refPaths = inputFileParser.$refs.paths();
+		const refPathNms = inputFileParser.$refs.paths();
 
 		// then for each referenced file
-		for (const path of refPaths) {
+		for (const refPathNm of refPathNms) {
 			// parse that file
-			const pathParser = new $RefParser();
-			const pathParsed = (await pathParser.dereference(path)) as JSONSchema7;
+			const refParser = new $RefParser();
+			const derefedSchema = (await refParser.dereference(refPathNm)) as JSONSchema7;
 
 			// Does it not have components? (skip it)
-			if (!isOpenAPIComponents(pathParsed)) continue;
+			if (!isOpenAPIComponents(derefedSchema)) continue;
 
-			const componentsEntries = Object.entries(pathParsed.components);
-			for (const [componentType, componentContents] of componentsEntries) {
+			const componentsEntries = Object.entries(derefedSchema.components);
+			for (const [componentFieldNm, componentContents] of componentsEntries) {
 				// Do we not know how to get the schema? (skip it)
-				if (schemaGetters[componentType] === undefined) continue;
+				if (schemaGetters[componentFieldNm] === undefined) continue;
 
-				const entries = Object.entries(componentContents);
-				for (const [objNm, objValue] of entries) {
-					const schema = schemaGetters[componentType](objValue);
+				const fieldEntries = Object.entries(componentContents);
+				for (const [objNm, objValue] of fieldEntries) {
+					const schema = schemaGetters[componentFieldNm](objValue);
 					// Is there no schema? (skip it)
 					if (schema === undefined) continue;
-					const tb = schema2typebox(objNm, schema, opts.prefix);
-					writeFileSync(`${opts.outdir}/${componentType}${objNm}.ts`, `${genDerefImportStatements()}\n\n${tb}`);
+					const tb = schema2typebox(objNm, schema, { prefixTx: opts.prefix, extTx: 'NotUsed' });
+					writeFileSync(`${opts.outdir}/${componentFieldNm}${objNm}.ts`, `${genDerefImportStatements()}\n\n${tb}`);
 				}
 			}
 		}

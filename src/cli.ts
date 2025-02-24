@@ -7,14 +7,14 @@ import { oas2rtb } from './commands/oas2rtb.ts';
 export type oas2rtbOptions = {
 	input: string;
 	outdir: string;
-	extension?: string;
-	prefix?: string;
+	extension: string;
+	prefix: string;
 };
 
 export type oas2dtbOptions = {
 	input: string;
 	outdir: string;
-	prefix?: string;
+	prefix: string;
 };
 
 export type oas2roOptions = {
@@ -49,7 +49,7 @@ function runProgram(version: string) {
 			'Path to an OpenAPI specification file or directory containing OpenAPI files to process',
 		)
 		.requiredOption('-o, --outdir <outDirNm>', 'Directory to receive output')
-		.option('--extension <extTx>', 'Extension to add to import file names', '.js')
+		.option('--extension <extTx>', 'Extension to add to import file names (no dot)', 'js')
 		.option(
 			'--prefix <prefixTx>',
 			'Characters to add at the beginning of names; types will being with uppercase, schema consts will begin with lower case',
