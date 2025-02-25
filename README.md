@@ -9,20 +9,22 @@
   - [x] `--prefix` -- prefix generated TypeBox schema and type names
   - [x] Ensure prefix first character is lower case to avoid name collisions
   - [x] ensure deep paths exist (mkdir recursive)
-  - [] `--up1` -- uppercase first character of names from OpenAPI
-  - [] ensure identifiers are valid JavaScript (replace invalid chars with `_`)
-  - [] `--camel` -- force camelcase (squeeze out `_` in names)
-  - [] `--minkeys` -- generate minimum schemas/types (no descriptions, examples, etc.)
-  - [] `--dropkeys` -- remove selected keywords
-  - [] build and make executable
-  - [] tests
-  - [wip] documentation
   - [x] refactor/extend code from `schema2typebox` (idiomatic, adjustments, etc.)
     - [x] type guards
     - [x] import statement code generation
     - [x] type from TypeBox schema, optional, extended OneOf code generation
     - [x] schema options code generation (setup for `--minkeys` and `--dropkeys`)
     - [x] other OpenAPI -> TypeBox code generation
+  - [x] uppercase first character of names from OpenAPI
+  - [x] `--preserve` -- preserve `$ref`-adjacent keywords; may not be necessary if we default `description` and `summary`
+  - [ ] ensure identifiers are valid JavaScript (replace invalid chars with `_`)
+  - [ ] `--camel` -- force camelcase (squeeze out `_` in names)
+  - [ ] `--minkeys` -- generate minimum schemas/types (no descriptions, examples, etc.)
+  - [ ] `--dropkeys` -- remove specified keywords (comma separated array of schema keywords to drop)
+  - [ ] build and make executable
+  - [ ] tests
+  - [wip] documentation
+
 - `oas2dtb`
   - [x] write command spec
   - [x] read file or directory
@@ -30,7 +32,6 @@
   - [x] generate TypeBox code
   - [x] write files to output directory
   - [x] `run:dtb` npm script (temporary)
-  - [] if possible, ensure local schema options are honored (currently, deref overrides); esp. important for default overrides, etc.
 - `oas2rtb`
   - [x] write command spec
   - [x] read file or directory
@@ -38,24 +39,25 @@
   - [x] generate TypeBox code
   - [x] write files to output directory
   - [x] `run:rtb` npm script (temporary)
+  - [ ] Replace `CloneType` - use `CloneType` code as a base, but reverse spread order
 - `oas2ro`
   - [x] write command spec
-  - [] read file or directory
-  - [] find paths to process
-  - [] generate partial `RouteOptions`
-    - [] url
-    - [] method
-    - [] operationId
-    - [] tags
-    - [] summary
-    - [] description
-    - [] schema
-      - [] querystring
-      - [] headers
-      - [] params
-      - [] body
-      - [] response
-  - [] write files to output directory
+  - [ ] read file or directory
+  - [ ] find paths to process
+  - [ ] generate partial `RouteOptions`
+    - [ ] url
+    - [ ] method
+    - [ ] operationId
+    - [ ] tags
+    - [ ] summary
+    - [ ] description
+    - [ ] schema
+      - [ ] querystring
+      - [ ] headers
+      - [ ] params
+      - [ ] body
+      - [ ] response
+  - [ ] write files to output directory
 
 ## Credit
 
@@ -79,10 +81,11 @@ I've seen examples using TypeBox to define the API schema and exporting JSON Sch
 
 - Converts only items in `components` because items in paths/callbacks may be unnamed
 - Converts only `headers`, `parameters`, `requestBodies`, `responses`, and `schemas` because other items do not produce types
-- Replaces invalid identifier characters with `_` and does not trim leading/trailing `_`. Valid JavaScript identifiers are Unicode letters, digits (0-9), `$` and `_`.
-  - This compromise most affects custom headers like `x-my-custom-header`, which will be renamed `x_my_custom_header` in output.
 - Prefixes generated file names with the section from which they came. For example, it will write `components.schemas.Users` output to `schemasUsers.ts`
 - For `responses`, generates a type for one `content` option with the following priority: `application/json` before `application/x-www-form-urlencoded` before `application/xml`.
+- (FUTURE) Replaces invalid identifier characters with `_` and does not trim leading/trailing `_`. Valid JavaScript identifiers are Unicode letters, digits (0-9), `$` and `_`.
+  - This compromise most affects custom headers like `x-my-custom-header`, which will be renamed `x_my_custom_header` in output.
+
 
 ## Commands
 
@@ -122,6 +125,8 @@ Example: `oas2tb4fastify oas2dtb -i example/openapi/openapi.yaml -o example/dtb 
 
 `--prefix` (optional; default `tb`) -- characters to prefix on OpenAPI names in generated code
 
+`--preserve` (optional; default `description,summary`) -- comma separated list of keywords to preserve adjacent to `$ref`s; may replace fixed default
+
 Be aware of possible camelcase inconsistencies. For example, if `components.schemas` defines `User1` and `user2` then
 
 ```typescript
@@ -144,19 +149,20 @@ type Hiuser2 ...;
 
 #### Example output
 
-Generated from `openapi/schema/User.yaml` `components/schemas/User`. Currently, the description for `userId` is from the `$ref`ed schema (local options ignored).
+Generated from `openapi/schema/User.yaml` `components/schemas/User`.
 
 ```typescript
 import { type Static, Type } from '@sinclair/typebox';
 
 export const tbUser = Type.Object({
-   userId: Type.Number({ description: 'uniquely identifes a user', minimum: 1 }),
+   userId: Type.Number({ description: 'A unique identifier for a user (override)', minimum: 1 }),
    userNm: Type.String({ minLength: 3, description: 'User name must be at least 3 characters', example: 'Joe' }),
    emailAddrTx: Type.Optional(
       Type.String({ format: 'emailAddr', description: 'An email address', example: 'joe@mailinator.com' }),
    ),
 });
 export type TbUser = Static<typeof tbUser>;
+
 ```
 
 ### `oas2rtb`
@@ -169,11 +175,13 @@ Example: `oas2tb4fastify oas2rtb -i example/openapi/openapi.yaml -o example/rtb 
 
 **WARNING:** If your schema `$ref`s `examples`, `links`, or other OpenAPI fields that do not generate types, `oas2tb4fastify` will not convert them and may produce unpredictable results.
 
-`oas2rtb` uses the same options as `oas2dtb`.
+`oas2rtb` uses the same options as `oas2dtb`
+
+- EXCEPT it does not support `--preserve` because `$RefParser.parse` doesn't support it
 
 #### Example output
 
-Generated from `openapi/schema/User.yaml` `components/schemas/User`. Note the description for `userId` is from the `description` in `User.yaml` (local options honored).
+Generated from `openapi/schema/User.yaml` `components/schemas/User`. Note the description for `userId` is from the `description` in `User.yaml` (local options honored) EXCEPT TypeBox `CloneType` will use description from the source type.
 
 ```typescript
 import { CloneType, type Static, Type } from '@sinclair/typebox';
@@ -190,6 +198,8 @@ export type TbUser = Static<typeof tbUser>;
 ```
 
 ### `oas2ro`
+
+**WIP** This section will change when I build the code.
 
 Generate partial Fastify `RouteOptions` objects based on `paths`.
 

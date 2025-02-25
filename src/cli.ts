@@ -1,25 +1,15 @@
 import { readFileSync } from 'node:fs';
-import { program } from 'commander';
+import { Option, program } from 'commander';
 import { oas2dtb } from './commands/oas2dtb.ts';
 import { oas2ro } from './commands/oas2ro.ts';
 import { oas2rtb } from './commands/oas2rtb.ts';
 
-export type oas2rtbOptions = {
+export type CombinedOptions = {
 	input: string;
 	outdir: string;
-	extension: string;
-	prefix: string;
-};
-
-export type oas2dtbOptions = {
-	input: string;
-	outdir: string;
-	prefix: string;
-};
-
-export type oas2roOptions = {
-	input: string;
-	outdir: string;
+	preserve: string;
+	extension?: string;
+	prefix?: string;
 	suffix?: string;
 };
 
@@ -33,6 +23,26 @@ function getVersion(): string {
 	return version;
 }
 
+const inputOption = new Option(
+	'-i, --input <inPathNm>',
+	'Path to an OpenAPI specification file or directory containing OpenAPI files to process',
+).makeOptionMandatory(true);
+
+const outputOption = new Option(
+	'-o, --outdir <outDirNm>',
+	'Path to directory to receive generated code',
+).makeOptionMandatory(true);
+
+const prefixOption = new Option(
+	'--prefix <prefixTx>',
+	'Characters to add at the beginning of names; types will being with uppercase, schema consts will begin with lower case',
+).default('tb');
+
+const preserveOption = new Option(
+	'--preserve <keywords>',
+	'Accepts a comma separated list of keywords next to a $ref to preserve; description and summary are always preserved',
+).default('description,summary');
+
 function runProgram(version: string) {
 	program
 		.name('oas2tb4fastify')
@@ -44,17 +54,11 @@ function runProgram(version: string) {
 		.description(
 			'Generate reference-maintaining TypeBox schema consts and types from and OpenAPI spec. Input may be YAML or JSON Schema.',
 		)
-		.requiredOption(
-			'-i, --input <inPathNm>',
-			'Path to an OpenAPI specification file or directory containing OpenAPI files to process',
-		)
-		.requiredOption('-o, --outdir <outDirNm>', 'Directory to receive output')
+		.addOption(inputOption)
+		.addOption(outputOption)
+		.addOption(prefixOption)
+		.addOption(preserveOption)
 		.option('--extension <extTx>', 'Extension to add to import file names (no dot)', 'js')
-		.option(
-			'--prefix <prefixTx>',
-			'Characters to add at the beginning of names; types will being with uppercase, schema consts will begin with lower case',
-			'tb',
-		)
 		.action(oas2rtb);
 
 	program
@@ -62,13 +66,9 @@ function runProgram(version: string) {
 		.description(
 			'Generate dereferenced TypeBox schema consts and types from and OpenAPI spec. Input may be YAML or JSON Schema.',
 		)
-		.option('-i, --input <inPathNm>', 'Path to an OpenAPI specification file')
-		.option('-o, --outdir <outDirNm>', 'Directory to receive output')
-		.option(
-			'--prefix <prefixTx>',
-			'Characters to add at the beginning of names; types will being with uppercase, schema consts will begin with lower case',
-			'tb',
-		)
+		.addOption(inputOption)
+		.addOption(outputOption)
+		.addOption(prefixOption)
 		.action(oas2dtb);
 
 	program
@@ -76,8 +76,9 @@ function runProgram(version: string) {
 		.description(
 			'Generate partial Fastify RouteOptions objects from paths in an OpenAPI schema. Input may be YAML or JSON Schema.',
 		)
-		.option('-i, --input <inPathNm>', 'Path to an OpenAPI specification file to process')
-		.option('-o, --outDir <outDir>', 'Directory to receive output')
+		.addOption(inputOption)
+		.addOption(outputOption)
+		.addOption(preserveOption)
 		.option('--suffix <suffixTx>', 'Characters to add at the end of names', 'RouteOptions')
 		.action(oas2ro);
 

@@ -83,6 +83,12 @@ export type OpenAPIResponsesItem = {
 	};
 };
 export type OpenAPISchemasItem = JSONSchema7;
+export type OpenAPIComponentsItem =
+	| OpenAPIHeadersItem
+	| OpenAPIParametersItem
+	| OpenAPIRequestBodiesItem
+	| OpenAPIResponsesItem
+	| OpenAPISchemasItem;
 // Arguably, pathItems and callbacks can have types in them but they may not be named, so can't use them
 export type OpenAPIComponents = {
 	components: {
