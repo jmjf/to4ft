@@ -46,6 +46,7 @@ components:
         statusTs:
           $ref: Fields.yaml#/components/schemas/GenericTs
           description: The date and time when the post was put in the current status
+          example: 2025-11-12T13:14:15Z
       required:
         - postId
         - titleTx

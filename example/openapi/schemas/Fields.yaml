@@ -45,6 +45,7 @@ components:
    TitleTx:
       type: string
       description: The title of a blog post
+      default: none
       minLength: 3
       maxLength: 100
    UserId:

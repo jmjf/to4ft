@@ -51,8 +51,8 @@ export const tbPostsResponse = Type.Array(
 		statusTs: Type.Optional(
 			Type.String({
 				description: 'The date and time when the post was put in the current status',
+				example: '2025-11-12T13:14:15Z',
 				format: 'date-time',
-				example: '2024-01-02:03:04:05Z',
 			}),
 		),
 	}),

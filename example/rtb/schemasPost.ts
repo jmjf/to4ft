@@ -15,7 +15,10 @@ export const tbPost = Type.Object({
 	comments: Type.Optional(Type.Array(CloneType(tbComment))),
 	statusCd: Type.Optional(CloneType(tbPostStatus, { default: 'draft' })),
 	statusTs: Type.Optional(
-		CloneType(tbGenericTs, { description: 'The date and time when the post was put in the current status' }),
+		CloneType(tbGenericTs, {
+			description: 'The date and time when the post was put in the current status',
+			example: '2025-11-12T13:14:15Z',
+		}),
 	),
 });
 export type TbPost = Static<typeof tbPost>;
