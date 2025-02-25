@@ -156,7 +156,7 @@ export function genExportedTypeForName(exportedNm: string): string {
  */
 
 const typeboxImports = [
-	'import {type Static, Type, SchemaOptions, CloneType, Kind, TypeRegistry} from "@sinclair/typebox"',
+	'import {type Static, Type, SchemaOptions, Clone, Kind, TypeRegistry} from "@sinclair/typebox"',
 	'import { Value } from "@sinclair/typebox/value";',
 ];
 export function genDerefImportStatements(): string {

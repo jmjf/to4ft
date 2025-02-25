@@ -6,7 +6,6 @@ import { getRefPathNms, preprocOptions, type StdOptions } from '../lib/optionHel
 
 export async function oas2dtb(opts: CombinedOptions) {
 	const stdOpts = preprocOptions(opts);
-	console.log(stdOpts);
 	const refPathNms = await getRefPathNms(stdOpts.fileNms);
 	genTypeBoxForRefs(refPathNms, 'dereference', genToDTB, stdOpts);
 }

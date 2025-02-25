@@ -39,7 +39,7 @@
   - [x] generate TypeBox code
   - [x] write files to output directory
   - [x] `run:rtb` npm script (temporary)
-  - [ ] Replace `CloneType` - use `CloneType` code as a base, but reverse spread order
+  - [x] Replace `CloneType` - use `CloneType` code as a base, but reverse spread order
 - `oas2ro`
   - [x] write command spec
   - [ ] read file or directory

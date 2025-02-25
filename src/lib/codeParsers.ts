@@ -164,7 +164,7 @@ export function parseRefName(codeGenOpts: CodeGenOpts, schema: JSONSchema7 = {})
 	refImports.push(`import { ${refedNm} } from '${refPathNm}';`);
 
 	const schemaOptionsTx = parseSchemaOptions(schema);
-	return schemaOptionsTx === undefined ? `CloneType(${refedNm})` : `CloneType(${refedNm}, ${schemaOptionsTx})`;
+	return schemaOptionsTx === undefined ? `Clone(${refedNm})` : `Clone({...${refedNm}, ...${schemaOptionsTx}})`;
 }
 
 export function parseTypeName(

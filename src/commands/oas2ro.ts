@@ -1,6 +1,6 @@
-import type { oas2roOptions } from '../cli.ts';
+import type { CombinedOptions } from '../cli.ts';
 
-export function oas2ro(options: oas2roOptions) {
+export function oas2ro(options: CombinedOptions) {
 	console.log('oas2ro not implemented');
 	console.log(options);
 }

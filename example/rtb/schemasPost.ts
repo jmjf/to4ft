@@ -1,4 +1,4 @@
-import { CloneType, type Static, Type } from '@sinclair/typebox';
+import { Clone, type Static, Type } from '@sinclair/typebox';
 import { tbComment } from './schemasComment.js';
 import { tbGenericTs } from './schemasGenericTs.js';
 import { tbPostId } from './schemasPostId.js';
@@ -8,16 +8,19 @@ import { tbTitleTx } from './schemasTitleTx.js';
 import { tbUser } from './schemasUser.js';
 
 export const tbPost = Type.Object({
-	postId: CloneType(tbPostId, { description: 'Uniquely identifies a blog post' }),
-	titleTx: CloneType(tbTitleTx, { default: 'hello' }),
-	postTx: CloneType(tbPostTx),
-	author: Type.Optional(CloneType(tbUser)),
-	comments: Type.Optional(Type.Array(CloneType(tbComment))),
-	statusCd: Type.Optional(CloneType(tbPostStatus, { default: 'draft' })),
+	postId: Clone({ ...tbPostId, ...{ description: 'Uniquely identifies a blog post' } }),
+	titleTx: Clone({ ...tbTitleTx, ...{ default: 'hello' } }),
+	postTx: Clone(tbPostTx),
+	author: Type.Optional(Clone(tbUser)),
+	comments: Type.Optional(Type.Array(Clone(tbComment))),
+	statusCd: Type.Optional(Clone({ ...tbPostStatus, ...{ default: 'draft' } })),
 	statusTs: Type.Optional(
-		CloneType(tbGenericTs, {
-			description: 'The date and time when the post was put in the current status',
-			example: '2025-11-12T13:14:15Z',
+		Clone({
+			...tbGenericTs,
+			...{
+				description: 'The date and time when the post was put in the current status',
+				example: '2025-11-12T13:14:15Z',
+			},
 		}),
 	),
 });
