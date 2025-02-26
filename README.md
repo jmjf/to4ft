@@ -17,14 +17,14 @@
     - [x] other OpenAPI -> TypeBox code generation
   - [x] uppercase first character of names from OpenAPI
   - [x] ensure `description` and `summary` adjacent to `$ref` are preserved (removed `--preserve` in favor of default)
-  - [ ] ensure identifiers are valid JavaScript (replace invalid chars with `_`)
+  - [x] sanitize identifier names to be valid JavaScript (replace invalid chars with `_`)
+    - NOTE: Sanitization does not affect names inside schemas. See `examples/rtb/User.yaml` where `'x-dashes'` references `tbX_dashes`.
   - [ ] `--camel` -- force camelcase (squeeze out `_` in names)
   - [ ] `--minkeys` -- generate minimum schemas/types (no descriptions, examples, etc.)
   - [ ] `--dropkeys` -- remove specified keywords (comma separated array of schema keywords to drop)
   - [ ] build and make executable
   - [ ] tests
   - [wip] documentation
-
 - `oas2dtb`
   - [x] write command spec
   - [x] read file or directory
@@ -83,9 +83,41 @@ I've seen examples using TypeBox to define the API schema and exporting JSON Sch
 - Converts only `headers`, `parameters`, `requestBodies`, `responses`, and `schemas` because other items do not produce types
 - Prefixes generated file names with the section from which they came. For example, it will write `components.schemas.Users` output to `schemasUsers.ts`
 - For `responses`, generates a type for one `content` option with the following priority: `application/json` before `application/x-www-form-urlencoded` before `application/xml`.
-- (FUTURE) Replaces invalid identifier characters with `_` and does not trim leading/trailing `_`. Valid JavaScript identifiers are Unicode letters, digits (0-9), `$` and `_`.
-  - This compromise most affects custom headers like `x-my-custom-header`, which will be renamed `x_my_custom_header` in output.
+- Replaces invalid identifier characters with `_` and does not trim leading/trailing `_`. See "Identifier name sanitization" below.
+  - This compromise most affects custom headers like `x-my-custom-header`, which will be renamed `tbX_my_custom_header` in output.
 
+### Identifier name sanitization
+
+JavaScript identifiers can include Unicode letters, Unicode numbers, `_` and `$`. The first character cannot be a number. That seems simple except for the Unicode part and that the definition of "numbers" is unclear. I'm not sure about letters either, but haven't found any problems yet.
+
+For example, the following assignments are valid in the NodeJS REPL:
+
+- `let 日本語 = 'Japanese for Japanese language'`
+- `let rrugë = 'Albanian for street'`
+- `let شجرة = 'Arabic for tree'`
+- `let x६ = 'x + Devangari 6'`
+- `let x六 = 'x + Han 6'`
+- `let x௬ = 'x + Tamil 6'`
+- `let x𒐗 = 'x + Cuneiform 3'`
+
+But `x¹` (superscript 1), `x𝋠` (Mayan 0), and `x𝋬` (Mayan 12) aren't, even though all three glyphs are classified as numbers (specifically, letter numbers -- `\p{Nl}`) in Unicode.
+
+The distinction seems to be that `\p{Nd}` (unicode decimals) and `\p{Nl}` (unicode numeric letters) are valid, but `\p{No}` (superscript, subscript, number that is not decimal) isn't, or isn't consistently, valid.
+
+Therefore, identifier validation rules are applied as follows:
+
+- Replace all characters that match `/[^\p{L}\p{Nd}\p{Nl}_$]/gui` with `_` -- note this is a negative match (`[^...]`).
+- If the first character matches `/^[^\p{L}_$]/ui`, replace it with `_` -- note this is a negative match
+
+In the rules above:
+
+- `\p{L}` is the character class for Unicode letters of all types, including ideographic scripts
+- `\p{Nd}` is the character class for decimal digit numbers (any script except ideographic scripts)
+- `\p{Nl}` is the character class for numeric letters (Roman numerals, etc.)
+
+I have not tested these rules exhaustively. They aim to be reasonably permissive, but may be too permissive or not permissive enough. I'm not going to write (or copy from [StackOverflow](https://stackoverflow.com/questions/2008279/validate-a-javascript-function-name/9392578#9392578)) an 11,000 character plus regular expression to try to be perfect. If you name something `function`, it will pass these rules, but JavaScript will say, "Nope!"
+
+Also, you may be able to write an API spec with Hittite object names in cuneiform, but just because you can doesn't mean you should.
 
 ## Commands
 
@@ -160,6 +192,9 @@ export const tbUser = Type.Object({
    emailAddrTx: Type.Optional(
       Type.String({ format: 'emailAddr', description: 'An email address', example: 'joe@mailinator.com' }),
    ),
+   'x-dashes': Type.Optional(Type.String()),
+   $100ok: Type.Optional(Type.String()),
+   x𒐗: Type.Optional(Type.Number()),
 });
 export type TbUser = Static<typeof tbUser>;
 
@@ -184,15 +219,21 @@ Example: `oas2tb4fastify oas2rtb -i example/openapi/openapi.yaml -o example/rtb 
 Generated from `openapi/schema/User.yaml` `components/schemas/User`. Note the description for `userId` is from the `description` in `User.yaml` (local options honored) EXCEPT TypeBox `CloneType` will use description from the source type.
 
 ```typescript
-import { CloneType, type Static, Type } from '@sinclair/typebox';
+import { Clone, type Static, Type } from '@sinclair/typebox';
+import { tb$100ok } from './schemas$100ok.js';
 import { tbEmailAddrTx } from './schemasEmailAddrTx.js';
 import { tbUserId } from './schemasUserId.js';
 import { tbUserNm } from './schemasUserNm.js';
+import { tbX_dashes } from './schemasx-dashes.js';
+import { tbX𒐗 } from './schemasx𒐗.js';
 
 export const tbUser = Type.Object({
-   userId: CloneType(tbUserId, { description: 'A unique identifier for a user (override)' }),
-   userNm: CloneType(tbUserNm),
-   emailAddrTx: Type.Optional(CloneType(tbEmailAddrTx)),
+   userId: Clone({ ...tbUserId, ...{ description: 'A unique identifier for a user (override)' } }),
+   userNm: Clone(tbUserNm),
+   emailAddrTx: Type.Optional(Clone(tbEmailAddrTx)),
+   'x-dashes': Type.Optional(Clone(tbX_dashes)),
+   $100ok: Type.Optional(Clone(tb$100ok)),
+   x𒐗: Type.Optional(Clone(tbX𒐗)),
 });
 export type TbUser = Static<typeof tbUser>;
 ```

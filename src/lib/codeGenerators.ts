@@ -228,7 +228,7 @@ export function recurseSchema(codeGenOpts: CodeGenOpts, schema: JSONSchema7Defin
  */
 
 export function genExportedNm({ prefixTx }: CodeGenOpts, schemaNm: string): string {
-	return `${prefixTx}${toUpperFirstChar(schemaNm)}`;
+	return `${prefixTx}${toUpperFirstChar(sanitizeName(schemaNm))}`;
 }
 
 /**
@@ -242,4 +242,12 @@ export function genOneOfTypeboxSupportCode(): string {
 	].reduce((acc, curr) => {
 		return `${acc + curr}\n\n`;
 	}, '');
+}
+
+const invalidCharsRegExp = /[^\p{L}\p{Nd}\p{Nl}_$]/giu;
+const invalidFirstCharRegExp = /^[^\p{L}_$]/iu;
+function sanitizeName(s: string): string {
+	if (typeof s !== 'string') throw new Error(`sanitizeIdentifierNames ERROR: received non-string; ${s}`);
+
+	return s.replace(invalidCharsRegExp, '_').replace(invalidFirstCharRegExp, '_');
 }

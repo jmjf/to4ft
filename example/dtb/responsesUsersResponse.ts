@@ -7,6 +7,9 @@ export const tbUsersResponse = Type.Array(
 		emailAddrTx: Type.Optional(
 			Type.String({ format: 'emailAddr', description: 'An email address', example: 'joe@mailinator.com' }),
 		),
+		'x-dashes': Type.Optional(Type.String()),
+		$100ok: Type.Optional(Type.String()),
+		x𒐗: Type.Optional(Type.Number()),
 	}),
 );
 export type TbUsersResponse = Static<typeof tbUsersResponse>;

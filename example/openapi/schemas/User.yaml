@@ -44,6 +44,12 @@ components:
           $ref: Fields.yaml#/components/schemas/UserNm
         emailAddrTx:
           $ref: Fields.yaml#/components/schemas/EmailAddrTx
+        x-dashes:
+          $ref: '#/components/schemas/x-dashes'
+        $100ok:
+          $ref: '#/components/schemas/$100ok'
+        x𒐗:
+          $ref: '#/components/schemas/x𒐗'
       required:
         - userId
         - userNm
@@ -52,6 +58,15 @@ components:
       type: array
       items:
         $ref: '#/components/schemas/User'
+    x-dashes:
+      title: x_dashes
+      type: string
+    $100ok:
+      title: $100ok
+      type: string
+    x𒐗:
+      title: cuneiform
+      type: number
   responses:
     UsersResponse:
       description: An array of users

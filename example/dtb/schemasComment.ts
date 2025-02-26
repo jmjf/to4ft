@@ -9,6 +9,9 @@ export const tbComment = Type.Object({
 		emailAddrTx: Type.Optional(
 			Type.String({ format: 'emailAddr', description: 'An email address', example: 'joe@mailinator.com' }),
 		),
+		'x-dashes': Type.Optional(Type.String()),
+		$100ok: Type.Optional(Type.String()),
+		x𒐗: Type.Optional(Type.Number()),
 	}),
 });
 export type TbComment = Static<typeof tbComment>;
