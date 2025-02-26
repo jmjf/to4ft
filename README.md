@@ -5,65 +5,67 @@
 
 ## Roadmap
 
-- Core/common
-  - [x] `--prefix` -- prefix generated TypeBox schema and type names
-  - [x] Ensure prefix first character is lower case to avoid name collisions
-  - [x] ensure deep paths exist (mkdir recursive)
-  - [x] refactor/extend code from `schema2typebox` (idiomatic, adjustments, etc.)
-    - [x] type guards
-    - [x] import statement code generation
-    - [x] type from TypeBox schema, optional, extended OneOf code generation
-    - [x] schema options code generation (setup for `--minkeys` and `--dropkeys`)
-    - [x] other OpenAPI -> TypeBox code generation
-  - [x] uppercase first character of names from OpenAPI
-  - [x] ensure `description` and `summary` adjacent to `$ref` are preserved (removed `--preserve` in favor of default)
-  - [x] sanitize identifier names to be valid JavaScript (replace invalid chars with `_`)
-    - NOTE: Sanitization does not affect names inside schemas. See `examples/rtb/User.yaml` where `'x-dashes'` references `tbX_dashes`.
-  - [ ] `--camel` -- force camelcase (squeeze out `_` in names)
-  - [ ] `--minkeys` -- generate minimum schemas/types (no descriptions, examples, etc.)
-  - [ ] `--dropkeys` -- remove specified keywords (comma separated array of schema keywords to drop)
-  - [ ] build and make executable
-  - [ ] tests
-  - [wip] documentation
-- `oas2dtb`
-  - [x] write command spec
-  - [x] read file or directory
-  - [x] find schemas to process
-  - [x] generate TypeBox code
-  - [x] write files to output directory
-  - [x] `run:dtb` npm script (temporary)
-- `oas2rtb`
-  - [x] write command spec
-  - [x] read file or directory
-  - [x] find schemas to process
-  - [x] generate TypeBox code
-  - [x] write files to output directory
-  - [x] `run:rtb` npm script (temporary)
-  - [x] Replace `CloneType` - use `CloneType` code as a base, but reverse spread order
-- `oas2ro`
-  - [x] write command spec
-  - [ ] read file or directory
-  - [ ] find paths to process
-  - [ ] generate partial `RouteOptions`
-    - [ ] url
-    - [ ] method
-    - [ ] operationId
-    - [ ] tags
-    - [ ] summary
-    - [ ] description
-    - [ ] schema
-      - [ ] querystring
-      - [ ] headers
-      - [ ] params
-      - [ ] body
-      - [ ] response
-  - [ ] write files to output directory
+### Core/common
 
-## Credit
+- [x] `--prefix` -- prefix generated TypeBox schema and type names
+- [x] Ensure prefix first character is lower case to avoid name collisions
+- [x] ensure deep paths exist (mkdir recursive)
+- [x] refactor/extend code from `schema2typebox` (idiomatic, adjustments, etc.)
+  - [x] type guards
+  - [x] import statement code generation
+  - [x] type from TypeBox schema, optional, extended OneOf code generation
+  - [x] schema options code generation (setup for `--minkeys` and `--dropkeys`)
+  - [x] other OpenAPI -> TypeBox code generation
+- [x] uppercase first character of names from OpenAPI
+- [x] ensure `description` and `summary` adjacent to `$ref` are preserved (removed `--preserve` in favor of default)
+- [x] sanitize identifier names to be valid JavaScript (replace invalid chars with `_`)
+  - NOTE: Sanitization does not affect names inside schemas. See `examples/rtb/User.yaml` where `'x-dashes'` references `tbX_dashes`.
+- [ ] `--camel` -- force camelcase (squeeze out `_` in names)
+- [ ] `--minkeys` -- generate minimum schemas/types (no descriptions, examples, etc.)
+- [ ] `--dropkeys` -- remove specified keywords (comma separated array of schema keywords to drop)
+- [ ] build and make executable
+- [ ] tests
 
-`openapi-transformer-toolkit` inspired generating code from OpenAPI specs and got me on the spec-first bandwagon. Thank you Nearform team.
+- [wip] documentation
 
-`oas2tb4fastify` borrows heavily from the core code from `schema2typebox` to do schema translation. Thank you xddq.
+### `oas2dtb`
+
+- [x] write command spec
+- [x] read file or directory
+- [x] find schemas to process
+- [x] generate TypeBox code
+- [x] write files to output directory
+- [x] `run:dtb` npm script (temporary)
+
+### `oas2rtb`
+
+- [x] write command spec
+- [x] read file or directory
+- [x] find schemas to process
+- [x] generate TypeBox code
+- [x] write files to output directory
+- [x] `run:rtb` npm script (temporary)
+- [x] Replace `CloneType` - use `CloneType` code as a base, but reverse spread order
+
+### `oas2ro`
+
+- [x] write command spec
+- [ ] read file or directory
+- [ ] find paths to process
+- [ ] generate partial `RouteOptions`
+  - [ ] url
+  - [ ] method
+  - [ ] operationId
+  - [ ] tags
+  - [ ] summary
+  - [ ] description
+  - [ ] schema
+    - [ ] querystring
+    - [ ] headers
+    - [ ] params
+    - [ ] body
+    - [ ] response
+- [ ] write files to output directory
 
 ## Motivation
 
@@ -121,16 +123,7 @@ Also, you may be able to write an API spec with Hittite object names in cuneifor
 
 ## Commands
 
-- `oas2tb4fastify -h` -- general help
-- `oas2tb4fastify oas2dtb -h` -- help for `oas2dtb`
-- `oas2tb4fastify oas2rtb -h` -- help for `oas2rtb`
-- `oas2tb4fastify oas2ro -h` -- help for `oas2ro`
-- `oas2tb4fastify -V` -- show version
-
-Alternative options
-
-- `-h` -> `--help`
-- `-V` -> `--version`
+`oas2tb4fastify` is a `commander` application, so `-h` or `--help` and `-V` or `--version` work as you'd expect, including `oas2tb4fastify <command> -h`.
 
 ### `oas2dtb`
 
@@ -146,9 +139,8 @@ Example: `oas2tb4fastify oas2dtb -i example/openapi/openapi.yaml -o example/dtb 
 
 - a directory containing files to convert
   - `example/openapi/schemas` generates types defined in `components` in any file in the directory
-- a single file to convert
+- a file to convert
   - `example/openapi/schemas/User.yaml` generates types for items defined in `components` in `User.yaml` and in any file `$ref`ed in `User.yaml` or its `$ref`s (recursive).
-- a root OpenAPI specification
   - `example/openapi/openapi.yaml` generates types for items defined in `components` in the `openapi.yaml` and in any file `$ref`ed in the `openapi.yaml` or its `$ref`s (recursive).
 
 `-o` (required) -- path to receive generated files
@@ -267,3 +259,9 @@ const postPostIdRoutes: [
 ```
 
 While this approach isn't seamless, the seams are small and confined to things that are code dependent expressed in an API schema.
+
+## Credit
+
+`openapi-transformer-toolkit` inspired generating code from OpenAPI specs and got me on the spec-first bandwagon. Thank you Nearform team.
+
+`oas2tb4fastify` borrows heavily from the core code from `schema2typebox` to do schema translation. Thank you xddq.
