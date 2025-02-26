@@ -38,11 +38,6 @@ const prefixOption = new Option(
 	'Characters to add at the beginning of names; types will being with uppercase, schema consts will begin with lower case',
 ).default('tb');
 
-const preserveOption = new Option(
-	'--preserve <keywords>',
-	'Accepts a comma separated list of keywords next to a $ref to preserve; description and summary are always preserved',
-).default('description,summary');
-
 function runProgram(version: string) {
 	program
 		.name('oas2tb4fastify')
@@ -57,7 +52,6 @@ function runProgram(version: string) {
 		.addOption(inputOption)
 		.addOption(outputOption)
 		.addOption(prefixOption)
-		.addOption(preserveOption)
 		.option('--extension <extTx>', 'Extension to add to import file names (no dot)', 'js')
 		.action(oas2rtb);
 
@@ -78,7 +72,6 @@ function runProgram(version: string) {
 		)
 		.addOption(inputOption)
 		.addOption(outputOption)
-		.addOption(preserveOption)
 		.option('--suffix <suffixTx>', 'Characters to add at the end of names', 'RouteOptions')
 		.action(oas2ro);
 

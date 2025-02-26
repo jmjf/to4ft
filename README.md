@@ -16,7 +16,7 @@
     - [x] schema options code generation (setup for `--minkeys` and `--dropkeys`)
     - [x] other OpenAPI -> TypeBox code generation
   - [x] uppercase first character of names from OpenAPI
-  - [x] `--preserve` -- preserve `$ref`-adjacent keywords; may not be necessary if we default `description` and `summary`
+  - [x] ensure `description` and `summary` adjacent to `$ref` are preserved (removed `--preserve` in favor of default)
   - [ ] ensure identifiers are valid JavaScript (replace invalid chars with `_`)
   - [ ] `--camel` -- force camelcase (squeeze out `_` in names)
   - [ ] `--minkeys` -- generate minimum schemas/types (no descriptions, examples, etc.)

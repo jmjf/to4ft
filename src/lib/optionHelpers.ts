@@ -67,7 +67,7 @@ export function preprocOptions(opts: CombinedOptions): StdOptions {
 	return {
 		inPathTx: opts.input,
 		outPathTx: opts.outdir,
-		preserveKeywords: opts.preserve?.split(',') ?? ['description', 'summary'],
+		preserveKeywords: ['description', 'summary'],
 		extTx: opts.extension?.toLowerCase() ?? 'js',
 		prefixTx: opts.prefix ? toLowerFirstChar(opts.prefix) : 'tb',
 		suffixTx: opts.suffix ?? 'RouteOptions',
