@@ -147,37 +147,17 @@ Example: `oas2tb4fastify oas2dtb -i example/openapi/openapi.yaml -o example/dtb 
 - a directory containing files to convert
   - `example/openapi/schemas` generates types defined in `components` in any file in the directory
 - a single file to convert
-  - `example/openapi/schemas/User.yaml` generates types defined in `components` in `User.yaml` and in any file `$ref`ed from `User.yaml`
+  - `example/openapi/schemas/User.yaml` generates types for items defined in `components` in `User.yaml` and in any file `$ref`ed in `User.yaml` or its `$ref`s (recursive).
 - a root OpenAPI specification
-  - `example/openapi/openapi.yaml` generates types defined in `components` in the root file and in any file `$ref`ed in the spec.
+  - `example/openapi/openapi.yaml` generates types for items defined in `components` in the `openapi.yaml` and in any file `$ref`ed in the `openapi.yaml` or its `$ref`s (recursive).
 
 `-o` (required) -- path to receive generated files
-
-- If the output path is nested `examples/tb` and any node before the final node does not exist, it will fail. (TODO: fix this)
 
 `--prefix` (optional; default `tb`) -- characters to prefix on OpenAPI names in generated code
 
 `--preserve` (optional; default `description,summary`) -- comma separated list of keywords to preserve adjacent to `$ref`s; may replace fixed default
 
-Be aware of possible camelcase inconsistencies. For example, if `components.schemas` defines `User1` and `user2` then
-
-```typescript
-// if --prefix hi
-const hiUser1 ...;
-type HiUser1 ...;
-
-const hiuser2 ...; // camelcase inconsistency can be confusing
-type Hiuser2 ...;  // camelcase inconsistency can be confusing
-
-// if --prefix Hi
-const hiUser1 ...; // prefix first character forced to lowercase to avoid name collision
-type HiUser1 ...;  
-
-const hiuser2 ...; // camelcase inconsistency can be confusing
-type Hiuser2 ...;  
-```
-
-**Recommendation:** Use leading lowercase for `--prefix`. Name OpenAPI items with leading uppercase.
+Be aware of possible camelcase inconsistencies in output. **Recommendation:** Use leading lowercase for `--prefix`. Name OpenAPI items with leading uppercase.
 
 #### Example output
 
@@ -206,13 +186,11 @@ Generate reference-maintaining TypeBox types
 
 Example: `oas2tb4fastify oas2rtb -i example/openapi/openapi.yaml -o example/rtb --prefix tb`
 
-`oas2rtb`'s reference-maintaining files mirror the source spec using imports and `CloneType`. This options works best if you want to convert an OpenAPI spec once and abandon it in favor of TypeBox and generating your API specs from the application (e.g., with `@fastify/swagger` to save JSON output in a file).
+`oas2rtb`'s reference-maintaining files mirror the source spec using imports and `Clone`. This options works best if you want to convert an OpenAPI spec once and abandon it in favor of TypeBox and generating your API specs from the application (e.g., with `@fastify/swagger` to save JSON output in a file).
 
 **WARNING:** If your schema `$ref`s `examples`, `links`, or other OpenAPI fields that do not generate types, `oas2tb4fastify` will not convert them and may produce unpredictable results.
 
-`oas2rtb` uses the same options as `oas2dtb`
-
-- EXCEPT it does not support `--preserve` because `$RefParser.parse` doesn't support it
+`oas2rtb` uses the same options as `oas2dtb` EXCEPT it does not support `--preserve` because `$RefParser.parse` doesn't support it.
 
 #### Example output
 
