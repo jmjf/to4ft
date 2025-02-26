@@ -98,7 +98,7 @@ For example, the following assignments are valid in the NodeJS REPL:
 - `let x६ = 'x + Devangari 6'`
 - `let x六 = 'x + Han 6'`
 - `let x௬ = 'x + Tamil 6'`
-- `let x𒐗 = 'x + Cuneiform 3'`
+- `let x𒐗 = 'x + cuneiform 3'`
 
 But `x¹` (superscript 1), `x𝋠` (Mayan 0), and `x𝋬` (Mayan 12) aren't, even though all three glyphs are classified as numbers (specifically, other numbers -- `\p{No}`) in Unicode.
 
@@ -115,7 +115,7 @@ In the rules above:
 - `\p{Nd}` is the character class for decimal digit numbers (any script except ideographic scripts)
 - `\p{Nl}` is the character class for numeric letters (Roman numerals, etc.)
 
-I have not tested these rules exhaustively. They aim to be reasonably permissive, but may be too permissive or not permissive enough. I'm not going to write (or copy from [StackOverflow](https://stackoverflow.com/questions/2008279/validate-a-javascript-function-name/9392578#9392578)) an 11,000 character plus regular expression to try to be perfect. If you name something `function`, it will pass these rules, but JavaScript will say, "Nope!"
+I have not tested these rules exhaustively. They aim to be reasonably permissive but may be too permissive or not permissive enough. I'm not going to write (or copy from [StackOverflow](https://stackoverflow.com/questions/2008279/validate-a-javascript-function-name/9392578#9392578)) an 11,000+ character regular expression to try to be perfect. If you name something `function`, it will pass these rules, but JavaScript will say, "Nope!"
 
 Also, you may be able to write an API spec with Hittite object names in cuneiform, but just because you can doesn't mean you should.
 
