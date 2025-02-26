@@ -100,7 +100,7 @@ For example, the following assignments are valid in the NodeJS REPL:
 - `let x௬ = 'x + Tamil 6'`
 - `let x𒐗 = 'x + Cuneiform 3'`
 
-But `x¹` (superscript 1), `x𝋠` (Mayan 0), and `x𝋬` (Mayan 12) aren't, even though all three glyphs are classified as numbers (specifically, letter numbers -- `\p{Nl}`) in Unicode.
+But `x¹` (superscript 1), `x𝋠` (Mayan 0), and `x𝋬` (Mayan 12) aren't, even though all three glyphs are classified as numbers (specifically, other numbers -- `\p{No}`) in Unicode.
 
 The distinction seems to be that `\p{Nd}` (unicode decimals) and `\p{Nl}` (unicode numeric letters) are valid, but `\p{No}` (superscript, subscript, number that is not decimal) isn't, or isn't consistently, valid.
 
