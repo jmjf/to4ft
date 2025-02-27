@@ -1,8 +1,10 @@
-import { readFileSync } from 'node:fs';
+#!/usr/bin/env node
+
 import { Option, program } from 'commander';
 import { oas2dtb } from './commands/oas2dtb.ts';
 import { oas2ro } from './commands/oas2ro.ts';
 import { oas2rtb } from './commands/oas2rtb.ts';
+import packageJSON from '../package.json' with { type: 'json' };
 
 export type CombinedOptions = {
 	input: string;
@@ -12,16 +14,6 @@ export type CombinedOptions = {
 	prefix?: string;
 	suffix?: string;
 };
-
-function getVersion(): string {
-	let version = '';
-	try {
-		version = JSON.parse(readFileSync('../package.json').toString()).version ?? 'unknown';
-	} catch (e) {
-		throw 'Error parsing package.json';
-	}
-	return version;
-}
 
 const inputOption = new Option(
 	'-i, --input <inPathNm>',
@@ -38,11 +30,11 @@ const prefixOption = new Option(
 	'Characters to add at the beginning of names; types will being with uppercase, schema consts will begin with lower case',
 ).default('tb');
 
-function runProgram(version: string) {
+function runProgram() {
 	program
 		.name('oas2tb4fastify')
 		.description('Utilities to convert OpenAPI specs to Typebox and Fastify RouteOptions')
-		.version(version);
+		.version(packageJSON.version);
 
 	program
 		.command('oas2rtb')
@@ -78,4 +70,4 @@ function runProgram(version: string) {
 	program.parse();
 }
 
-runProgram(getVersion());
+runProgram();

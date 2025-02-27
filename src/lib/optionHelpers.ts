@@ -47,7 +47,8 @@ export function getInputFiles(inPathNm: string): GetInputFilesReturn {
 		}
 		return { fileNms: fileNms.map((fn) => path.resolve(inPathNm, fn)) as string[], isDir: true };
 	} catch (e) {
-		throw new Error(`getInputFiles ERROR: ${e.name} ${e.code} reading directory ${inPathNm}`);
+		const err = e as Error;
+		throw new Error(`getInputFiles ERROR: ${err.name} ${err.message} reading directory ${inPathNm}`);
 	}
 }
 
