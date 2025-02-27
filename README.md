@@ -20,10 +20,10 @@
 - [x] ensure `description` and `summary` adjacent to `$ref` are preserved (removed `--preserve` in favor of default)
 - [x] sanitize identifier names to be valid JavaScript (replace invalid chars with `_`)
   - NOTE: Sanitization does not affect names inside schemas. See `examples/rtb/User.yaml` where `'x-dashes'` references `tbX_dashes`.
+- [x] build and make executable; improve tools
 - [ ] `--camel` -- force camelcase (squeeze out `_` in names)
 - [ ] `--minkeys` -- generate minimum schemas/types (no descriptions, examples, etc.)
 - [ ] `--dropkeys` -- remove specified keywords (comma separated array of schema keywords to drop)
-- [ ] build and make executable
 - [ ] tests
 
 - [wip] documentation

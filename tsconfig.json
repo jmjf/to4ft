@@ -1,0 +1,39 @@
+{
+	"compilerOptions": {
+		"target": "ES2022",
+		"lib": ["ES2023"],
+		"module": "nodenext",
+		"moduleResolution": "nodenext",
+
+		"rootDir": "./",
+		"typeRoots": ["./node_modules/@types", "./src/@types"],
+		"types": ["node"],
+
+		"resolveJsonModule": true,
+		"allowJs": true,
+		"sourceMap": true,
+		"outDir": "./dist",
+		"removeComments": false,
+		"esModuleInterop": true,
+		"forceConsistentCasingInFileNames": true,
+
+		"strict": true,
+		"strictNullChecks": true,
+		"strictBindCallApply": false,
+		"noStrictGenericChecks": false,
+		"noImplicitAny": false,
+		"noImplicitReturns": true,
+		"noFallthroughCasesInSwitch": true,
+		"allowUnreachableCode": false,
+		"skipLibCheck": true,
+
+		"rewriteRelativeImportExtensions": true
+	},
+	"ts-node": {
+		"esm": true,
+		"transpileOnly": true,
+		"experimentalSpecifierResolution": "node"
+	},
+	"include": ["./src/*.ts", "./src/**/*.ts", "./src/**/*.js"],
+	"exclude": ["./node_modules", "./node_modules/@types", "./dist"]
+}

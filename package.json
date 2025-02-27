@@ -1,36 +1,46 @@
 {
-  "name": "oas-test",
+  "name": "oas2tb4fastify",
   "type": "module",
   "version": "1.0.0",
   "description": "",
-  "main": "./dist/tson-server.js",
+  "main": "dist/src/cli.js",
+  "author": "jmjf (https://github.com/jmjf)",
+  "license": "MIT",
+  "bin": {
+    "oas2tb4fastify": "./dist/src/cli.ts"
+  },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "",
     "oas:lint": "npx @redocly/cli lint openapi/openapi.yaml",
     "oas:doc": "npx @redocly/cli build-docs openapi/openapi.yaml -o=openapi/api-docs.html",
-    "run:dtb": "cd src && node --experimental-strip-types cli.ts oas2dtb -i ../example/openapi/openapi.yaml -o ../example/dtb && npm run check:ex",
-    "run:rtb": "cd src && node --experimental-strip-types cli.ts oas2rtb -i ../example/openapi/openapi.yaml -o ../example/rtb && npm run check:ex",
+    "predtb": "npm run build",
+    "dtb": "./dist/src/cli.js oas2dtb -i example/openapi/openapi.yaml -o example/dtb && npm run check:ex",
+    "prertb": "npm run build",
+    "rtb": "./dist/src/cli.js oas2rtb -i example/openapi/openapi.yaml -o example/rtb && npm run check:ex",
+    "dtb:dev": "node --experimental-strip-types src/cli.ts oas2dtb -i example/openapi/openapi.yaml -o example/dtb && npm run check:ex",
+    "rtb:dev": "node --experimental-strip-types src/cli.ts oas2rtb -i example/openapi/openapi.yaml -o example/rtb && npm run check:ex",
     "check:ex": "npx @biomejs/biome check --write example",
     "format": "npx @biomejs/biome format --write",
-    "lint": "npx @biomejs/biome lint",
-    "build": "npx tsc tson-server.ts --outDir ./dist"
+    "lint": "npm run lint:only && npm run lint:typecheck",
+    "lint:only": "npx @biomejs/biome lint",
+    "lint:typecheck": "npx tsc -p tsconfig.json --noemit",
+    "build": "npx tsc -p tsconfig-build.json",
+    "postbuild": "cp ./package.json ./dist && chmod a+x ./dist/src/cli.js",
+    "prepare": "husky"
   },
-  "author": "",
-  "license": "MIT",
   "dependencies": {
     "@apidevtools/json-schema-ref-parser": "^11.9.1",
-    "@jmjf/result": "^1.0.1",
     "commander": "^13.1.0"
   },
   "devDependencies": {
     "@biomejs/biome": "^1.9.4",
-    "@fastify/swagger": "^9.4.2",
-    "@fastify/type-provider-json-schema-to-ts": "^5.0.0",
-    "@fastify/type-provider-typebox": "^5.1.0",
     "@sinclair/typebox": "^0.34.24",
     "@types/node": "^22.13.4",
-    "fastify": "^5.2.1",
-    "pino-pretty": "^13.0.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^15.4.3",
     "typescript": "^5.7.3"
+  },
+  "lint-staged": {
+    "*.{js,ts,mjs,mts}": "npm run format && npm run lint"
   }
 }

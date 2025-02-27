@@ -3,7 +3,7 @@
 	"files": {
 		"ignore": [".devcontainer", "dist", "notes", "coverage", ".private"],
 		"ignoreUnknown": true,
-		"include": ["src", "example", "tests", "tests-e2e"]
+		"include": ["src", "example", "test", "dist"]
 	},
 	"linter": {
 		"enabled": true,
