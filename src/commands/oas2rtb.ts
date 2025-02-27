@@ -14,13 +14,14 @@ function genToRTB(
 	schema: JSONSchema7,
 	objNm: string,
 	componentFieldNm: string,
-	{ outPathTx, prefixTx, extTx }: StdOptions,
+	{ outPathTx, prefixTx, extTx, minKeysFl }: StdOptions,
 ) {
 	const refImports: string[] = [];
 	const tb = genTypeBoxForSchema(objNm, schema, {
 		refImports,
 		prefixTx,
 		extTx,
+		minKeysFl,
 	});
 	writeFileSync(`${outPathTx}/${componentFieldNm}${objNm}.ts`, `${genRefImportStatements(refImports)}\n\n${tb}`);
 }

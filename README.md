@@ -14,16 +14,15 @@
   - [x] type guards
   - [x] import statement code generation
   - [x] type from TypeBox schema, optional, extended OneOf code generation
-  - [x] schema options code generation (setup for `--minkeys` and `--dropkeys`)
+  - [x] schema options code generation (setup for `--minkeys`)
   - [x] other OpenAPI -> TypeBox code generation
 - [x] uppercase first character of names from OpenAPI
 - [x] ensure `description` and `summary` adjacent to `$ref` are preserved (removed `--preserve` in favor of default)
 - [x] sanitize identifier names to be valid JavaScript (replace invalid chars with `_`)
   - NOTE: Sanitization does not affect names inside schemas. See `examples/rtb/User.yaml` where `'x-dashes'` references `tbX_dashes`.
 - [x] build and make executable; improve tools
+- [x] `--minkeys` -- generate minimum schemas/types (compare `example/?tb/schemasPost.ts` with `example/?tb-minkeys/schemasPost.ts`)
 - [ ] `--camel` -- force camelcase (squeeze out `_` in names)
-- [ ] `--minkeys` -- generate minimum schemas/types (no descriptions, examples, etc.)
-- [ ] `--dropkeys` -- remove specified keywords (comma separated array of schema keywords to drop)
 - [ ] tests
 
 - [wip] documentation
@@ -77,7 +76,7 @@ I've seen examples using TypeBox to define the API schema and exporting JSON Sch
 
 - `oas2tb4fastify` does not format output. You've already configured your preferred style for your preferred code formatter (`@biomejs/biome`, `prettier`, something else). You need to format the code anyway so it matches your style. Why add the overhead of a formatter and format in a style you're going to reformat anyway? Write an npm script to generate and format generated code and lint-fix generate code (next point).
 
-- `oas2tb4fastify` writes a standard set of TypeBox imports to all output files. If your linter warns or errors on unused imports, run lint the output directory with the fix option to strip unused imports. If your linter can't fix unused imports, consider getting a linter that can.
+- `oas2tb4fastify` writes a standard set of TypeBox imports to all output files. If your linter warns or errors on unused imports, run lint on the output directory with the fix option to strip unused imports. If your linter can't fix unused imports, consider getting a linter that can.
 
 ### `oas2dtb` and `oas2dtb`
 

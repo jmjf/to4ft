@@ -46,6 +46,7 @@ export type CodeGenOpts = {
 	refImports?: string[];
 	prefixTx: string;
 	extTx: string;
+	minKeysFl: boolean;
 };
 
 /*
@@ -81,7 +82,7 @@ type GenToTypeBoxFn = (
 	schema: JSONSchema7,
 	objNm: string,
 	componentFieldNm: string,
-	{ outPathTx, prefixTx, extTx }: StdOptions,
+	{ outPathTx, prefixTx, extTx, minKeysFl }: StdOptions,
 ) => void;
 
 /**
@@ -184,9 +185,8 @@ export function recurseSchema(codeGenOpts: CodeGenOpts, schema: JSONSchema7Defin
 	if (isObjectSchema(schema)) {
 		return parseObject(codeGenOpts, schema);
 	}
-	// enums cannot have refs
 	if (isEnumSchema(schema)) {
-		return parseEnum(schema);
+		return parseEnum(codeGenOpts, schema);
 	}
 	if (isAnyOfSchema(schema)) {
 		return parseAnyOf(codeGenOpts, schema);
@@ -206,9 +206,8 @@ export function recurseSchema(codeGenOpts: CodeGenOpts, schema: JSONSchema7Defin
 	if (isSchemaWithMultipleTypes(schema)) {
 		return parseWithMultipleTypes(codeGenOpts, schema);
 	}
-	// consts cannot have refs
 	if (isConstSchema(schema)) {
-		return parseConst(schema);
+		return parseConst(codeGenOpts, schema);
 	}
 	// unknown is an object schema with no keys
 	if (isUnknownSchema(schema)) {

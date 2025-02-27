@@ -13,6 +13,7 @@ export type CombinedOptions = {
 	extension?: string;
 	prefix?: string;
 	suffix?: string;
+	minkeys: boolean;
 };
 
 const inputOption = new Option(
@@ -30,6 +31,11 @@ const prefixOption = new Option(
 	'Characters to add at the beginning of names; types will being with uppercase, schema consts will begin with lower case',
 ).default('tb');
 
+const minkeysOption = new Option(
+	'--minkeys',
+	'Remove description, summary, example, examples, deprecated, $comment, and other annotations for a smaller schema',
+);
+
 function runProgram() {
 	program
 		.name('oas2tb4fastify')
@@ -44,6 +50,7 @@ function runProgram() {
 		.addOption(inputOption)
 		.addOption(outputOption)
 		.addOption(prefixOption)
+		.addOption(minkeysOption)
 		.option('--extension <extTx>', 'Extension to add to import file names (no dot)', 'js')
 		.action(oas2rtb);
 
@@ -55,6 +62,7 @@ function runProgram() {
 		.addOption(inputOption)
 		.addOption(outputOption)
 		.addOption(prefixOption)
+		.addOption(minkeysOption)
 		.action(oas2dtb);
 
 	program
@@ -64,6 +72,7 @@ function runProgram() {
 		)
 		.addOption(inputOption)
 		.addOption(outputOption)
+		.addOption(minkeysOption)
 		.option('--suffix <suffixTx>', 'Characters to add at the end of names', 'RouteOptions')
 		.action(oas2ro);
 

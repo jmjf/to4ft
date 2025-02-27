@@ -19,7 +19,7 @@ import {
 
 export function parseObject(codeGenOpts: CodeGenOpts, schema: ObjectSchema) {
 	// schema is ObjectSchema
-	const schemaOptionsTx = parseSchemaOptions(schema);
+	const schemaOptionsTx = parseSchemaOptions(schema, codeGenOpts.minKeysFl);
 	const properties = schema.properties;
 	const requiredProperties = schema.required;
 	if (properties === undefined) {
@@ -40,16 +40,16 @@ export function parseObject(codeGenOpts: CodeGenOpts, schema: ObjectSchema) {
 	return schemaOptionsTx === undefined ? `Type.Object({${codeTx}})` : `Type.Object({${codeTx}}, ${schemaOptionsTx})`;
 }
 
-export function parseEnum(schema: EnumSchema) {
-	const schemaOptionsTx = parseSchemaOptions(schema);
+export function parseEnum(codeGenOpts: CodeGenOpts, schema: EnumSchema) {
+	const schemaOptionsTx = parseSchemaOptions(schema, codeGenOpts.minKeysFl);
 	const codeTx = schema.enum.reduce<string>((acc, schema) => {
 		return `${acc}${acc === '' ? '' : ','} ${parseType(schema)}`;
 	}, '');
 	return schemaOptionsTx === undefined ? `Type.Union([${codeTx}])` : `Type.Union([${codeTx}], ${schemaOptionsTx})`;
 }
 
-export function parseConst(schema: ConstSchema): string {
-	const schemaOptionsTx = parseSchemaOptions(schema);
+export function parseConst(codeGenOpts: CodeGenOpts, schema: ConstSchema): string {
+	const schemaOptionsTx = parseSchemaOptions(schema, codeGenOpts.minKeysFl);
 	if (Array.isArray(schema.const)) {
 		const codeTx = schema.const.reduce<string>((acc, schema) => {
 			return `${acc}${acc === '' ? '' : ',\n'} ${parseType(schema)}`;
@@ -95,7 +95,7 @@ export function parseType(type: JSONSchema7Type): string {
 }
 
 export function parseAnyOf(codeGenOpts: CodeGenOpts, schema: AnyOfSchema): string {
-	const schemaOptionsTx = parseSchemaOptions(schema);
+	const schemaOptionsTx = parseSchemaOptions(schema, codeGenOpts.minKeysFl);
 	const codeTx = schema.anyOf.reduce<string>((acc, schema) => {
 		return `${acc}${acc === '' ? '' : ',\n'} ${recurseSchema(codeGenOpts, schema)}`;
 	}, '');
@@ -103,7 +103,7 @@ export function parseAnyOf(codeGenOpts: CodeGenOpts, schema: AnyOfSchema): strin
 }
 
 export function parseAllOf(codeGenOpts: CodeGenOpts, schema: AllOfSchema): string {
-	const schemaOptionsTx = parseSchemaOptions(schema);
+	const schemaOptionsTx = parseSchemaOptions(schema, codeGenOpts.minKeysFl);
 	const codeTx = schema.allOf.reduce<string>((acc, schema) => {
 		return `${acc}${acc === '' ? '' : ',\n'} ${recurseSchema(codeGenOpts, schema)}`;
 	}, '');
@@ -113,7 +113,7 @@ export function parseAllOf(codeGenOpts: CodeGenOpts, schema: AllOfSchema): strin
 }
 
 export function parseOneOf(codeGenOpts: CodeGenOpts, schema: OneOfSchema): string {
-	const schemaOptionsTx = parseSchemaOptions(schema);
+	const schemaOptionsTx = parseSchemaOptions(schema, codeGenOpts.minKeysFl);
 	const codeTx = schema.oneOf.reduce<string>((acc, schema) => {
 		return `${acc}${acc === '' ? '' : ',\n'} ${recurseSchema(codeGenOpts, schema)}`;
 	}, '');
@@ -121,14 +121,14 @@ export function parseOneOf(codeGenOpts: CodeGenOpts, schema: OneOfSchema): strin
 }
 
 export function parseNot(codeGenOpts: CodeGenOpts, schema: NotSchema): string {
-	const schemaOptionsTx = parseSchemaOptions(schema);
+	const schemaOptionsTx = parseSchemaOptions(schema, codeGenOpts.minKeysFl);
 	return schemaOptionsTx === undefined
 		? `Type.Not(${recurseSchema(codeGenOpts, schema.not)})`
 		: `Type.Not(${recurseSchema(codeGenOpts, schema.not)}, ${schemaOptionsTx})`;
 }
 
 export function parseArray(codeGenOpts: CodeGenOpts, schema: ArraySchema): string {
-	const schemaOptionsTx = parseSchemaOptions(schema);
+	const schemaOptionsTx = parseSchemaOptions(schema, codeGenOpts.minKeysFl);
 	if (Array.isArray(schema.items)) {
 		const codeTx = schema.items.reduce<string>((acc, schema) => {
 			return `${acc}${acc === '' ? '' : ',\n'} ${recurseSchema(codeGenOpts, schema)}`;
@@ -163,7 +163,7 @@ export function parseRefName(codeGenOpts: CodeGenOpts, schema: JSONSchema7 = {})
 
 	refImports.push(`import { ${refedNm} } from '${refPathNm}';`);
 
-	const schemaOptionsTx = parseSchemaOptions(schema);
+	const schemaOptionsTx = parseSchemaOptions(schema, codeGenOpts.minKeysFl);
 	return schemaOptionsTx === undefined ? `Clone(${refedNm})` : `Clone({...${refedNm}, ...${schemaOptionsTx}})`;
 }
 
@@ -172,7 +172,7 @@ export function parseTypeName(
 	typeNm: JSONSchema7TypeName | undefined,
 	schema: JSONSchema7 = {},
 ): string {
-	const schemaOptionsTx = parseSchemaOptions(schema);
+	const schemaOptionsTx = parseSchemaOptions(schema, codeGenOpts.minKeysFl);
 	if (typeNm === 'number' || typeNm === 'integer') {
 		return schemaOptionsTx === undefined ? 'Type.Number()' : `Type.Number(${schemaOptionsTx})`;
 	}
@@ -210,8 +210,9 @@ const stdIgnoreKeys = [
 	'enum',
 	'$ref',
 ];
-function parseSchemaOptions(schema: JSONSchema7, extraIgnoreKeys = [] as string[]): string | undefined {
-	const ignoreKeys = [...stdIgnoreKeys, ...extraIgnoreKeys];
+const minKeysIgnoreKeys = ['description', 'summary', 'example', 'examples', '$comment', 'deprecated'];
+function parseSchemaOptions(schema: JSONSchema7, minKeysFl: boolean): string | undefined {
+	const ignoreKeys = [...stdIgnoreKeys, ...(minKeysFl ? minKeysIgnoreKeys : [])];
 	const propertiesEntries = Object.entries(schema).filter(([key, _value]) => !ignoreKeys.includes(key));
 	if (propertiesEntries.length === 0) {
 		return undefined;

@@ -15,6 +15,7 @@ export type StdOptions = {
 	extTx: string;
 	prefixTx: string;
 	suffixTx: string;
+	minKeysFl: boolean;
 } & GetInputFilesReturn;
 
 export function toLowerFirstChar(s: string): string {
@@ -72,6 +73,7 @@ export function preprocOptions(opts: CombinedOptions): StdOptions {
 		extTx: opts.extension?.toLowerCase() ?? 'js',
 		prefixTx: opts.prefix ? toLowerFirstChar(opts.prefix) : 'tb',
 		suffixTx: opts.suffix ?? 'RouteOptions',
+		minKeysFl: opts.minkeys ?? false,
 		...inputFiles,
 	};
 }
