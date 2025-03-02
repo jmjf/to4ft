@@ -6,21 +6,18 @@
 ## To do
 
 See `docs/Roadmap.md` for details of what's done
+
 ### Core/common
 
 - [ ] `--camel` -- force camelcase (squeeze out `_` in names)
 - [ ] tests
 - [ ] documentation (work in progress)
 
-### `oas2dtb`
+### `oas2tb`
 
 - [ ] exclude parameter keywords AJV doesn't recognize and invalid headers
 - [ ] ensure `requestBodies` generate for one content type with the same priority as `responses`
-
-### `oas2rtb`
-
-- [ ] exclude parameter keywords AJV doesn't recognize and invalid headers
-- [ ] ensure `requestBodies` generate for one content type with the same priority as `responses`
+- [ ] why does redocly lint complain about my `headers`
 
 ### `oas2ro`
 
@@ -40,7 +37,7 @@ Currently, generates dereferenced `RouteOptions` object. Code is still WIP, but 
     - [x] querystring
     - [x] headers (excludes headers OpenAPI says to ignore)
     - [x] params
-    - [ ] body (work in progress)
+    - [ ] body **(work in progress)**
     - [ ] response
     - [x] remove keywords AJV doesn't recognize
 - [x] write files to output directory
@@ -66,12 +63,14 @@ I've seen examples using TypeBox to define the API schema and exporting JSON Sch
 
 Also see, `docs/AssumptionsRecommendations.md` for base assumptions and recommendations on how to build specs to get the most from this tool.
 
-### In `oas2dtb` and `oas2dtb`
+### In `oas2tb`
 
 - Convert items in `components` only. Items in paths/callbacks may be unnamed
 - Convert `headers`, `parameters`, `requestBodies`, `responses`, and `schemas` only. Other items do not produce types
-- Prefix generated file names with the section from which they came. For example, it will write `components.schemas.Users` output to `schemasUsers.ts`
+  - Currently, `requestBodies` handling is not working. Use `schemas` to define the request body.
+  - Redocly's lint doesn't like my `headers` definitions. To be investigated. Use `parameters` to define whole header parameters for now.
 - For `responses`, generate a type for one `content` option with the following priority: `application/json` before `application/x-www-form-urlencoded` before `application/xml`.
+- Prefix generated file names with the section from which they came. For example, it will write `components.schemas.Users` output to `schemasUsers.ts`
 - Replace invalid identifier characters with `_`. Do not trim leading/trailing `_`. See `docs/ValidIdentifiers.md` for name sanitizer behavior.
   - This compromise most affects custom headers like `x-my-custom-header`, which will be renamed `tbX_my_custom_header` in output. When I get `--camel` working, that may become `tbXMyCustomHeader`.
 
@@ -84,7 +83,7 @@ Also see, `docs/AssumptionsRecommendations.md` for base assumptions and recommen
 
 `oas2tb4fastify` is a `commander` application, so `-h` or `--help` and `-V` or `--version` work as you'd expect, including `oas2tb4fastify <command> -h`.
 
-### `oas2dtb`
+### `oas2tb`
 
 Generate dereferenced TypeBox types
 
@@ -106,11 +105,17 @@ Example: `oas2tb4fastify oas2dtb -i example/openapi/openapi.yaml -o example/dtb 
 
 `--prefix` (optional; default `tb`) -- characters to prefix on OpenAPI names in generated code
 
-`--preserve` (optional; default `description,summary`) -- comma separated list of keywords to preserve adjacent to `$ref`s; may replace fixed default
+`--keepanno` -- if present, keep description, summary, example, examples, deprecated, $comment, and other annotation keywords. (Default is remove for a smaller schema.)
+
+`--ajvunsafe` -- if present, allow xml, externalDocs, name, in, allowEmptyValue, required, and discriminator keywords, which AJV does not support by default.
+
+`--keeprefs` -- if present, convert `$ref`s into clones of other (assumed to exist) TypeBox schemas -- implies `--extension js`
+
+`--extension` (default `js`) -- filename extension to use for imported TypeBox schemas -- implies `--keepref`
 
 Be aware of possible camelcase inconsistencies in output. **Recommendation:** Use leading lowercase for `--prefix`. Name OpenAPI items with leading uppercase.
 
-#### Example output
+#### Example dereferenced output (no `--keeprefs` or `--extension`)
 
 Generated from `openapi/schema/User.yaml` `components/schemas/User`.
 

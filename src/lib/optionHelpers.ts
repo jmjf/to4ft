@@ -15,7 +15,9 @@ export type StdOptions = {
 	extTx: string;
 	prefixTx: string;
 	suffixTx: string;
-	minKeysFl: boolean;
+	keepRefFl: boolean;
+	keepAnnoFl: boolean;
+	ajvUnsafeFl: boolean;
 } & GetInputFilesReturn;
 
 export function toLowerFirstChar(s: string): string {
@@ -60,8 +62,8 @@ export function ensureDirectoryExists(dirPathNm: string) {
 }
 
 export function preprocOptions(opts: CombinedOptions): StdOptions {
-	if (!opts.input) throw new Error('missing required option --input');
-	if (!opts.outdir) throw new Error('missing required option --outdir');
+	if (!opts.input) throw new Error('preprocOptions FATAL: missing required option --input');
+	if (!opts.outdir) throw new Error('preprocOptions FATAL: missing required option --outdir');
 
 	const inputFiles = getInputFiles(opts.input);
 	ensureDirectoryExists(opts.outdir);
@@ -73,7 +75,9 @@ export function preprocOptions(opts: CombinedOptions): StdOptions {
 		extTx: opts.extension?.toLowerCase() ?? 'js',
 		prefixTx: opts.prefix ? toLowerFirstChar(opts.prefix) : 'tb',
 		suffixTx: opts.suffix ?? 'RouteOptions',
-		minKeysFl: opts.minkeys ?? false,
+		keepRefFl: opts.keepref ?? false,
+		keepAnnoFl: opts.keepanno ?? false,
+		ajvUnsafeFl: opts.ajvunsafe ?? false,
 		...inputFiles,
 	};
 }

@@ -35,19 +35,7 @@ import {
 	parseWithMultipleTypes,
 } from './codeParsers.ts';
 
-/**
- * Options supporting code generation and parser functions
- * @typedef {Object} CodeGenOpts
- * @param {string[]} refImports - optional list of imports needed for the file (only used for ref-maintaining)
- * @param {string} prefixTx - prefix to add to names
- * @param {extTx} string - extension to add to import file names
- */
-export type CodeGenOpts = {
-	refImports?: string[];
-	prefixTx: string;
-	extTx: string;
-	minKeysFl: boolean;
-};
+export type CodeGenOpts = StdOptions & { refImports?: string[] };
 
 /*
  * SCHEMA GETTERS FOR COMMANDS
@@ -71,36 +59,31 @@ const schemaGetters = {
  */
 
 /**
- * Type of a function that handles specifics of calling `schemaToTypeBox` and writing output
+ * Type of a function that handles specifics of calling `schemaToTypeBox` to generate TypeBox code and writing output
  * @typedef {Function} GenToTypeBoxFn
  * @param {JSONSchema7} schema - schema being processed
  * @param {string} objNm - name of the object (subschema) being processed
  * @param {string} componentFieldNm - name of the component field being processed (schemas, responses, etc.)
  * @param {StdOptions} - destructured as { outPathTx, prefixTx, extTx }
  */
-type GenToTypeBoxFn = (
-	schema: JSONSchema7,
-	objNm: string,
-	componentFieldNm: string,
-	{ outPathTx, prefixTx, extTx, minKeysFl }: StdOptions,
-) => void;
+type GenTypeBoxFn = (schema: JSONSchema7, objNm: string, componentFieldNm: string, opts: StdOptions) => void;
 
 /**
  * Generate TypeBox code for a list of ref paths
- * @param {string[]} refPathNms - list of referenced paths for which to generate TypeBox
+ * @param {string[]} pathNms - list of referenced paths for which to generate TypeBox
  * @param {'dereference' | 'parse'} refParserFnNm - name of the $RefParser function to use to read each refPath
- * @param {GenToTypeBoxFn} genToTypeBox - a function that handles specifics of calling `schemaToTypeBox` and writing output
+ * @param {GenTypeBoxFn} genToTypeBox - a function that handles specifics of calling `schemaToTypeBox` and writing output
  * @param {StdOptions} stdOpts - standard options object
  * @async
  *
  */
-export async function genTypeBoxForRefs(
-	refPathNms: string[],
+export async function genTypeBoxForPaths(
+	pathNms: string[],
 	refParserFnNm: 'dereference' | 'parse',
-	genToTypeBox: GenToTypeBoxFn,
+	genToTypeBox: GenTypeBoxFn,
 	stdOpts: StdOptions,
 ) {
-	for (const refPathNm of refPathNms) {
+	for (const refPathNm of pathNms) {
 		const rpSchema = (await $RefParser[refParserFnNm](refPathNm, {
 			dereference: { preservedProperties: stdOpts.preserveKeywords },
 		})) as JSONSchema7;
@@ -127,10 +110,10 @@ export async function genTypeBoxForRefs(
  * Generate TypeBox code for a single schema, recursing through any sub-schemas
  * @param {string} schemaNm - name of the schema being processed
  * @param {JSONSchema7} schema - schema to process
- * @param {CodeGenOpts} codeGenOpts - options used in code generation
+ * @param {StdOptions} opts - options used in code generation
  */
-export function genTypeBoxForSchema(schemaNm: string, schema: JSONSchema7, codeGenOpts: CodeGenOpts) {
-	const exportedNm = genExportedNm(codeGenOpts, schemaNm);
+export function genTypeBoxForSchema(schemaNm: string, schema: JSONSchema7, opts: CodeGenOpts) {
+	const exportedNm = genExportedNm(opts, schemaNm);
 
 	// Including id doesn't play nice with fastify for ref-maintaining
 	// Ensuring that generated typebox code will contain an '$id' field.
@@ -138,7 +121,7 @@ export function genTypeBoxForSchema(schemaNm: string, schema: JSONSchema7, codeG
 	// if (typeof parsedSchema !== "boolean" && parsedSchema.$id === undefined) {
 	// 	parsedSchema.$id = exportedName;
 	// }
-	const typeBoxTypeTx = recurseSchema(codeGenOpts, schema);
+	const typeBoxTypeTx = recurseSchema(opts, schema);
 	const exportedTypeTx = genExportedTypeForName(exportedNm);
 
 	return `${typeBoxTypeTx.includes('OneOf([') ? genOneOfTypeboxSupportCode() : ''}\n\nexport const ${exportedNm} = ${typeBoxTypeTx}\n${exportedTypeTx}\n`;
@@ -170,54 +153,54 @@ export function genRefImportStatements(refImports: string[]): string {
 } /**
  * Takes the root schema and recursively collects the corresponding types
  * for it. Returns the matching typebox code representing the schema.
- * @param {CodeGenOpts} codeGenOpts
+ * @param {StdOptions} opts
  * @param {JSONSchema7Definition} schema
  *
  * @returns {string} - generated code
  *
  * @throws Error if an unexpected schema (one with no matching parser) was given
  */
-export function recurseSchema(codeGenOpts: CodeGenOpts, schema: JSONSchema7Definition): string {
+export function recurseSchema(opts: StdOptions, schema: JSONSchema7Definition): string {
 	// TODO: boolean schema support..?
 	if (isBoolean(schema)) {
 		return JSON.stringify(schema);
 	}
 	if (isObjectSchema(schema)) {
-		return parseObject(codeGenOpts, schema);
+		return parseObject(opts, schema);
 	}
 	if (isEnumSchema(schema)) {
-		return parseEnum(codeGenOpts, schema);
+		return parseEnum(opts, schema);
 	}
 	if (isAnyOfSchema(schema)) {
-		return parseAnyOf(codeGenOpts, schema);
+		return parseAnyOf(opts, schema);
 	}
 	if (isAllOfSchema(schema)) {
-		return parseAllOf(codeGenOpts, schema);
+		return parseAllOf(opts, schema);
 	}
 	if (isOneOfSchema(schema)) {
-		return parseOneOf(codeGenOpts, schema);
+		return parseOneOf(opts, schema);
 	}
 	if (isNotSchema(schema)) {
-		return parseNot(codeGenOpts, schema);
+		return parseNot(opts, schema);
 	}
 	if (isArraySchema(schema)) {
-		return parseArray(codeGenOpts, schema);
+		return parseArray(opts, schema);
 	}
 	if (isSchemaWithMultipleTypes(schema)) {
-		return parseWithMultipleTypes(codeGenOpts, schema);
+		return parseWithMultipleTypes(opts, schema);
 	}
 	if (isConstSchema(schema)) {
-		return parseConst(codeGenOpts, schema);
+		return parseConst(opts, schema);
 	}
 	// unknown is an object schema with no keys
 	if (isUnknownSchema(schema)) {
 		return parseUnknown(schema);
 	}
 	if (schema.$ref !== undefined) {
-		return parseRefName(codeGenOpts, schema);
+		return parseRefName(opts, schema);
 	}
 	if (schema.type !== undefined && !Array.isArray(schema.type)) {
-		return parseTypeName(codeGenOpts, schema.type, schema);
+		return parseTypeName(opts, schema.type, schema);
 	}
 	throw new Error(`Unsupported schema. Did not match any type of the parsers. Schema was: ${JSON.stringify(schema)}`);
 }
@@ -226,7 +209,7 @@ export function recurseSchema(codeGenOpts: CodeGenOpts, schema: JSONSchema7Defin
  * UTILITIES
  */
 
-export function genExportedNm({ prefixTx }: CodeGenOpts, schemaNm: string): string {
+export function genExportedNm({ prefixTx }: StdOptions, schemaNm: string): string {
 	return `${prefixTx}${toUpperFirstChar(sanitizeName(schemaNm))}`;
 }
 

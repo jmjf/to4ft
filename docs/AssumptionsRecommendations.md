@@ -12,6 +12,12 @@
 
 ## Recommendations
 
+### Lint your spec before processing
+
+Use a tool like Redocly's lint to catch egregious issues in your OpenAPI spec before attempting to generate code. 
+
+Tools like `@apidevtools/json-schema-ref-parser` assume they're getting valid schemas. Writing `oas2tb4fastify` to handle all the variations that are questionable but kind of look right and kind of work would require more time than I have.
+
 ### Write your spec to support reuse
 
 If you are using TypeScript, build parameters in `components.parameters` and other `components.*` sections as appropriate and `$ref` them in `paths`.
@@ -240,3 +246,11 @@ writeFileSync("api_spec.json", JSON.stringify(doc));
 ```
 
 Then you can `npx @redocly/cli build-docs api_spec.json -o api_spec.html` to get an HTML document that you can publish on a documentation route in non-production environments, or even in production if you wish.
+
+### Define headers in `components.parameters`
+
+Define headers in `components.parameters`, not `components.headers`.
+
+Redocly's lint complains about missing fields in `components.headers`.
+
+TBD if this is a real problem or something wrong in my test spec.

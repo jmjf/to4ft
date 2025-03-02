@@ -32,7 +32,6 @@ const removeFromParameterEntries = {
 // I think I can handle query (yes), path (yes), and header (yes) in one function. TBD.
 function getParameterSchema(paramType: string, parameters: OpenAPI3x.ParameterObject[]) {
 	if (!Array.isArray(parameters)) return undefined;
-	// TODO: $ref when we get to that
 	// TODO: need to strip disallowed headers and keywords from TypeBox code too
 	const params = parameters.filter((s) => s.in === paramType);
 
@@ -50,7 +49,9 @@ function getParameterSchema(paramType: string, parameters: OpenAPI3x.ParameterOb
 			continue;
 		}
 
-		// For a dereferenced schema, this should never happen but check just in case.
+		// TODO: Support $ref
+		// Dereferenced schemas should have none
+		// For parsed schemas, By the time we get here, paths should be pulled in properly.
 		if (Object.hasOwn(param.schema, '$ref')) {
 			console.log(`getParameterSchema WARN: query is $ref, ${param.schema}`);
 			continue;
