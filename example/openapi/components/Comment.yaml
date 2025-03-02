@@ -13,15 +13,10 @@ components:
     CommentIdParam:
       in: path
       name: commentId
+      required: true
       schema:
-        title: CommentIdParam
-        type: object
-        properties:
-          commentId:
-            $ref: Fields.yaml#/components/schemas/CommentId
-            description: A unique identifier for a comment
-        required: 
-          -  commentId
+        $ref: Fields.yaml#/components/schemas/CommentId
+        description: A unique identifier for a comment
   schemas:
     Comment:
       title: Comment

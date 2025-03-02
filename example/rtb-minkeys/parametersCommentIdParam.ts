@@ -1,5 +1,5 @@
-import { Clone, type Static, Type } from '@sinclair/typebox';
+import { Clone, type Static } from '@sinclair/typebox';
 import { tbCommentId } from './schemasCommentId.js';
 
-export const tbCommentIdParam = Type.Object({ commentId: Clone(tbCommentId) });
+export const tbCommentIdParam = Clone(tbCommentId);
 export type TbCommentIdParam = Static<typeof tbCommentIdParam>;

@@ -9,7 +9,22 @@ info:
       identifier: MIT
 
 components:
+  headers:
+    x-my-custom-header:
+      description: custom header example
+      schema:
+        type: string
   parameters:
+    UserHeaderParam:
+      in: header
+      name: userHeaderParam
+      $ref: '#/components/headers/x-my-custom-header'
+    x-header-2-param:
+      in: header
+      name: x-header-2
+      description: x-header-2 description
+      schema:
+        type: string
     UserIdParam:
       in: path
       name: userId
@@ -24,9 +39,18 @@ components:
           -  userId
     UserQuery:
       in: query
+      name: userQuery
+      description: this description can be preserved in querystring
+      summary: in query userQuery
+      style: simple # will not be preserved in querystring
+      allowReserved: true # will not be preserved in querystring
       schema:
         title: UserQuery
         type: object
+        description: this description will not be preserved
+        required:
+          - userId
+          - userNm
         properties:
           userId:
             $ref: Fields.yaml#/components/schemas/UserId

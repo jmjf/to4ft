@@ -5,7 +5,11 @@ get:
   security: []
   summary: GET user endpoint for tson issue
   parameters:
-    - $ref: ../components/User.yaml#/components/parameters/UserIdParam
+    - $ref: ../components/User.yaml#/components/parameters/UserQuery
+    - $ref: ../components/User.yaml#/components/parameters/x-header-2-param
+    - in: header
+      name: x-my-custom-header
+      $ref: ../components/User.yaml#/components/headers/x-my-custom-header
   responses:
     '200':
       description: result

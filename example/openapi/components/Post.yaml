@@ -21,6 +21,28 @@ components:
             description: A unique identifier for a post from parameters
         required: 
           -  postId
+    PostBodyParam:
+      in: body
+      description: Body param description
+      schema:
+        $ref: '#/components/requestBodies/PostRequestBody'
+    PaginationPage:
+      name: page
+      in: query
+      description: Page number to retrieve.
+      schema:
+        type: integer
+        default: 1
+        example: 2
+    PaginationLimit:
+      name: limit
+      in: query
+      description: Number of days per page.
+      schema:
+        type: integer
+        default: 10
+        maximum: 30
+        example: 15
   schemas:
     Post:
       title: Post
@@ -57,3 +79,31 @@ components:
       type: array
       items: 
         $ref: '#/components/schemas/Post'
+  requestBodies:
+    PostRequestBody:
+      title: PostRequestBody
+      type: object
+      properties:
+        titleTx:
+          $ref: Fields.yaml#/components/schemas/TitleTx
+          default: hello
+        postTx:
+          $ref: Fields.yaml#/components/schemas/PostTx
+        author:
+          $ref: User.yaml#/components/schemas/User
+        comments:
+          type: 'array'
+          items:
+            $ref: Comment.yaml#/components/schemas/Comment
+        statusCd:
+          $ref: Fields.yaml#/components/schemas/PostStatus
+          default: draft
+        statusTs:
+          $ref: Fields.yaml#/components/schemas/GenericTs
+          description: The date and time when the post was put in the current status
+          example: 2025-11-12T13:14:15Z
+      required:
+        - titleTx
+        - postTx
+        - postStatus
+      

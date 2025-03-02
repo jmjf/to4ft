@@ -17,11 +17,14 @@ tags:
     description: other stuff
 
 paths:
-  /users/{userId}:
-    $ref: paths/api_users_userid.yaml
+  /comments/{commentId}:
+    $ref: paths/api_comments_commentId.yaml
   /posts/{postId}:
     $ref: paths/api_posts_postId.yaml
   /posts:
     $ref: paths/api_posts.yaml
-  /comments/{commentId}:
-    $ref: paths/api_comments_commentId.yaml
+  /users/{userId}:
+    $ref: paths/api_users_userid.yaml
+  /users:
+    $ref: paths/api_users.yaml
+

@@ -4,12 +4,44 @@ get:
     -  Posts
   security: []
   summary: GET all posts
+  parameters:
+    - in: path
+      name: testId
+      type: string
+    - $ref: ../components/Post.yaml#/components/parameters/PaginationPage
+    - $ref: ../components/Post.yaml#/components/parameters/PaginationLimit    
+    - name: tags
+      in: query
+      description: Tags to filter by
+      required: false
+      explode: true
+      schema:
+        type: array
+        items:
+          type: string
   responses:
     '200':
       description: result
       content:
         application/json:
           schema:
-            $ref: ../schemas/Post.yaml#/components/schemas/PostsResponse
+            $ref: ../components/Post.yaml#/components/schemas/PostsResponse
     '4xx':
         description: error
+post:
+  operationId: putPosts
+  tags:
+    - Posts
+  security: []
+  summary: POST a post
+  parameters:
+    - $ref: '../components/Post.yaml#/components/parameters/PostBodyParam'
+  responses:
+    '200':
+      description: result
+      content:
+        application/json:
+          schema:
+            $ref: ../components/Post.yaml#/components/schemas/PostsResponse
+    '4xx':
+        description: error    
