@@ -19,6 +19,7 @@
     "rtb": "./dist/src/cli.js oas2rtb -i example/openapi/openapi.yaml -o example/rtb && npm run check:ex",
     "dtb:dev": "node --experimental-strip-types src/cli.ts oas2dtb -i example/openapi/openapi.yaml -o example/dtb && npm run check:ex",
     "rtb:dev": "node --experimental-strip-types src/cli.ts oas2rtb -i example/openapi/openapi.yaml -o example/rtb && npm run check:ex",
+    "ro:dev": "node --experimental-strip-types src/cli.ts oas2ro -i example/openapi/openapi.yaml -o example/ro && npm run check:ex",
     "check:ex": "npx @biomejs/biome check --write example",
     "format": "npx @biomejs/biome format --write",
     "lint": "npm run lint:only && npm run lint:typecheck",
@@ -30,7 +31,8 @@
   },
   "dependencies": {
     "@apidevtools/json-schema-ref-parser": "^11.9.1",
-    "commander": "^13.1.0"
+    "commander": "^13.1.0",
+    "openapi-types": "^12.1.3"
   },
   "devDependencies": {
     "@biomejs/biome": "^1.9.4",
