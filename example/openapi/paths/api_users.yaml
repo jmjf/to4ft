@@ -1,5 +1,5 @@
 get:
-  operationId: getUserById
+  operationId: getUsersByQuery
   tags: 
     -  Other
   security: []
@@ -9,7 +9,8 @@ get:
     - $ref: ../components/User.yaml#/components/parameters/x-header-2-param
     - in: header
       name: x-my-custom-header
-      $ref: ../components/User.yaml#/components/headers/x-my-custom-header
+      schema:
+        type: string
   responses:
     '200':
       description: result

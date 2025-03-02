@@ -9,16 +9,19 @@ info:
       identifier: MIT
 
 components:
-  headers:
-    x-my-custom-header:
-      description: custom header example
-      schema:
-        type: string
+  # headers:
+  #   x-my-custom-header:
+  #     description: custom header example
+  #     schema:
+  #       type: string
+  # Redocly's lint doesn't like headers outside parameters
   parameters:
     UserHeaderParam:
       in: header
       name: userHeaderParam
-      $ref: '#/components/headers/x-my-custom-header'
+      description: custom header example
+      schema:
+        type: string
     x-header-2-param:
       in: header
       name: x-header-2
@@ -41,7 +44,6 @@ components:
       in: query
       name: userQuery
       description: this description can be preserved in querystring
-      summary: in query userQuery
       style: simple # will not be preserved in querystring
       allowReserved: true # will not be preserved in querystring
       schema:

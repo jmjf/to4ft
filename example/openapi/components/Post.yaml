@@ -21,11 +21,6 @@ components:
             description: A unique identifier for a post from parameters
         required: 
           -  postId
-    PostBodyParam:
-      in: body
-      description: Body param description
-      schema:
-        $ref: '#/components/requestBodies/PostRequestBody'
     PaginationPage:
       name: page
       in: query
@@ -74,13 +69,7 @@ components:
         - titleTx
         - postTx
         - postStatus
-    PostsResponse:
-      title: PostsResponse
-      type: array
-      items: 
-        $ref: '#/components/schemas/Post'
-  requestBodies:
-    PostRequestBody:
+    PostBody:
       title: PostRequestBody
       type: object
       properties:
@@ -91,6 +80,7 @@ components:
           $ref: Fields.yaml#/components/schemas/PostTx
         author:
           $ref: User.yaml#/components/schemas/User
+          default: joe
         comments:
           type: 'array'
           items:
@@ -106,4 +96,33 @@ components:
         - titleTx
         - postTx
         - postStatus
-      
+    PostsResponse:
+      title: PostsResponse
+      type: array
+      items: 
+        $ref: '#/components/schemas/Post'
+
+  requestBodies:
+    PetBody:
+      description: A JSON object containing pet information
+      # required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              petId:
+                type: string
+              petName:
+                type: string
+    PostRequestBody:
+      description: post to add to the blog (from requestBodies)
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/PostBody'
+        application/xml:
+          schema:
+            $ref: '#/components/schemas/PostBody'
+  # It's probably better to NOT use requestBodies and build them in requestBody in the operation object
+  # Also Redocly's lint complains about content, even though the OpenAPI spec says it's required

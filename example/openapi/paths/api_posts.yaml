@@ -5,9 +5,6 @@ get:
   security: []
   summary: GET all posts
   parameters:
-    - in: path
-      name: testId
-      type: string
     - $ref: ../components/Post.yaml#/components/parameters/PaginationPage
     - $ref: ../components/Post.yaml#/components/parameters/PaginationLimit    
     - name: tags
@@ -34,8 +31,17 @@ post:
     - Posts
   security: []
   summary: POST a post
-  parameters:
-    - $ref: '../components/Post.yaml#/components/parameters/PostBodyParam'
+  requestBody:
+    $ref: ../components/Post.yaml#/components/requestBodies/PostRequestBody
+    # description: post to add to the blog
+    # content:
+    #   'application/json':
+    #     schema:
+    #       $ref: ../components/Post.yaml#/components/schemas/PostBody
+    #   'application/xml':
+    #     schema:
+    #       $ref: ../components/Post.yaml#/components/schemas/PostBody
+      
   responses:
     '200':
       description: result
