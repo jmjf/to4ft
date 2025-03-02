@@ -1,0 +1,17 @@
+{
+  "name": "objectqueries",
+  "version": "1.0.0",
+  "description": "How does Fastify deal with multi-object query parameters",
+  "main": "index.ts",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "it": "node --experimental-strip-types --watch index.ts"
+  },
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "@sinclair/typebox": "^0.34.28",
+    "fastify": "^5.2.1"
+  }
+}
