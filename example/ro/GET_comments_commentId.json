@@ -1,0 +1,92 @@
+{
+	"url": "/comments/:commentId",
+	"method": "GET",
+	"operationId": "getCommentById",
+	"schema": {
+		"params": {
+			"required": ["commentId"],
+			"type": "object",
+			"properties": {
+				"commentId": {
+					"description": "A unique identifier for a comment",
+					"type": "number",
+					"minimum": 1
+				}
+			}
+		},
+		"response": {
+			"200": {
+				"description": "result",
+				"content": {
+					"application/json": {
+						"schema": {
+							"title": "Comment",
+							"type": "object",
+							"properties": {
+								"commentId": {
+									"description": "A unique identifier for a comment (override)",
+									"type": "number",
+									"minimum": 1
+								},
+								"commentTx": {
+									"type": "string",
+									"minLength": 1,
+									"maxLength": 256,
+									"description": "Contents of a comment"
+								},
+								"commenter": {
+									"title": "User",
+									"type": "object",
+									"properties": {
+										"userId": {
+											"description": "A unique identifier for a user (override)",
+											"type": "number",
+											"minimum": 1
+										},
+										"userNm": {
+											"type": "string",
+											"minLength": 3,
+											"description": "User name must be at least 3 characters",
+											"example": "Joe"
+										},
+										"emailAddrTx": {
+											"type": "string",
+											"format": "emailAddr",
+											"description": "An email address",
+											"example": "joe@mailinator.com"
+										},
+										"x-dashes": {
+											"title": "x_dashes",
+											"type": "string"
+										},
+										"$100ok": {
+											"title": "$100ok",
+											"type": "string"
+										},
+										"x𒐗": {
+											"title": "cuneiform",
+											"type": "number"
+										}
+									},
+									"required": ["userId", "userNm"]
+								}
+							},
+							"required": ["commentId", "commentTx", "commenter"]
+						}
+					}
+				}
+			},
+			"404": {
+				"description": "The specified resource was not found"
+			},
+			"500": {
+				"description": "Something went terribly wrong"
+			},
+			"4xx": {
+				"description": "error"
+			}
+		}
+	},
+	"tags": ["Other"],
+	"summary": "GET comment endpoint for tson issue"
+}

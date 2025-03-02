@@ -1,0 +1,162 @@
+{
+	"url": "/posts/:postId",
+	"method": "GET",
+	"operationId": "getPostById",
+	"schema": {
+		"params": {
+			"required": ["postId"],
+			"type": "object",
+			"properties": {
+				"postId": {
+					"description": "A unique identifier for a post from parameters",
+					"type": "number",
+					"minimum": 1
+				}
+			}
+		},
+		"response": {
+			"200": {
+				"description": "result",
+				"content": {
+					"application/json": {
+						"schema": {
+							"title": "Post",
+							"type": "object",
+							"properties": {
+								"postId": {
+									"description": "Uniquely identifies a blog post",
+									"type": "number",
+									"minimum": 1
+								},
+								"titleTx": {
+									"default": "hello",
+									"type": "string",
+									"description": "The title of a blog post",
+									"minLength": 3,
+									"maxLength": 100
+								},
+								"postTx": {
+									"type": "string",
+									"minLength": 1,
+									"maxLength": 1024,
+									"description": "Contents of a post"
+								},
+								"author": {
+									"title": "User",
+									"type": "object",
+									"properties": {
+										"userId": {
+											"description": "A unique identifier for a user (override)",
+											"type": "number",
+											"minimum": 1
+										},
+										"userNm": {
+											"type": "string",
+											"minLength": 3,
+											"description": "User name must be at least 3 characters",
+											"example": "Joe"
+										},
+										"emailAddrTx": {
+											"type": "string",
+											"format": "emailAddr",
+											"description": "An email address",
+											"example": "joe@mailinator.com"
+										},
+										"x-dashes": {
+											"title": "x_dashes",
+											"type": "string"
+										},
+										"$100ok": {
+											"title": "$100ok",
+											"type": "string"
+										},
+										"x𒐗": {
+											"title": "cuneiform",
+											"type": "number"
+										}
+									},
+									"required": ["userId", "userNm"]
+								},
+								"comments": {
+									"type": "array",
+									"items": {
+										"title": "Comment",
+										"type": "object",
+										"properties": {
+											"commentId": {
+												"description": "A unique identifier for a comment (override)",
+												"type": "number",
+												"minimum": 1
+											},
+											"commentTx": {
+												"type": "string",
+												"minLength": 1,
+												"maxLength": 256,
+												"description": "Contents of a comment"
+											},
+											"commenter": {
+												"title": "User",
+												"type": "object",
+												"properties": {
+													"userId": {
+														"description": "A unique identifier for a user (override)",
+														"type": "number",
+														"minimum": 1
+													},
+													"userNm": {
+														"type": "string",
+														"minLength": 3,
+														"description": "User name must be at least 3 characters",
+														"example": "Joe"
+													},
+													"emailAddrTx": {
+														"type": "string",
+														"format": "emailAddr",
+														"description": "An email address",
+														"example": "joe@mailinator.com"
+													},
+													"x-dashes": {
+														"title": "x_dashes",
+														"type": "string"
+													},
+													"$100ok": {
+														"title": "$100ok",
+														"type": "string"
+													},
+													"x𒐗": {
+														"title": "cuneiform",
+														"type": "number"
+													}
+												},
+												"required": ["userId", "userNm"]
+											}
+										},
+										"required": ["commentId", "commentTx", "commenter"]
+									}
+								},
+								"statusCd": {
+									"default": "draft",
+									"type": "string",
+									"enum": ["draft", "published", "deleted"],
+									"description": "Post status:\n - draft - work in progress\n - published - for the world to see\n - deleted - don't show this to anyone\n"
+								},
+								"statusTs": {
+									"description": "The date and time when the post was put in the current status",
+									"example": "2025-11-12T13:14:15Z",
+									"type": "string",
+									"format": "date-time"
+								}
+							},
+							"required": ["postId", "titleTx", "postTx", "postStatus"]
+						}
+					}
+				}
+			},
+			"4xx": {
+				"description": "error"
+			}
+		}
+	},
+	"tags": ["Posts"],
+	"summary": "GET post endpoint for tson issue"
+}

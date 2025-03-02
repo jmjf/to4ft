@@ -70,7 +70,12 @@ function runProgram() {
 		.description(
 			'Generate partial Fastify RouteOptions objects from paths in an OpenAPI schema. Input may be YAML or JSON Schema.',
 		)
-		.addOption(inputOption)
+		.addOption(
+			new Option(
+				'-i, --input <inFileNm>',
+				'Path to an OpenAPI specification file to process. The file must contain a paths section.',
+			).makeOptionMandatory(true),
+		)
 		.addOption(outputOption)
 		.addOption(minkeysOption)
 		.option('--suffix <suffixTx>', 'Characters to add at the end of names', 'RouteOptions')
