@@ -18,6 +18,7 @@ See `docs/Roadmap.md` for details of what's done
 - [ ] exclude parameter keywords AJV doesn't recognize and invalid headers
 - [ ] ensure `requestBodies` generate for one content type with the same priority as `responses`
 - [ ] why does redocly lint complain about my `headers`
+- [ ] ensure no empty parameter options objects in output
 
 ### `oas2ro`
 
@@ -111,46 +112,40 @@ Example: `oas2tb4fastify oas2dtb -i example/openapi/openapi.yaml -o example/dtb 
 
 `--keeprefs` -- if present, convert `$ref`s into clones of other (assumed to exist) TypeBox schemas -- implies `--extension js`
 
-`--extension` (default `js`) -- filename extension to use for imported TypeBox schemas -- implies `--keepref`
+`--extension` (default `js`) -- filename extension to use for imported TypeBox schemas -- implies `--keeprefs`
 
 Be aware of possible camelcase inconsistencies in output. **Recommendation:** Use leading lowercase for `--prefix`. Name OpenAPI items with leading uppercase.
 
-#### Example dereferenced output (no `--keeprefs` or `--extension`)
+The following examples are generated from `openapi/schema/User.yaml` `components/schemas/User`.
 
-Generated from `openapi/schema/User.yaml` `components/schemas/User`.
+#### Example dereferenced output from `npm run tbd:dev`
+
+By default, `oas2tb` generates types that dereference any `$ref`ed fields. Each file is self-contained with no imports of other files. This option works best if you maintain an OpenAPI schema and generate TypeBox when it changes. Schemas are easier to see because they have full type information in one place.
 
 ```typescript
 import { type Static, Type } from '@sinclair/typebox';
 
-export const tbUser = Type.Object({
-   userId: Type.Number({ description: 'A unique identifier for a user (override)', minimum: 1 }),
-   userNm: Type.String({ minLength: 3, description: 'User name must be at least 3 characters', example: 'Joe' }),
-   emailAddrTx: Type.Optional(
-      Type.String({ format: 'emailAddr', description: 'An email address', example: 'joe@mailinator.com' }),
-   ),
-   'x-dashes': Type.Optional(Type.String()),
-   $100ok: Type.Optional(Type.String()),
-   x𒐗: Type.Optional(Type.Number()),
-});
+export const tbUser = Type.Object(
+   {
+      userId: Type.Number({ minimum: 1 }),
+      userNm: Type.String({ minLength: 3 }),
+      emailAddrTx: Type.Optional(Type.String({ format: 'emailAddr' })),
+      'x-dashes': Type.Optional(Type.String()),
+      $100ok: Type.Optional(Type.String()),
+      x𒐗: Type.Optional(Type.Number()),
+   },
+   {},
+);
 export type TbUser = Static<typeof tbUser>;
-
 ```
 
-### `oas2rtb`
+See `example/tb-d` for more examples.
 
-Generate reference-maintaining TypeBox types
-
-Example: `oas2tb4fastify oas2rtb -i example/openapi/openapi.yaml -o example/rtb --prefix tb`
-
-`oas2rtb`'s reference-maintaining files mirror the source spec using imports and `Clone`. This options works best if you want to convert an OpenAPI spec once and abandon it in favor of TypeBox and generating your API specs from the application (e.g., with `@fastify/swagger` to save JSON output in a file).
+#### Example reference-maintaining output from `npm run tbr:dev`
 
 **WARNING:** If your schema `$ref`s `examples`, `links`, or other OpenAPI fields that do not generate types, `oas2tb4fastify` will not convert them and may produce unpredictable results.
 
-`oas2rtb` uses the same options as `oas2dtb` EXCEPT it does not support `--preserve` because `$RefParser.parse` doesn't support it.
-
-#### Example output
-
-Generated from `openapi/schema/User.yaml` `components/schemas/User`. Note the description for `userId` is from the `description` in `User.yaml` (local options honored) EXCEPT TypeBox `CloneType` will use description from the source type.
+Reference-maintaining output mirrors the source spec using imports and `Clone`. This option works best if you want to convert an OpenAPI spec once and abandon it in favor of TypeBox and generating your API specs from the application (e.g., with `@fastify/swagge`r to save JSON output in a file). If you choose to maintain your spec in TypeBox, add at least `--keepanno` to get descriptions, examples, and other annotations. Be aware of the limitations of AJV, Fastify's `RouteOptions`, and how they an affect documentation. See `docs/AssumptionsRecommendations.md` for more details.
 
 ```typescript
 import { Clone, type Static, Type } from '@sinclair/typebox';
@@ -161,16 +156,46 @@ import { tbUserNm } from './schemasUserNm.js';
 import { tbX_dashes } from './schemasx-dashes.js';
 import { tbX𒐗 } from './schemasx𒐗.js';
 
-export const tbUser = Type.Object({
-   userId: Clone({ ...tbUserId, ...{ description: 'A unique identifier for a user (override)' } }),
-   userNm: Clone(tbUserNm),
-   emailAddrTx: Type.Optional(Clone(tbEmailAddrTx)),
-   'x-dashes': Type.Optional(Clone(tbX_dashes)),
-   $100ok: Type.Optional(Clone(tb$100ok)),
-   x𒐗: Type.Optional(Clone(tbX𒐗)),
-});
+export const tbUser = Type.Object(
+   {
+      userId: Clone(tbUserId),
+      userNm: Clone(tbUserNm),
+      emailAddrTx: Type.Optional(Clone(tbEmailAddrTx)),
+      'x-dashes': Type.Optional(Clone(tbX_dashes)),
+      $100ok: Type.Optional(Clone(tb$100ok)),
+      x𒐗: Type.Optional(Clone(tbX𒐗)),
+   },
+   {},
+);
 export type TbUser = Static<typeof tbUser>;
 ```
+
+See `example/tb-r` for more examples.
+
+#### Example keywords-maintaining output from `npm run tbdkeys:dev`
+
+This example shows that `oas2tb` keeps keywords from the nearest source. `userId` has a definition in `Fields.yaml`, which is `$ref`ed in `User.yaml`. In `User.yaml` we change the definition. The definition in the output is from `User.yaml`. The same holds true for defaults, examples, and other keywords. Choose overrides carefully.
+
+```typescript
+import { type Static, Type } from '@sinclair/typebox';
+
+export const tbUser = Type.Object(
+   {
+      userId: Type.Number({ description: 'A unique identifier for a user (override)', minimum: 1 }),
+      userNm: Type.String({ minLength: 3, description: 'User name must be at least 3 characters', example: 'Joe' }),
+      emailAddrTx: Type.Optional(
+         Type.String({ format: 'emailAddr', description: 'An email address', example: 'joe@mailinator.com' }),
+      ),
+      'x-dashes': Type.Optional(Type.String()),
+      $100ok: Type.Optional(Type.String()),
+      x𒐗: Type.Optional(Type.Number()),
+   },
+   {},
+);
+export type TbUser = Static<typeof tbUser>;
+```
+
+See `example/tb-keys` for more examples.
 
 ### `oas2ro`
 
@@ -222,7 +247,7 @@ const postPostIdRoutes: [
 ]
 ```
 
-While this approach isn't seamless, the seams are small and confined to details that aren't expressed in an API schema.
+This approach isn't seamless, but the seams are small and confined to details that aren't expressed in an API schema.
 
 ## Thanks
 
