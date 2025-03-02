@@ -3,68 +3,53 @@
 - Convert OpenAPI schemas into dereferenced TypeBox types
 - Convert OpenAPI paths into Fastify `RouteOptions` with TypeBox schemas
 
-## Roadmap
+## To do
 
+See `docs/Roadmap.md` for details of what's done
 ### Core/common
 
-- [x] `--prefix` -- prefix generated TypeBox schema and type names
-- [x] Ensure prefix first character is lower case to avoid name collisions
-- [x] ensure deep paths exist (mkdir recursive)
-- [x] refactor/extend code from `schema2typebox` (idiomatic, adjustments, etc.)
-  - [x] type guards
-  - [x] import statement code generation
-  - [x] type from TypeBox schema, optional, extended OneOf code generation
-  - [x] schema options code generation (setup for `--minkeys`)
-  - [x] other OpenAPI -> TypeBox code generation
-- [x] uppercase first character of names from OpenAPI
-- [x] ensure `description` and `summary` adjacent to `$ref` are preserved (removed `--preserve` in favor of default)
-- [x] sanitize identifier names to be valid JavaScript (replace invalid chars with `_`)
-  - NOTE: Sanitization does not affect names inside schemas. See `examples/rtb/User.yaml` where `'x-dashes'` references `tbX_dashes`.
-- [x] build and make executable; improve tools
-- [x] `--minkeys` -- generate minimum schemas/types (compare `example/?tb/schemasPost.ts` with `example/?tb-minkeys/schemasPost.ts`)
 - [ ] `--camel` -- force camelcase (squeeze out `_` in names)
 - [ ] tests
-
-- [wip] documentation
+- [ ] documentation (work in progress)
 
 ### `oas2dtb`
 
-- [x] write command spec
-- [x] read file or directory
-- [x] find schemas to process
-- [x] generate TypeBox code
-- [x] write files to output directory
-- [x] `run:dtb` npm script (temporary)
+- [ ] exclude parameter keywords AJV doesn't recognize and invalid headers
+- [ ] ensure `requestBodies` generate for one content type with the same priority as `responses`
 
 ### `oas2rtb`
 
-- [x] write command spec
-- [x] read file or directory
-- [x] find schemas to process
-- [x] generate TypeBox code
-- [x] write files to output directory
-- [x] `run:rtb` npm script (temporary)
-- [x] Replace `CloneType` - use `CloneType` code as a base, but reverse spread order
+- [ ] exclude parameter keywords AJV doesn't recognize and invalid headers
+- [ ] ensure `requestBodies` generate for one content type with the same priority as `responses`
 
 ### `oas2ro`
 
+Currently, generates dereferenced `RouteOptions` object. Code is still WIP, but output so far looks decent.
+
 - [x] write command spec
-- [ ] read file or directory
-- [ ] find paths to process
-- [ ] generate partial `RouteOptions`
-  - [ ] url
-  - [ ] method
-  - [ ] operationId
-  - [ ] tags
-  - [ ] summary
-  - [ ] description
-  - [ ] schema
-    - [ ] querystring
-    - [ ] headers
-    - [ ] params
-    - [ ] body
+- [x] read file or directory
+- [x] find paths to process
+- [x] generate partial `RouteOptions`
+  - [x] url
+  - [x] method
+  - [x] operationId
+  - [x] tags
+  - [x] summary
+  - [x] description
+  - [x] schema
+    - [x] querystring
+    - [x] headers (excludes headers OpenAPI says to ignore)
+    - [x] params
+    - [ ] body (work in progress)
     - [ ] response
-- [ ] write files to output directory
+    - [x] remove keywords AJV doesn't recognize
+- [x] write files to output directory
+- [ ] build reference maintaining version
+- [ ] refactor code
+
+### Demo server
+
+- [ ] Build a simple server that returns route and parameter information using generated `RouteOptions` and TypeBox types.
 
 ## Motivation
 
@@ -74,51 +59,25 @@ I've seen examples using TypeBox to define the API schema and exporting JSON Sch
 
 ## Limitations and compromises
 
-- `oas2tb4fastify` does not format output. You've already configured your preferred style for your preferred code formatter (`@biomejs/biome`, `prettier`, something else). You need to format the code anyway so it matches your style. Why add the overhead of a formatter and format in a style you're going to reformat anyway? Write an npm script to generate and format generated code and lint-fix generate code (next point).
+- Does not format output. You've already configured your preferred style for your preferred code formatter (`@biomejs/biome`, `prettier`, something else). You need to format the code anyway so it matches your style. Why add the overhead of a formatter and format in a style you're going to reformat anyway? Write an npm script to generate and format generated code and lint-fix generated code (next point).
 
-- `oas2tb4fastify` writes a standard set of TypeBox imports to all output files. If your linter warns or errors on unused imports, run lint on the output directory with the fix option to strip unused imports. If your linter can't fix unused imports, consider getting a linter that can.
+- Writes a standard set of TypeBox imports to all output files. If your linter warns or errors on unused imports, run lint on the output directory with the fix option to strip unused imports. If your linter can't fix unused imports, consider getting a linter that can.
 
-### `oas2dtb` and `oas2dtb`
+Also see, `docs/AssumptionsRecommendations.md` for base assumptions and recommendations on how to build specs to get the most from this tool.
 
-- Converts only items in `components` because items in paths/callbacks may be unnamed
-- Converts only `headers`, `parameters`, `requestBodies`, `responses`, and `schemas` because other items do not produce types
-- Prefixes generated file names with the section from which they came. For example, it will write `components.schemas.Users` output to `schemasUsers.ts`
-- For `responses`, generates a type for one `content` option with the following priority: `application/json` before `application/x-www-form-urlencoded` before `application/xml`.
-- Replaces invalid identifier characters with `_` and does not trim leading/trailing `_`. See "Identifier name sanitization" below.
-  - This compromise most affects custom headers like `x-my-custom-header`, which will be renamed `tbX_my_custom_header` in output.
+### In `oas2dtb` and `oas2dtb`
 
-### Identifier name sanitization
+- Convert items in `components` only. Items in paths/callbacks may be unnamed
+- Convert `headers`, `parameters`, `requestBodies`, `responses`, and `schemas` only. Other items do not produce types
+- Prefix generated file names with the section from which they came. For example, it will write `components.schemas.Users` output to `schemasUsers.ts`
+- For `responses`, generate a type for one `content` option with the following priority: `application/json` before `application/x-www-form-urlencoded` before `application/xml`.
+- Replace invalid identifier characters with `_`. Do not trim leading/trailing `_`. See `docs/ValidIdentifiers.md` for name sanitizer behavior.
+  - This compromise most affects custom headers like `x-my-custom-header`, which will be renamed `tbX_my_custom_header` in output. When I get `--camel` working, that may become `tbXMyCustomHeader`.
 
-JavaScript identifiers can include Unicode letters, Unicode numbers, `_` and `$`. The first character cannot be a number. That seems simple except for the Unicode part and that the definition of "numbers" is unclear. I'm not sure about letters either, but haven't found any problems yet.
+### In `oas2ro`
 
-For example, the following assignments are valid in the NodeJS REPL:
-
-- `let 日本語 = 'Japanese for Japanese language'`
-- `let rrugë = 'Albanian for street'`
-- `let شجرة = 'Arabic for tree'`
-- `let x६ = 'x + Devangari 6'`
-- `let x六 = 'x + Han 6'`
-- `let x௬ = 'x + Tamil 6'`
-- `let x𒐗 = 'x + cuneiform 3'`
-
-But `x¹` (superscript 1), `x𝋠` (Mayan 0), and `x𝋬` (Mayan 12) aren't, even though all three glyphs are classified as numbers (specifically, other numbers -- `\p{No}`) in Unicode.
-
-The distinction seems to be that `\p{Nd}` (unicode decimals) and `\p{Nl}` (unicode numeric letters) are valid, but `\p{No}` (superscript, subscript, number that is not decimal) isn't, or isn't consistently, valid.
-
-Therefore, identifier validation rules are applied as follows:
-
-- Replace all characters that match `/[^\p{L}\p{Nd}\p{Nl}_$]/gui` with `_` -- note this is a negative match (`[^...]`).
-- If the first character matches `/^[^\p{L}_$]/ui`, replace it with `_` -- note this is a negative match
-
-In the rules above:
-
-- `\p{L}` is the character class for Unicode letters of all types, including ideographic scripts
-- `\p{Nd}` is the character class for decimal digit numbers (any script except ideographic scripts)
-- `\p{Nl}` is the character class for numeric letters (Roman numerals, etc.)
-
-I have not tested these rules exhaustively. They aim to be reasonably permissive but may be too permissive or not permissive enough. I'm not going to write (or copy from [StackOverflow](https://stackoverflow.com/questions/2008279/validate-a-javascript-function-name/9392578#9392578)) an 11,000+ character regular expression to try to be perfect. If you name something `function`, it will pass these rules, but JavaScript will say, "Nope!"
-
-Also, you may be able to write an API spec with Hittite object names in cuneiform, but just because you can doesn't mean you should.
+- Do not generate schemas for `cookie` parameters. Fastify doesn't support them in `RouteOptions` schemas.
+- Exclude keywords AJV doesn't recognize. See `docs/experimentQuerystrings.md` and `experiments/querystrings` for more details.
 
 ## Commands
 
@@ -257,10 +216,12 @@ const postPostIdRoutes: [
 ]
 ```
 
-While this approach isn't seamless, the seams are small and confined to things that are code dependent expressed in an API schema.
+While this approach isn't seamless, the seams are small and confined to details that aren't expressed in an API schema.
 
-## Credit
+## Thanks
 
-`openapi-transformer-toolkit` inspired generating code from OpenAPI specs and got me on the spec-first bandwagon. Thank you Nearform team.
+Without `@apidevtools/json-schema-ref-parser`, this tool would be more work than I'm willing to take on. Thank you Jon, Phil, and the rest of the team behind it.
+
+`openapi-transformer-toolkit` for inspiring me to explore generating code from OpenAPI specs and getting me on the spec-first bandwagon. Thank you Nearform team.
 
 `oas2tb4fastify` borrows heavily from the core code from `schema2typebox` to do schema translation. Thank you xddq.
