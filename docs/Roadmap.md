@@ -69,6 +69,7 @@ Currently, generates dereferenced `RouteOptions` object. Code is still WIP, but 
     - [x] remove keywords AJV doesn't recognize
 - [x] write files to output directory
 - [ ] build reference maintaining version
+- [ ] write TypesScript/JavaScript, not JSON
 - [ ] refactor code
 
 ## Demo server
