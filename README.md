@@ -35,13 +35,15 @@ Currently, generates dereferenced `RouteOptions` object. Code is still WIP, but 
     - [x] querystring
     - [x] headers (excludes headers OpenAPI says to ignore)
     - [x] params
-    - [ ] body **(work in progress)**
-    - [ ] response
+    - [x] body
+    - [x] response
     - [x] remove keywords AJV doesn't recognize
 - [x] write files to output directory
-- [ ] build reference maintaining version
-- [ ] write TypesScript/JavaScript, not JSON
+- [ ] build reference maintaining version **WIP**
 - [ ] refactor code
+  - process schemas so we can control documentation, unsafe terms, etc.
+  - probably similar to TypeBox generating code but generates JSON Schema
+- [ ] write TypesScript/JavaScript, not JSON
 
 ### Demo server
 
@@ -142,7 +144,7 @@ See `example/tb-d` for more examples.
 
 **WARNING:** If your schema `$ref`s `examples`, `links`, or other OpenAPI fields that do not generate types, `oas2tb4fastify` will not convert them and may produce unpredictable results.
 
-Reference-maintaining output mirrors the source spec using imports and `Clone`. This option works best if you want to convert an OpenAPI spec once and abandon it in favor of TypeBox and generating your API specs from the application (e.g., with `@fastify/swagge`r to save JSON output in a file). If you choose to maintain your spec in TypeBox, add at least `--keepanno` to get descriptions, examples, and other annotations. Be aware of the limitations of AJV, Fastify's `RouteOptions`, and how they an affect documentation. See `docs/AssumptionsRecommendations.md` for more details.
+Reference-maintaining output mirrors the source spec using imports and `Clone`. This option works best if you want to convert an OpenAPI spec once and abandon it in favor of TypeBox and generating your API specs from the application (e.g., with `@fastify/swagger` to save JSON output in a file). If you choose to maintain your spec in TypeBox, add at least `--keepanno` to get descriptions, examples, and other annotations. Be aware of the limitations of AJV, Fastify's `RouteOptions`, and how they an affect documentation. See `docs/AssumptionsRecommendations.md` for more details.
 
 ```typescript
 import { Clone, type Static, Type } from '@sinclair/typebox';
@@ -196,17 +198,16 @@ See `example/tb-keys` for more examples.
 
 ### `oas2ro`
 
-**WIP** This section will change when I build the code.
+**WIP** This section will change when I finish the code.
 
 Generate partial Fastify `RouteOptions` objects based on `paths`.
 
-`oas2tb4fastify routes -i openapiRoot -o outDir -r refDir --deref`
+`oas2tb4fastify oas2ro -i input -o outDir -r refDir --deref`
 
-- `routes` -> generate Fastify `RouteOptions`
-- `openapiRoot` -> the root file of the OpenAPI spec
+- `input` -> the root file of an OpenAPI spec; we expect to find an OpenAPI Document Object
 - `outDir` -> directory to receive TypeScript files with `RouteOptions`
-- `refDir` -> directory that contains TypeBox types (used to write `import`s)
 - `deref` -> dereference references
+- `refDir` -> directory that contains TypeBox types (used to write `import`s)
 
 Will write TypeScript files corresponding to paths containing `RouteOptions` objects named for `operationId`s.
 
