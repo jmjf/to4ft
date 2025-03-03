@@ -1,7 +1,6 @@
 import { type Static, Type } from '@sinclair/typebox';
 
-export const tbPost = Type.Object({
-	postId: Type.Number({ minimum: 1 }),
+export const tbPostRequestBody = Type.Object({
 	titleTx: Type.String({ default: 'hello', minLength: 3, maxLength: 100 }),
 	postTx: Type.String({ minLength: 1, maxLength: 1024 }),
 	author: Type.Optional(
@@ -35,4 +34,4 @@ export const tbPost = Type.Object({
 	),
 	statusTs: Type.Optional(Type.String({ format: 'date-time' })),
 });
-export type TbPost = Static<typeof tbPost>;
+export type TbPostRequestBody = Static<typeof tbPostRequestBody>;

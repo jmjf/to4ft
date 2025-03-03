@@ -6,11 +6,7 @@ get:
   summary: GET user endpoint for tson issue
   parameters:
     - $ref: ../components/User.yaml#/components/parameters/UserQuery
-    - $ref: ../components/User.yaml#/components/parameters/x-header-2-param
-    - in: header
-      name: x-my-custom-header
-      schema:
-        type: string
+    - $ref: ../components/User.yaml#/components/parameters/XTestHeaderParam
   responses:
     '200':
       description: result
@@ -18,5 +14,8 @@ get:
         application/json:
           schema:
             $ref: ../components/User.yaml#/components/schemas/User
+      headers:
+        x-test-header:     # this is the name used in the response
+          $ref: ../components/User.yaml#/components/headers/XTestHeader
     '4xx':
         description: error

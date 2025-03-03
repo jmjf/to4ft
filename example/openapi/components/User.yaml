@@ -9,23 +9,18 @@ info:
       identifier: MIT
 
 components:
-  # headers:
-  #   x-my-custom-header:
-  #     description: custom header example
-  #     schema:
-  #       type: string
-  # Redocly's lint doesn't like headers outside parameters
-  parameters:
-    UserHeaderParam:
-      in: header
-      name: userHeaderParam
-      description: custom header example
+  # components.headers can only be used in responses
+  headers:
+    XTestHeader:           # this is the object name
+      description: test header in response
       schema:
         type: string
-    x-header-2-param:
+  parameters:
+    # use components.parameters for request headers
+    XTestHeaderParam:      # this is the object name
       in: header
-      name: x-header-2
-      description: x-header-2 description
+      name: x-test-header  # this is the name to use when sending the request
+      description: test header in request
       schema:
         type: string
     UserIdParam:
