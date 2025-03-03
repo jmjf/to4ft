@@ -15,10 +15,7 @@ See `docs/Roadmap.md` for details of what's done
 
 ### `oas2tb`
 
-- [ ] exclude parameter keywords AJV doesn't recognize and invalid headers
-- [ ] ensure `requestBodies` generate for one content type with the same priority as `responses`
-- [ ] why does redocly lint complain about my `headers`
-- [ ] ensure no empty parameter options objects in output
+Nothing pending
 
 ### `oas2ro`
 

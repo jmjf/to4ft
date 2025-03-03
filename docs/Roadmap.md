@@ -1,6 +1,6 @@
 # Roadmap and status
 
-## Core/common
+## `oas2tb`
 
 - [x] `--prefix` -- prefix generated TypeBox schema and type names
 - [x] Ensure prefix first character is lower case to avoid name collisions
@@ -17,33 +17,15 @@
   - NOTE: Sanitization does not affect names inside schemas. See `examples/rtb/User.yaml` where `'x-dashes'` references `tbX_dashes`.
 - [x] build and make executable; improve tools
 - [x] `--minkeys` -- generate minimum schemas/types (compare `example/?tb/schemasPost.ts` with `example/?tb-minkeys/schemasPost.ts`)
+- [x] ensure `requestBodies` generate a type for one content type with the same priority as `responses`
+- [x] ensure no empty parameter options objects in output
+- [x] why does redocly lint complain about my `headers`
+  - `components.headers` are for responses, cannot be used for request headers
+  - See `User.yaml` and `api_users.yaml` for examples
 - [ ] `--camel` -- force camelcase (squeeze out `_` in names)
 - [ ] tests
 
 - [ ] documentation (work in progress)
-
-## `oas2dtb`
-
-- [x] write command spec
-- [x] read file or directory
-- [x] find schemas to process
-- [x] generate TypeBox code
-- [x] write files to output directory
-- [x] `run:dtb` npm script (temporary)
-- [ ] exclude parameter keywords AJV doesn't recognize and invalid headers
-- [ ] ensure `requestBodies` generate for one content type with the same priority as `responses`
-
-## `oas2rtb`
-
-- [x] write command spec
-- [x] read file or directory
-- [x] find schemas to process
-- [x] generate TypeBox code
-- [x] write files to output directory
-- [x] `run:rtb` npm script (temporary)
-- [x] Replace `CloneType` - use `CloneType` code as a base, but reverse spread order
-- [ ] exclude parameter keywords AJV doesn't recognize and invalid headers
-- [ ] ensure `requestBodies` generate for one content type with the same priority as `responses`
 
 ## `oas2ro`
 
