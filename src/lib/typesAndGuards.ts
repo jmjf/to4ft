@@ -94,7 +94,7 @@ export type OASResponseObject = OpenAPIV3.ResponseObject | OpenAPIV3_1.ResponseO
 export type OASResponsesObject = OpenAPIV3.ResponsesObject | OpenAPIV3_1.ResponsesObject; // 200: ResponseObject for example
 export type OASSchemaObject = OpenAPIV3.SchemaObject | OpenAPIV3_1.SchemaObject;
 
-export type HTTPMethods = OpenAPIV3.HttpMethods | OpenAPIV3_1.HttpMethods;
+export type OASHTTPMethods = OpenAPIV3.HttpMethods | OpenAPIV3_1.HttpMethods;
 
 export type OpenAPIHeadersItem = { description?: string; schema?: JSONSchema7 };
 export type OpenAPIRequestBodiesItem = { content?: { schema?: JSONSchema7 } };
