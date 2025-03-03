@@ -15,7 +15,7 @@ import {
 	isNullType,
 	isString,
 	isNumber,
-} from './typeGuards.ts';
+} from './typesAndGuards.ts';
 
 export function parseObject(opts: CodeGenOpts, schema: ObjectSchema) {
 	// schema is ObjectSchema
@@ -220,16 +220,20 @@ const ajvUnsafeKeys = ['xml', 'externalDocs', 'name', 'in', 'allowEmptyValue', '
 //     Redocly lint doesn't like content in requestBodies (though OpenAPI spec requires), so recommend against using
 function parseSchemaOptions(schema: JSONSchema7, { keepAnnoFl, ajvUnsafeFl }: CodeGenOpts): string | undefined {
 	const ignoreKeys = [...stdIgnoreKeys, ...(keepAnnoFl ? [] : annotationKeys), ...(ajvUnsafeFl ? [] : ajvUnsafeKeys)];
+
 	const propertiesEntries = Object.entries(schema).filter(([key, _value]) => !ignoreKeys.includes(key));
 	if (propertiesEntries.length === 0) {
 		return undefined;
 	}
 
 	const result = propertiesEntries.reduce<Record<string, unknown>>((acc, [key, value]) => {
-		acc[key] = value;
+		if (value !== undefined) {
+			acc[key] = value;
+		}
 		return acc;
 	}, {});
-	return JSON.stringify(result);
+
+	return Object.keys(result).length > 0 ? JSON.stringify(result) : undefined;
 }
 
 /*

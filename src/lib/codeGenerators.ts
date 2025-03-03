@@ -2,11 +2,6 @@ import type { JSONSchema7, JSONSchema7Definition } from 'json-schema';
 import { $RefParser } from '@apidevtools/json-schema-ref-parser';
 import { dedupeArray, toUpperFirstChar, type StdOptions } from './optionHelpers.ts';
 import {
-	type OpenAPIHeadersItem,
-	type OpenAPIParametersItem,
-	type OpenAPIRequestBodiesItem,
-	type OpenAPIResponsesItem,
-	type OpenAPISchemasItem,
 	isAllOfSchema,
 	isAnyOfSchema,
 	isArraySchema,
@@ -16,10 +11,16 @@ import {
 	isNotSchema,
 	isObjectSchema,
 	isOneOfSchema,
-	isOpenAPIComponents,
+	isOASDocument,
 	isSchemaWithMultipleTypes,
 	isUnknownSchema,
-} from './typeGuards.ts';
+	type OASDocument,
+	type OASHeaderObject,
+	type OASParameterObject,
+	type OASRequestBodyObject,
+	type OASResponseObject,
+	type OASSchemaObject,
+} from './typesAndGuards.ts';
 import {
 	parseAllOf,
 	parseAnyOf,
@@ -41,17 +42,20 @@ export type CodeGenOpts = StdOptions & { refImports?: string[] };
  * SCHEMA GETTERS FOR COMMANDS
  */
 
+function getSchemaFromContent(obj: OASRequestBodyObject | OASResponseObject) {
+	return obj.content
+		? (obj.content['application/json']?.schema ??
+				obj.content['application/x-www-form-urlencoded']?.schema ??
+				obj.content['application/xml']?.schema)
+		: undefined;
+}
+
 const schemaGetters = {
-	headers: (headers: OpenAPIHeadersItem) => headers.schema,
-	parameters: (parameters: OpenAPIParametersItem) => parameters.schema,
-	requestBodies: (requestBodies: OpenAPIRequestBodiesItem) => requestBodies.content?.schema,
-	responses: (responses: OpenAPIResponsesItem) =>
-		responses.content
-			? (responses.content['application/json']?.schema ??
-				responses.content['application/x-www-form-urlencoded']?.schema ??
-				responses.content['application/xml']?.schema)
-			: undefined,
-	schemas: (schema: OpenAPISchemasItem) => schema,
+	headers: (header: OASHeaderObject) => header.schema,
+	parameters: (parameter: OASParameterObject) => parameter.schema,
+	requestBodies: (requestBody: OASRequestBodyObject) => getSchemaFromContent(requestBody),
+	responses: (response: OASResponseObject) => getSchemaFromContent(response),
+	schemas: (schema: OASSchemaObject) => schema,
 };
 
 /*
@@ -86,10 +90,10 @@ export async function genTypeBoxForPaths(
 	for (const refPathNm of pathNms) {
 		const rpSchema = (await $RefParser[refParserFnNm](refPathNm, {
 			dereference: { preservedProperties: stdOpts.preserveKeywords },
-		})) as JSONSchema7;
-		if (!isOpenAPIComponents(rpSchema)) continue;
+		})) as OASDocument;
+		if (!isOASDocument(rpSchema)) continue;
 
-		const componentsEntries = Object.entries(rpSchema.components);
+		const componentsEntries = Object.entries(rpSchema.components ?? {});
 		for (const [componentFieldNm, componentContents] of componentsEntries) {
 			// Do we not know how to get the schema? (skip it)
 			if (schemaGetters[componentFieldNm] === undefined) continue;

@@ -1,3 +1,5 @@
+import type { OpenAPIV3, OpenAPIV3_1 } from 'openapi-types';
+
 /**
  * Type guards for determining the type of schema we are currently working on.
  * E.g. an anyOf schema object, oneOf, enum, const, etc..
@@ -72,8 +74,29 @@ export function isNullType(type: JSONSchema7Type): type is null {
 	return type === null;
 }
 
+/**
+ *
+ * Types and guards for OpenAPI schemas
+ *
+ */
+
+export type OASArraySchemaObject = OpenAPIV3.ArraySchemaObject | OpenAPIV3_1.ArraySchemaObject;
+export type OASBaseSchemaObject = OpenAPIV3.BaseSchemaObject | OpenAPIV3_1.BaseSchemaObject;
+export type OASComponentsObject = OpenAPIV3.ComponentsObject | OpenAPIV3_1.ComponentsObject;
+export type OASDocument = OpenAPIV3.Document | OpenAPIV3_1.Document;
+export type OASHeaderObject = OpenAPIV3.HeaderObject | OpenAPIV3_1.HeaderObject;
+export type OASNonArraySchemaObject = OpenAPIV3.NonArraySchemaObject | OpenAPIV3_1.NonArraySchemaObject;
+export type OASOperationObject = OpenAPIV3.OperationObject | OpenAPIV3_1.OperationObject;
+export type OASPathItem = OpenAPIV3.PathItemObject | OpenAPIV3_1.PathItemObject;
+export type OASParameterObject = OpenAPIV3.ParameterObject | OpenAPIV3_1.ParameterObject;
+export type OASRequestBodyObject = OpenAPIV3.RequestBodyObject | OpenAPIV3_1.RequestBodyObject;
+export type OASResponseObject = OpenAPIV3.ResponseObject | OpenAPIV3_1.ResponseObject;
+export type OASResponsesObject = OpenAPIV3.ResponsesObject | OpenAPIV3_1.ResponsesObject; // 200: ResponseObject for example
+export type OASSchemaObject = OpenAPIV3.SchemaObject | OpenAPIV3_1.SchemaObject;
+
+export type HTTPMethods = OpenAPIV3.HttpMethods | OpenAPIV3_1.HttpMethods;
+
 export type OpenAPIHeadersItem = { description?: string; schema?: JSONSchema7 };
-export type OpenAPIParametersItem = { schema?: JSONSchema7 };
 export type OpenAPIRequestBodiesItem = { content?: { schema?: JSONSchema7 } };
 export type OpenAPIResponsesItem = {
 	content: {
@@ -82,33 +105,69 @@ export type OpenAPIResponsesItem = {
 		'application/x-www-form-urlencoded'?: { schema: JSONSchema7 };
 	};
 };
-export type OpenAPISchemasItem = JSONSchema7;
-export type OpenAPIComponentsItem =
-	| OpenAPIHeadersItem
-	| OpenAPIParametersItem
-	| OpenAPIRequestBodiesItem
-	| OpenAPIResponsesItem
-	| OpenAPISchemasItem;
-// Arguably, pathItems and callbacks can have types in them but they may not be named, so can't use them
-export type OpenAPIComponents = {
-	components: {
-		// callbacks: (pathItem) does not produce a type
-		// examples: does not produce a type
-		headers?: Record<string, OpenAPIHeadersItem>;
-		// links: does not produce a type
-		parameters?: Record<string, OpenAPIParametersItem>;
-		// pathItems: does not produce a type
-		requestBodies?: Record<string, OpenAPIRequestBodiesItem>;
-		responses?: Record<string, OpenAPIResponsesItem>;
-		// securitySchemes: does not produce a type
-		schemas?: Record<string, OpenAPISchemasItem>;
-	};
-};
+
 const openapiComponentsKeys = ['headers', 'parameters', 'requestBodies', 'responses', 'schemas'];
-export function isOpenAPIComponents(schema: JSONSchema7 & Partial<OpenAPIComponents>): schema is OpenAPIComponents {
+export function isOASDocument(schema: OASDocument): schema is OASDocument {
 	return (
 		schema.components !== undefined &&
 		Object.keys(schema.components).filter((k) => openapiComponentsKeys.includes(k)).length > 0
 		// If schema.components contains at least one key the type supports
 	);
 }
+
+/**
+ *
+ * Selected types from Fastify's type definitions to support RouteOptions
+ *
+ */
+
+type AutocompletePrimitiveBaseType<T> = T extends string
+	? string
+	: T extends number
+		? number
+		: T extends boolean
+			? boolean
+			: never;
+
+export type Autocomplete<T> = T | (AutocompletePrimitiveBaseType<T> & Record<never, never>);
+
+type _FastifyHTTPMethods =
+	| 'DELETE'
+	| 'GET'
+	| 'HEAD'
+	| 'PATCH'
+	| 'POST'
+	| 'PUT'
+	| 'OPTIONS'
+	| 'PROPFIND'
+	| 'PROPPATCH'
+	| 'MKCOL'
+	| 'COPY'
+	| 'MOVE'
+	| 'LOCK'
+	| 'UNLOCK'
+	| 'TRACE'
+	| 'SEARCH'
+	| 'REPORT'
+	| 'MKCALENDAR';
+
+export type FastifyHTTPMethods = Autocomplete<_FastifyHTTPMethods | Lowercase<_FastifyHTTPMethods>>;
+
+type FastifySchema = {
+	body?: unknown;
+	querystring?: unknown;
+	params?: unknown;
+	headers?: unknown;
+	response?: unknown;
+};
+
+export type RouteOptions = {
+	url: string;
+	method: FastifyHTTPMethods; // Fastify supports arrays, but OpenAPI does one at a time
+	operationId?: string;
+	schema?: FastifySchema;
+	tags?: string[];
+	description?: string;
+	summary?: string;
+	deprecated?: boolean;
+};

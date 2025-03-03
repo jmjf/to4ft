@@ -2,8 +2,15 @@ import { writeFileSync } from 'node:fs';
 import { $RefParser } from '@apidevtools/json-schema-ref-parser';
 import type { CombinedOptions } from '../cli.ts';
 import { preprocOptions } from '../lib/optionHelpers.ts';
-import type * as OpenAPI3x from '../lib/typesOpenAPI.js';
-import type { RouteOptions } from '../lib/typesFastify.js';
+import type { RouteOptions } from '../lib/typesAndGuards.ts';
+import type {
+	OASDocument,
+	OASSchemaObject,
+	OASParameterObject,
+	OASNonArraySchemaObject,
+	OASPathItem,
+	OASOperationObject,
+} from '../lib/typesAndGuards.ts';
 
 type OpenAPIParameterIn = 'path' | 'header' | 'query' | 'cookie' | 'body';
 
@@ -30,12 +37,12 @@ const removeFromParameterEntries = {
 };
 
 // I think I can handle query (yes), path (yes), and header (yes) in one function. TBD.
-function getParameterSchema(paramType: string, parameters: OpenAPI3x.ParameterObject[]) {
+function getParameterSchema(paramType: string, parameters: OASParameterObject[]) {
 	if (!Array.isArray(parameters)) return undefined;
 	// TODO: need to strip disallowed headers and keywords from TypeBox code too
 	const params = parameters.filter((s) => s.in === paramType);
 
-	const paramEntries: [string, Partial<OpenAPI3x.ParameterObject>][] = [];
+	const paramEntries: [string, Partial<OASParameterObject>][] = [];
 	const required: string[] = [];
 	for (const param of params) {
 		if (!param.schema) {
@@ -58,12 +65,12 @@ function getParameterSchema(paramType: string, parameters: OpenAPI3x.ParameterOb
 		}
 
 		// merge all query parameters into a single object schema
-		const paramSchema = param.schema as OpenAPI3x.SchemaObject;
+		const paramSchema = param.schema as OASSchemaObject;
 		if (paramSchema.type === 'object') {
 			if (Array.isArray(paramSchema.required) && paramSchema.required.length > 0) {
 				required.push(...(paramSchema.required as string[]));
 			}
-			const objectSchema = paramSchema as OpenAPI3x.NonArraySchemaObject;
+			const objectSchema = paramSchema as OASNonArraySchemaObject;
 			for (const [name, propertySchema] of Object.entries(objectSchema.properties ?? {})) {
 				paramEntries.push([name, propertySchema]);
 			}
@@ -88,8 +95,8 @@ function getParameterSchema(paramType: string, parameters: OpenAPI3x.ParameterOb
 			};
 }
 
-// Needs work and maybe some constraints about how request bodies are built
-function getBodyParameterSchema(schema: OpenAPI3x.ParameterObject[]) {
+// TODO: It's actually in requestBody; needs to handle content
+function getBodyParameterSchema(schema: OASParameterObject[]) {
 	if (!Array.isArray(schema)) return undefined;
 	const body = schema.find((s) => s.in === 'body');
 	return body !== undefined ? { ...body, in: undefined, schema: undefined, ...body.schema } : undefined;
@@ -99,22 +106,22 @@ export async function oas2ro(opts: CombinedOptions) {
 	const stdOpts = preprocOptions(opts);
 
 	const rp = new $RefParser();
-	const schema = (await rp.dereference(opts.input)) as OpenAPI3x.Document;
+	const schema = (await rp.dereference(opts.input)) as OASDocument;
 	if (!schema.paths) throw new Error('oas2ro ERROR: schema does not include paths.');
 
 	for (const [pathURL, pathItem] of Object.entries(schema.paths)) {
-		for (const [opMethod, opObjut] of Object.entries(pathItem as OpenAPI3x.PathItem)) {
-			const opObj = opObjut as OpenAPI3x.OperationObject;
+		for (const [opMethod, opObjut] of Object.entries(pathItem as OASPathItem)) {
+			const opObj = opObjut as OASOperationObject;
 
 			const routeOptions: RouteOptions = {
 				url: cleanPath(pathURL),
 				method: opMethod.toUpperCase(), // Fastify can accept a method array, but OpenAPI does one method at a time
 				operationId: opObj.operationId,
 				schema: {
-					body: getBodyParameterSchema(opObj.parameters as OpenAPI3x.ParameterObject[]), // getting body, could have content before schema
-					headers: getParameterSchema('header', opObj.parameters as OpenAPI3x.ParameterObject[]),
-					querystring: getParameterSchema('query', opObj.parameters as OpenAPI3x.ParameterObject[]),
-					params: getParameterSchema('path', opObj.parameters as OpenAPI3x.ParameterObject[]),
+					body: getBodyParameterSchema(opObj.parameters as OASParameterObject[]), // getting body, could have content before schema
+					headers: getParameterSchema('header', opObj.parameters as OASParameterObject[]),
+					querystring: getParameterSchema('query', opObj.parameters as OASParameterObject[]),
+					params: getParameterSchema('path', opObj.parameters as OASParameterObject[]),
 					response: opObj.responses, // uses rspKey.content.contentType.schema style
 				},
 				tags: opObj.tags,
@@ -129,8 +136,8 @@ export async function oas2ro(opts: CombinedOptions) {
 	// NEXT: headers
 	// seem to be similar to path params
 	// some may be required, others not, so need to build a required array
-	/*
-Name is often something like x-my-header
+	/* Example from OpenAPI site -- name is often something like x-my-header
+
 name: token          # Accept, Content-Type, Authorization -> ignore in  header
 in: header
 description: token to be passed as a header
