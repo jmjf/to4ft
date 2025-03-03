@@ -1,6 +1,6 @@
 import { existsSync, lstatSync, mkdirSync, readdirSync } from 'node:fs';
 import path from 'node:path';
-import type { CombinedOptions } from '../cli.ts';
+import type { CommandOptions } from '../cli.ts';
 import { $RefParser } from '@apidevtools/json-schema-ref-parser';
 
 type GetInputFilesReturn = {
@@ -12,12 +12,15 @@ export type StdOptions = {
 	inPathTx: string;
 	outPathTx: string;
 	preserveKeywords: string[];
-	extTx: string;
 	prefixTx: string;
-	suffixTx: string;
-	keepRefFl: boolean;
 	keepAnnoFl: boolean;
 	ajvUnsafeFl: boolean;
+	extTx: string;
+	// oas2tb options
+	keepRefFl: boolean;
+	// oas2ro options
+	derefFl: boolean;
+	suffixTx: string;
 } & GetInputFilesReturn;
 
 export function toLowerFirstChar(s: string): string {
@@ -61,7 +64,7 @@ export function ensureDirectoryExists(dirPathNm: string) {
 	}
 }
 
-export function preprocOptions(opts: CombinedOptions): StdOptions {
+export function preprocOptions(opts: CommandOptions): StdOptions {
 	if (!opts.input) throw new Error('preprocOptions FATAL: missing required option --input');
 	if (!opts.outdir) throw new Error('preprocOptions FATAL: missing required option --outdir');
 
@@ -69,15 +72,18 @@ export function preprocOptions(opts: CombinedOptions): StdOptions {
 	ensureDirectoryExists(opts.outdir);
 
 	return {
+		preserveKeywords: ['description', 'summary'],
 		inPathTx: opts.input,
 		outPathTx: opts.outdir,
-		preserveKeywords: ['description', 'summary'],
 		extTx: opts.extension?.toLowerCase() ?? 'js',
 		prefixTx: opts.prefix ? toLowerFirstChar(opts.prefix) : 'tb',
-		suffixTx: opts.suffix ?? 'RouteOptions',
-		keepRefFl: opts.keepref ?? false,
 		keepAnnoFl: opts.keepanno ?? false,
 		ajvUnsafeFl: opts.ajvunsafe ?? false,
+		// oas2tb
+		keepRefFl: opts.keepref ?? false,
+		// oas2ro
+		derefFl: opts.deref ?? false,
+		suffixTx: opts.suffix ?? 'RouteOptions',
 		...inputFiles,
 	};
 }

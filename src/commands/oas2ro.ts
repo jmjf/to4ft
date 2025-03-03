@@ -1,6 +1,6 @@
 import { writeFileSync } from 'node:fs';
 import { $RefParser } from '@apidevtools/json-schema-ref-parser';
-import type { CombinedOptions } from '../cli.ts';
+import type { CommandOptions } from '../cli.ts';
 import { preprocOptions } from '../lib/optionHelpers.ts';
 import type { RouteOptions } from '../lib/typesAndGuards.ts';
 import type {
@@ -11,8 +11,7 @@ import type {
 	OASPathItem,
 	OASOperationObject,
 } from '../lib/typesAndGuards.ts';
-
-type OpenAPIParameterIn = 'path' | 'header' | 'query' | 'cookie' | 'body';
+import path from 'node:path';
 
 // make OpenAPI path Fastify friendly
 function cleanPath(path: string): string {
@@ -39,7 +38,7 @@ const removeFromParameterEntries = {
 // I think I can handle query (yes), path (yes), and header (yes) in one function. TBD.
 function getParameterSchema(paramType: string, parameters: OASParameterObject[]) {
 	if (!Array.isArray(parameters)) return undefined;
-	// TODO: need to strip disallowed headers and keywords from TypeBox code too
+	// parameters for paramType only
 	const params = parameters.filter((s) => s.in === paramType);
 
 	const paramEntries: [string, Partial<OASParameterObject>][] = [];
@@ -50,6 +49,7 @@ function getParameterSchema(paramType: string, parameters: OASParameterObject[])
 			continue;
 		}
 
+		console.log('paramSchema', paramType, param.schema);
 		// OpenAPI says to ignore these header parameters
 		if (paramType === 'header' && ['Accept', 'Content-Type', 'Authorization'].includes(param.name)) {
 			console.log(`getParameterSchema WARN: skipping header named ${param.name}`);
@@ -58,13 +58,13 @@ function getParameterSchema(paramType: string, parameters: OASParameterObject[])
 
 		// TODO: Support $ref
 		// Dereferenced schemas should have none
-		// For parsed schemas, By the time we get here, paths should be pulled in properly.
+		// For parsed schemas, by the time we get here, we should just need to convert $ref paths to output paths.
 		if (Object.hasOwn(param.schema, '$ref')) {
 			console.log(`getParameterSchema WARN: query is $ref, ${param.schema}`);
 			continue;
 		}
 
-		// merge all query parameters into a single object schema
+		// merge all parameter properties into a single object schema
 		const paramSchema = param.schema as OASSchemaObject;
 		if (paramSchema.type === 'object') {
 			if (Array.isArray(paramSchema.required) && paramSchema.required.length > 0) {
@@ -95,38 +95,65 @@ function getParameterSchema(paramType: string, parameters: OASParameterObject[])
 			};
 }
 
-// TODO: It's actually in requestBody; needs to handle content
-function getBodyParameterSchema(schema: OASParameterObject[]) {
-	if (!Array.isArray(schema)) return undefined;
-	const body = schema.find((s) => s.in === 'body');
-	return body !== undefined ? { ...body, in: undefined, schema: undefined, ...body.schema } : undefined;
-}
-
-export async function oas2ro(opts: CombinedOptions) {
+export async function oas2ro(opts: CommandOptions) {
 	const stdOpts = preprocOptions(opts);
+	const dirname = path.dirname(stdOpts.inPathTx);
 
 	const rp = new $RefParser();
-	const schema = (await rp.dereference(opts.input)) as OASDocument;
+
+	const schema = (
+		stdOpts.derefFl === true ? await rp.dereference(stdOpts.inPathTx) : await rp.parse(stdOpts.inPathTx)
+	) as OASDocument;
 	if (!schema.paths) throw new Error('oas2ro ERROR: schema does not include paths.');
 
-	for (const [pathURL, pathItem] of Object.entries(schema.paths)) {
-		for (const [opMethod, opObjut] of Object.entries(pathItem as OASPathItem)) {
-			const opObj = opObjut as OASOperationObject;
+	/**
+	 * if derefFl === false
+	 *
+	 * for (const [pathURL, pathItem] of schema.paths)
+	 *   if pathItem.$ref we need to read the ref and parse it to get the op
+	 *   else we can process the schema as is, any refs should be to components.*
+	 *   ASSUMPTION: Don't $ref a file that $refs a file for get, another for put, etc.
+	 *
+	 * paths: {
+	 *		'/comments/{commentId}': { '$ref': 'paths/api_comments_commentId.yaml' },
+	 *		'/posts/{postId}': { '$ref': 'paths/api_posts_postId.yaml' },
+	 *		'/posts': { '$ref': 'paths/api_posts.yaml' },
+	 *		'/users/{userId}': { '$ref': 'paths/api_users_userid.yaml' },
+	 *		'/users': { '$ref': 'paths/api_users.yaml' }
+	 *	}
+	 *
+	 * url, method, operationId, tags, description, and summary should come from the operation object
+	 * if we have $refs, for parameters, we need to parse the $ref to know what type it is
+	 *   requestBody -- should be only one, but may need to handle $ref per content type
+	 *   responses -- should be only one, but may need to handle $ref per content type
+	 *   headers -- could be many, need to get all and each becomes a property
+	 *   path -- could be many, need to get all and each becomes a property
+	 *   query -- assume could be many, need to get all and merge properties
+	 * also need to handle parameters defined in the operation object that $ref objects
+	 *
+	 */
+
+	for (const [pathURL, pathItemRaw] of Object.entries(schema.paths)) {
+		const pathItem = pathItemRaw?.$ref === undefined ? pathItemRaw : await rp.parse(`${dirname}/${pathItemRaw.$ref}`);
+
+		for (const [opMethod, opObjRaw] of Object.entries(pathItem as OASPathItem)) {
+			const opObj = opObjRaw as OASOperationObject;
+			console.log('opObj', opObj);
 
 			const routeOptions: RouteOptions = {
 				url: cleanPath(pathURL),
 				method: opMethod.toUpperCase(), // Fastify can accept a method array, but OpenAPI does one method at a time
 				operationId: opObj.operationId,
+				tags: opObj.tags,
+				description: opObj.description,
+				summary: opObj.summary,
 				schema: {
-					body: getBodyParameterSchema(opObj.parameters as OASParameterObject[]), // getting body, could have content before schema
+					body: opObj.requestBody, // getting body, could have content before schema
 					headers: getParameterSchema('header', opObj.parameters as OASParameterObject[]),
 					querystring: getParameterSchema('query', opObj.parameters as OASParameterObject[]),
 					params: getParameterSchema('path', opObj.parameters as OASParameterObject[]),
 					response: opObj.responses, // uses rspKey.content.contentType.schema style
 				},
-				tags: opObj.tags,
-				description: opObj.description,
-				summary: opObj.summary,
 			};
 			const filePath = `${opts.outdir}/${routeOptions.method}_${routeOptions.url.replace(':', '_').replaceAll('/', '')}.json`;
 			writeFileSync(filePath, JSON.stringify(routeOptions, null, 3));

@@ -1,6 +1,6 @@
 import { writeFileSync } from 'node:fs';
 import type { JSONSchema7 } from 'json-schema';
-import type { CombinedOptions } from '../cli.ts';
+import type { CommandOptions } from '../cli.ts';
 import {
 	genDerefImportStatements,
 	genRefImportStatements,
@@ -9,7 +9,7 @@ import {
 } from '../lib/codeGenerators.ts';
 import { preprocOptions, getRefPathNms, type StdOptions } from '../lib/optionHelpers.ts';
 
-export async function oas2tb(opts: CombinedOptions) {
+export async function oas2tb(opts: CommandOptions) {
 	const stdOpts = preprocOptions(opts);
 
 	const refPathNms = await getRefPathNms(stdOpts.fileNms);
