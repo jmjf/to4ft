@@ -2,6 +2,8 @@
 	"url": "/comments/:commentId",
 	"method": "GET",
 	"operationId": "getCommentById",
+	"tags": ["Other"],
+	"summary": "GET comment endpoint for tson issue",
 	"schema": {
 		"params": {
 			"required": ["commentId"],
@@ -86,7 +88,5 @@
 				"description": "error"
 			}
 		}
-	},
-	"tags": ["Other"],
-	"summary": "GET comment endpoint for tson issue"
+	}
 }

@@ -1,37 +1,18 @@
 {
-	"url": "/users",
+	"url": "/users/:userId",
 	"method": "GET",
 	"operationId": "getUserById",
+	"tags": ["Users"],
+	"summary": "GET user endpoint for tson issue",
 	"schema": {
-		"headers": {
-			"type": "object",
-			"properties": {
-				"x-header-2": {
-					"description": "x-header-2 description",
-					"type": "string"
-				},
-				"x-my-custom-header": {
-					"description": "custom header example",
-					"type": "string"
-				}
-			}
-		},
-		"querystring": {
-			"description": "this description can be preserved in querystring",
-			"summary": "in query userQuery",
-			"required": ["userId", "userNm"],
+		"params": {
+			"required": ["userId"],
 			"type": "object",
 			"properties": {
 				"userId": {
+					"description": "A unique identifier for a user",
 					"type": "number",
-					"description": "uniquely identifes a user",
 					"minimum": 1
-				},
-				"userNm": {
-					"type": "string",
-					"minLength": 3,
-					"description": "User name must be at least 3 characters",
-					"example": "Joe"
 				}
 			}
 		},
@@ -83,7 +64,5 @@
 				"description": "error"
 			}
 		}
-	},
-	"tags": ["Other"],
-	"summary": "GET user endpoint for tson issue"
+	}
 }

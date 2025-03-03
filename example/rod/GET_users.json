@@ -1,16 +1,35 @@
 {
-	"url": "/users/:userId",
+	"url": "/users",
 	"method": "GET",
-	"operationId": "getUserById",
+	"operationId": "getUsersByQuery",
+	"tags": ["Users"],
+	"summary": "GET user endpoint for tson issue",
 	"schema": {
-		"params": {
-			"required": ["userId"],
+		"headers": {
+			"description": "test header in request",
+			"type": "object",
+			"properties": {
+				"x-test-header": {
+					"description": "test header in request",
+					"type": "string"
+				}
+			}
+		},
+		"querystring": {
+			"description": "this description can be preserved in querystring",
+			"required": ["userId", "userNm"],
 			"type": "object",
 			"properties": {
 				"userId": {
-					"description": "A unique identifier for a user",
 					"type": "number",
+					"description": "uniquely identifes a user",
 					"minimum": 1
+				},
+				"userNm": {
+					"type": "string",
+					"minLength": 3,
+					"description": "User name must be at least 3 characters",
+					"example": "Joe"
 				}
 			}
 		},
@@ -56,13 +75,19 @@
 							"required": ["userId", "userNm"]
 						}
 					}
+				},
+				"headers": {
+					"x-test-header": {
+						"description": "test header in response",
+						"schema": {
+							"type": "string"
+						}
+					}
 				}
 			},
 			"4xx": {
 				"description": "error"
 			}
 		}
-	},
-	"tags": ["Other"],
-	"summary": "GET user endpoint for tson issue"
+	}
 }

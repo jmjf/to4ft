@@ -2,6 +2,8 @@
 	"url": "/posts/:postId",
 	"method": "GET",
 	"operationId": "getPostById",
+	"tags": ["Posts"],
+	"summary": "GET post endpoint for tson issue",
 	"schema": {
 		"params": {
 			"required": ["postId"],
@@ -156,7 +158,5 @@
 				"description": "error"
 			}
 		}
-	},
-	"tags": ["Posts"],
-	"summary": "GET post endpoint for tson issue"
+	}
 }
