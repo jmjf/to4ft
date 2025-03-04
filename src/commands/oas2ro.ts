@@ -1,15 +1,16 @@
 import { writeFileSync } from 'node:fs';
 import { $RefParser } from '@apidevtools/json-schema-ref-parser';
 import type { CommandOptions } from '../cli.ts';
-import { preprocOptions } from '../lib/optionHelpers.ts';
-import type { RouteOptions } from '../lib/typesAndGuards.ts';
+import { preprocOptions, type StdOptions } from '../lib/optionHelpers.ts';
+import { isReferenceObject, type OASPathsObject, type RouteOptions } from '../lib/typesAndGuards.ts';
 import type {
 	OASDocument,
 	OASSchemaObject,
 	OASParameterObject,
 	OASNonArraySchemaObject,
-	OASPathItem,
 	OASOperationObject,
+	OASPathItemObject,
+	OASReferenceObject,
 } from '../lib/typesAndGuards.ts';
 import path from 'node:path';
 
@@ -97,15 +98,78 @@ function getParameterSchema(paramType: string, parameters: OASParameterObject[])
 
 export async function oas2ro(opts: CommandOptions) {
 	const stdOpts = preprocOptions(opts);
-	const dirname = path.dirname(stdOpts.inPathTx);
+	const absDir = path.resolve(path.dirname(stdOpts.inPathTx));
 
 	const rp = new $RefParser();
-
 	const schema = (
 		stdOpts.derefFl === true ? await rp.dereference(stdOpts.inPathTx) : await rp.parse(stdOpts.inPathTx)
 	) as OASDocument;
-	if (!schema.paths) throw new Error('oas2ro ERROR: schema does not include paths.');
 
+	if (schema.paths === undefined) throw new Error('oas2ro ERROR: schema does not include paths.');
+
+	// If we dereferenced, paths are okay as-is. If not, we need to partially dereference to make handling easier.
+	if (stdOpts.derefFl === false) await partialDerefPaths(stdOpts, absDir, schema);
+
+	console.log(JSON.stringify(schema.paths, null, 3));
+}
+
+async function partialDerefPaths(stdOpts: StdOptions, absDir: string, schema: OASDocument) {
+	if (schema.paths === undefined) return; // type guard so TS knows it isn't undefined
+
+	// resolved makes it easier to get referenced content
+	const rp = new $RefParser();
+	const resolved = await rp.resolve(stdOpts.inPathTx);
+
+	const normPath = (refFilePath: string, refPath: string) => path.normalize(`${refFilePath}/${refPath}`);
+	const addRefedContent = (base: OASReferenceObject, refFilePath: string) => {
+		const refedContent = resolved.get(normPath(refFilePath, base.$ref)) as object;
+		return { $ref: normPath(refFilePath, base.$ref), ...structuredClone(refedContent) };
+	};
+
+	for (const [pathURL, pathItemRaw] of Object.entries(schema.paths)) {
+		// merge the ref into the path
+		let refFilePath = '';
+
+		// get any refed Path Items
+		if (isReferenceObject(pathItemRaw)) {
+			const refFile = path.normalize(`${absDir}/${pathItemRaw.$ref.split('#')[0]}`);
+			refFilePath = path.dirname(refFile); // other refs from this file will be relative to this path
+			const refedContent = resolved.get(refFile);
+			schema.paths[pathURL] = {
+				$ref: normPath(refFilePath, pathItemRaw.$ref),
+				...structuredClone(refedContent as object),
+			};
+		}
+		const schemaPath = schema.paths[pathURL] as OASPathItemObject;
+
+		// for each operation in the PathItem
+		for (const opNm of Object.keys(schemaPath)) {
+			const opObj = schemaPath[opNm] as OASOperationObject;
+
+			// deref parameter objects into the schema
+			if (Array.isArray(opObj.parameters)) {
+				// ['a','b'].entries => [ [0, 'a'], [1, 'b'] ]
+				for (const [idx, param] of opObj.parameters.entries()) {
+					if (isReferenceObject(param)) {
+						schemaPath[opNm].parameters[idx] = addRefedContent(param as OASReferenceObject, refFilePath);
+					}
+				}
+			}
+
+			// deref response object (only one) into the schema
+			if (typeof opObj.responses === 'object' && isReferenceObject(opObj.responses)) {
+				schemaPath[opNm].responses = addRefedContent(opObj.responses, refFilePath);
+			}
+
+			// deref requestBody object (only one) into the schema
+			if (typeof opObj.requestBody === 'object' && isReferenceObject(opObj.requestBody)) {
+				schemaPath[opNm].requestBody = addRefedContent(opObj.requestBody, refFilePath);
+			}
+		}
+	}
+}
+
+async function oas2ro_deref(stdOpts: StdOptions, dirname: string, schema: OASPathsObject) {
 	/**
 	 * if derefFl === false
 	 *

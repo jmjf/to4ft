@@ -87,8 +87,10 @@ export type OASDocument = OpenAPIV3.Document | OpenAPIV3_1.Document;
 export type OASHeaderObject = OpenAPIV3.HeaderObject | OpenAPIV3_1.HeaderObject;
 export type OASNonArraySchemaObject = OpenAPIV3.NonArraySchemaObject | OpenAPIV3_1.NonArraySchemaObject;
 export type OASOperationObject = OpenAPIV3.OperationObject | OpenAPIV3_1.OperationObject;
-export type OASPathItem = OpenAPIV3.PathItemObject | OpenAPIV3_1.PathItemObject;
+export type OASPathsObject = OpenAPIV3.PathsObject | OpenAPIV3_1.PathsObject;
+export type OASPathItemObject = OpenAPIV3.PathItemObject | OpenAPIV3_1.PathItemObject;
 export type OASParameterObject = OpenAPIV3.ParameterObject | OpenAPIV3_1.ParameterObject;
+export type OASReferenceObject = OpenAPIV3.ReferenceObject | OpenAPIV3_1.ReferenceObject;
 export type OASRequestBodyObject = OpenAPIV3.RequestBodyObject | OpenAPIV3_1.RequestBodyObject;
 export type OASResponseObject = OpenAPIV3.ResponseObject | OpenAPIV3_1.ResponseObject;
 export type OASResponsesObject = OpenAPIV3.ResponsesObject | OpenAPIV3_1.ResponsesObject; // 200: ResponseObject for example
@@ -113,6 +115,10 @@ export function isOASDocument(schema: OASDocument): schema is OASDocument {
 		Object.keys(schema.components).filter((k) => openapiComponentsKeys.includes(k)).length > 0
 		// If schema.components contains at least one key the type supports
 	);
+}
+
+export function isReferenceObject(schema: unknown): schema is OASReferenceObject {
+	return typeof (schema as OASReferenceObject).$ref === 'string';
 }
 
 /**
