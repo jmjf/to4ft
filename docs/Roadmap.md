@@ -46,8 +46,8 @@ Currently, generates dereferenced `RouteOptions` object. Code is still WIP, but 
     - [x] headers
       - [x] exclude headers OpenAPI says to ignore
     - [x] params
-    - [ ] body (work in progress)
-    - [ ] response
+    - [x] body (work in progress)
+    - [x] response
     - [x] remove keywords AJV doesn't recognize
 - [x] write files to output directory
 - [ ] build reference maintaining version

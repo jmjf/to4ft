@@ -12,38 +12,22 @@ See `docs/Roadmap.md` for details of what's done
 - [ ] `--camel` -- force camelcase (squeeze out `_` in names)
 - [ ] tests
 - [ ] documentation (work in progress)
+- [ ] redo options to use config file; `oas2ro` needs `oas2tb` options to generate references and imports
 
 ### `oas2tb`
 
-Nothing pending
+Nothing pending.
 
 ### `oas2ro`
 
-Currently, generates dereferenced `RouteOptions` object. Code is still WIP, but output so far looks decent.
+This part of the code is a hot mess at the moment. Reference-maintaining version is close to working.
 
-- [x] write command spec
-- [x] read file or directory
-- [x] find paths to process
-- [x] generate partial `RouteOptions`
-  - [x] url
-  - [x] method
-  - [x] operationId
-  - [x] tags
-  - [x] summary
-  - [x] description
-  - [x] schema
-    - [x] querystring
-    - [x] headers (excludes headers OpenAPI says to ignore)
-    - [x] params
-    - [x] body
-    - [x] response
-    - [x] remove keywords AJV doesn't recognize
-- [x] write files to output directory
-- [ ] build reference maintaining version **WIP**
-- [ ] refactor code
-  - process schemas so we can control documentation, unsafe terms, etc.
-  - probably similar to TypeBox generating code but generates JSON Schema
-- [ ] write TypesScript/JavaScript, not JSON
+- [ ] when generating code descending into objects, generate imports and bubble them up so they can be added
+- [ ] redo options to use a config file (dupe of above)
+- [ ] write individual files
+- [ ] rewrite deref code in light of ref-maintaining work (should have solved most of the issues)
+- [ ] find and flatten overlaps between ref/deref
+- [ ] improve unsafe keyword handling
 
 ### Demo server
 
@@ -59,13 +43,13 @@ I've seen examples using TypeBox to define the API schema and exporting JSON Sch
 
 - Does not format output. You've already configured your preferred style for your preferred code formatter (`@biomejs/biome`, `prettier`, something else). You need to format the code anyway so it matches your style. Why add the overhead of a formatter and format in a style you're going to reformat anyway? Write an npm script to generate and format generated code and lint-fix generated code (next point).
 
-- Writes a standard set of TypeBox imports to all output files. If your linter warns or errors on unused imports, run lint on the output directory with the fix option to strip unused imports. If your linter can't fix unused imports, consider getting a linter that can.
+- Writes a standard set of TypeBox imports to all output files. If your linter warns or errors on unused imports, run lint with fix on the output directory to strip unused imports. If your linter can't fix simple, safe issues like this, consider getting a linter that can.
 
-Also see, `docs/AssumptionsRecommendations.md` for base assumptions and recommendations on how to build specs to get the most from this tool.
+Also see, `docs` for base assumptions and recommendations on how to build specs to get the most from this tool.
 
 ### In `oas2tb`
 
-- Convert items in `components` only. Items in paths/callbacks may be unnamed
+- Convert items in `components` only. Items in paths/callbacks may be unnamed.
 - Convert `headers`, `parameters`, `requestBodies`, `responses`, and `schemas` only. Other items do not produce types
   - Currently, `requestBodies` handling is not working. Use `schemas` to define the request body.
   - Redocly's lint doesn't like my `headers` definitions. To be investigated. Use `parameters` to define whole header parameters for now.
