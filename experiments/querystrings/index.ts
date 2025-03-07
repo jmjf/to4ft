@@ -54,11 +54,13 @@ fastify.route({
          type: 'object',
          properties: {
             p1: {
+               description: 'p1 description',
                type: 'string',
                // nullable: true // valid
                // example: 'test' // valid
                // format: 'date-time' // valid
                // default: 'abc' // valid
+               // description: 'p1 description' // valid
                // xml: {name: 'test'} // invalid
                // externalDocs: { url: 'https://example.com'} // invalid
             },
@@ -190,3 +192,6 @@ const start = async() => {
 }
 
 start();
+
+
+const getUsersByQueryRouteOptions = {url: '/users',method: 'GET',operationId: 'getUsersByQuery',tags: ["Users","Other"],summary: "GET user endpoint for tson issue",schema: {headers: {type: 'object', properties:{'x-test-header': {type: "string",},}},querystring: {type: 'object', properties:{'userQuery': {title: "UserQuery",type: "object",description: "this description will not be preserved",required: ["userId","userNm"],properties: {"userId":{"$ref":"Fields.yaml#/components/schemas/UserId"},"userNm":{"$ref":"Fields.yaml#/components/schemas/UserNm"}},},}},}} 

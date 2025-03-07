@@ -9,32 +9,163 @@ import type {
 	OASParameterObject,
 	OASNonArraySchemaObject,
 	OASOperationObject,
-	OASPathItemObject,
-	OASReferenceObject,
+	OASRequestBodyObject,
+	OASResponsesObject,
 } from '../lib/typesAndGuards.ts';
 import path from 'node:path';
+import {
+	cleanPath,
+	genAnnotationsForParam,
+	genEntriesCode,
+	genRefCode,
+	genRequestBodyCode,
+	genRequiredParams,
+	genResponsesCode,
+	hoistSchemas,
+	mergeParams,
+	partialDerefPaths,
+	stringArrayToCode,
+	toROName,
+} from '../lib/roCodeGenerators.ts';
+import { removeFromParameterEntries } from '../lib/consts.ts';
 
-// make OpenAPI path Fastify friendly
-function cleanPath(path: string): string {
-	let cleanPath = path.replace('{', ':');
-	cleanPath = cleanPath.replace('}', '');
-	return cleanPath;
+export async function oas2ro(opts: CommandOptions) {
+	const stdOpts = preprocOptions(opts);
+	const absDir = path.resolve(path.dirname(stdOpts.inPathTx));
+
+	const rp = new $RefParser();
+	const oasDoc = (
+		stdOpts.derefFl === true ? await rp.dereference(stdOpts.inPathTx) : await rp.parse(stdOpts.inPathTx)
+	) as OASDocument;
+	if (oasDoc.paths === undefined) throw new Error('oas2ro ERROR: schema does not include paths.');
+
+	// If we dereferenced, paths are okay as-is. If not, we need to partially dereference to make handling easier.
+	let oasPaths = oasDoc.paths;
+	if (stdOpts.derefFl === false) oasPaths = await partialDerefPaths(stdOpts, absDir, oasDoc.paths);
+
+	console.log(JSON.stringify(oasPaths, null, 3));
+	let output = '';
+	for (const [pathURL, pathItemRaw] of Object.entries(oasPaths)) {
+		if (pathItemRaw === undefined) continue;
+		for (const [opMethod, opObjRaw] of Object.entries(pathItemRaw)) {
+			console.log('******', pathURL, opMethod);
+			if (opMethod === '$ref') continue;
+
+			const opObj = opObjRaw as OASOperationObject;
+			let roCode = '';
+			const outFile = `${stdOpts.outPathTx}/${opObj.operationId}${stdOpts.suffixTx}.ts`;
+			const imports = [] as string[];
+
+			roCode += `const ${toROName(opObj.operationId as string, stdOpts)} = {`;
+			roCode += `url: '${cleanPath(pathURL)}',`;
+			roCode += `method: '${opMethod.toUpperCase()}',`;
+			roCode += opObj.operationId ? `operationId: '${opObj.operationId}',` : '';
+			roCode += Array.isArray(opObj.tags) && opObj.tags.length > 0 ? `tags: ${stringArrayToCode(opObj.tags)},` : '';
+			roCode += typeof opObj.description === 'string' ? `description: ${JSON.stringify(opObj.description)},` : '';
+			roCode += typeof opObj.summary === 'string' ? `summary: ${JSON.stringify(opObj.summary)},` : '';
+			roCode += opObj.deprecated === true ? 'deprecated: true,' : '';
+			roCode += 'schema: {';
+
+			// parameters
+
+			if (Array.isArray(opObj.parameters) && opObj.parameters.length > 0) {
+				// in: path (params)
+				const paramsCode = genParameterCode('path', opObj.parameters as OASParameterObject[], stdOpts, imports);
+				roCode += paramsCode.length > 0 ? `params: {${paramsCode}},` : '';
+
+				// in: header (headers)
+				const headersCode = genParameterCode('header', opObj.parameters as OASParameterObject[], stdOpts, imports);
+				roCode += headersCode.length > 0 ? `headers: {${headersCode}},` : '';
+
+				// in: query (querystring)
+				const querystringCode = genParameterCode(
+					'query',
+					opObj.parameters as OASParameterObject[],
+					stdOpts,
+					imports,
+				);
+				roCode += querystringCode.length > 0 ? `querystring: {${querystringCode}},` : '';
+			}
+			// requestBody (body)
+			const {
+				code: bodyCode,
+				importTx: bodyImport,
+				isRef: bodyIsRef,
+			} = genRequestBodyCode(opObj.requestBody as OASRequestBodyObject, stdOpts);
+			roCode += bodyCode.length > 0 ? `body: ${!bodyIsRef ? '{' : ''}${bodyCode}${!bodyIsRef ? '}' : ''},` : '';
+			if (bodyImport.length > 0 && bodyIsRef) imports.push(bodyImport);
+
+			// responses (response)
+			const {
+				code: responseCode,
+				importTx: responseImport,
+				isRef: responseIsRef,
+			} = genResponsesCode(opObj.responses as OASResponsesObject, stdOpts);
+			console.log('RESPONSE', responseCode, responseImport, responseIsRef);
+			roCode +=
+				responseCode.length > 0
+					? `response: ${!responseIsRef ? '{' : ''}${responseCode}${!responseIsRef ? '}' : ''},`
+					: '';
+			if (responseImport.length > 0 && responseIsRef) imports.push(responseImport);
+
+			roCode += '}'; // schema
+			roCode += '}'; // RouteOptions
+			console.log(imports, '\n', roCode, '\n');
+			output += `${imports.join(';\n')};\n${roCode};\n`;
+		}
+	}
+	writeFileSync('/workspace/example/ro-wip.ts', output);
 }
-const removeFromParameterEntries = {
-	in: undefined,
-	name: undefined,
-	schema: undefined,
-	allowEmptyValue: undefined,
-	content: undefined,
-	required: undefined,
-	discriminator: undefined,
-	default: undefined,
-	xml: undefined,
-	externalDocs: undefined,
-	explode: undefined,
-	style: undefined,
-	allowReserved: undefined,
-};
+
+// handles parameters that can be single-value -- in:path, in:header
+function genParameterCode(
+	paramIn: string,
+	parameters: OASParameterObject[],
+	opts: StdOptions,
+	imports: string[],
+): string {
+	const functionNm = 'genParameterCode';
+
+	let params = parameters.filter((s) => s.in === paramIn);
+	params = hoistSchemas(params, paramIn === 'query') as OASParameterObject[];
+	const mergedParams = mergeParams(params, paramIn === 'query');
+
+	if (mergedParams.length === 0) return '';
+	// console.log('MERGED', paramIn, JSON.stringify(mergedParams, null, 3));
+
+	let paramCode = '';
+	for (const [paramNm, paramObj] of mergedParams) {
+		if (!paramObj.schema) {
+			console.log(`${functionNm} ERROR: skipping no-schema parameter ${paramNm}`);
+			continue;
+		}
+
+		// OpenAPI says to ignore these header parameters
+		if (paramIn === 'header' && ['Accept', 'Content-Type', 'Authorization'].includes(paramNm)) {
+			console.log(`${functionNm} ERROR: skipping header named ${paramNm}`);
+			continue;
+		}
+
+		// put '' around names because headers may be invalid JS identifiers
+		paramCode += `'${paramNm}': `;
+		const schema = paramObj.schema as OASSchemaObject;
+
+		if (isReferenceObject(schema)) {
+			const { code, importTx } = genRefCode(schema.$ref, opts);
+			paramCode += `${code},`;
+			imports.push(importTx);
+		} else {
+			paramCode += '{';
+			paramCode += genAnnotationsForParam(paramObj, opts);
+			paramCode += genEntriesCode(Object.entries(schema), opts);
+			paramCode += '},';
+		}
+	}
+	if (paramCode.length > 0) {
+		paramCode = `type: 'object', properties:{${paramCode}}, ${genRequiredParams(mergedParams)}`;
+	}
+	return paramCode;
+}
 
 // I think I can handle query (yes), path (yes), and header (yes) in one function. TBD.
 function getParameterSchema(paramType: string, parameters: OASParameterObject[]) {
@@ -94,79 +225,6 @@ function getParameterSchema(paramType: string, parameters: OASParameterObject[])
 				properties: Object.fromEntries(paramEntries),
 				...requiredObj,
 			};
-}
-
-export async function oas2ro(opts: CommandOptions) {
-	const stdOpts = preprocOptions(opts);
-	const absDir = path.resolve(path.dirname(stdOpts.inPathTx));
-
-	const rp = new $RefParser();
-	const schema = (
-		stdOpts.derefFl === true ? await rp.dereference(stdOpts.inPathTx) : await rp.parse(stdOpts.inPathTx)
-	) as OASDocument;
-
-	if (schema.paths === undefined) throw new Error('oas2ro ERROR: schema does not include paths.');
-
-	// If we dereferenced, paths are okay as-is. If not, we need to partially dereference to make handling easier.
-	if (stdOpts.derefFl === false) await partialDerefPaths(stdOpts, absDir, schema);
-
-	console.log(JSON.stringify(schema.paths, null, 3));
-}
-
-async function partialDerefPaths(stdOpts: StdOptions, absDir: string, schema: OASDocument) {
-	if (schema.paths === undefined) return; // type guard so TS knows it isn't undefined
-
-	// resolved makes it easier to get referenced content
-	const rp = new $RefParser();
-	const resolved = await rp.resolve(stdOpts.inPathTx);
-
-	const normPath = (refFilePath: string, refPath: string) => path.normalize(`${refFilePath}/${refPath}`);
-	const addRefedContent = (base: OASReferenceObject, refFilePath: string) => {
-		const refedContent = resolved.get(normPath(refFilePath, base.$ref)) as object;
-		return { $ref: normPath(refFilePath, base.$ref), ...structuredClone(refedContent) };
-	};
-
-	for (const [pathURL, pathItemRaw] of Object.entries(schema.paths)) {
-		// merge the ref into the path
-		let refFilePath = '';
-
-		// get any refed Path Items
-		if (isReferenceObject(pathItemRaw)) {
-			const refFile = path.normalize(`${absDir}/${pathItemRaw.$ref.split('#')[0]}`);
-			refFilePath = path.dirname(refFile); // other refs from this file will be relative to this path
-			const refedContent = resolved.get(refFile);
-			schema.paths[pathURL] = {
-				$ref: normPath(refFilePath, pathItemRaw.$ref),
-				...structuredClone(refedContent as object),
-			};
-		}
-		const schemaPath = schema.paths[pathURL] as OASPathItemObject;
-
-		// for each operation in the PathItem
-		for (const opNm of Object.keys(schemaPath)) {
-			const opObj = schemaPath[opNm] as OASOperationObject;
-
-			// deref parameter objects into the schema
-			if (Array.isArray(opObj.parameters)) {
-				// ['a','b'].entries => [ [0, 'a'], [1, 'b'] ]
-				for (const [idx, param] of opObj.parameters.entries()) {
-					if (isReferenceObject(param)) {
-						schemaPath[opNm].parameters[idx] = addRefedContent(param as OASReferenceObject, refFilePath);
-					}
-				}
-			}
-
-			// deref response object (only one) into the schema
-			if (typeof opObj.responses === 'object' && isReferenceObject(opObj.responses)) {
-				schemaPath[opNm].responses = addRefedContent(opObj.responses, refFilePath);
-			}
-
-			// deref requestBody object (only one) into the schema
-			if (typeof opObj.requestBody === 'object' && isReferenceObject(opObj.requestBody)) {
-				schemaPath[opNm].requestBody = addRefedContent(opObj.requestBody, refFilePath);
-			}
-		}
-	}
 }
 
 async function oas2ro_deref(stdOpts: StdOptions, dirname: string, schema: OASPathsObject) {
