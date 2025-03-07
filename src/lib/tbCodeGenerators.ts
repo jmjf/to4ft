@@ -34,7 +34,7 @@ import {
 	parseTypeName,
 	parseUnknown,
 	parseWithMultipleTypes,
-} from './codeParsers.ts';
+} from './tbCodeParsers.ts';
 
 export type CodeGenOpts = StdOptions & { refImports?: string[] };
 
@@ -213,8 +213,12 @@ export function recurseSchema(opts: StdOptions, schema: JSONSchema7Definition): 
  * UTILITIES
  */
 
-export function genExportedNm({ prefixTx }: StdOptions, schemaNm: string): string {
-	return `${prefixTx}${toUpperFirstChar(sanitizeName(schemaNm))}`;
+export function genExportedNm({ prefixTx, suffixTx }: StdOptions, schemaNm: string): string {
+	return `${prefixTx}${genExportFileNm(schemaNm)}`;
+}
+
+export function genExportFileNm(schemaNm: string): string {
+	return toUpperFirstChar(sanitizeName(schemaNm));
 }
 
 /**

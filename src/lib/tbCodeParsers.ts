@@ -1,5 +1,5 @@
 import type { JSONSchema7, JSONSchema7Type, JSONSchema7TypeName } from 'json-schema';
-import { type CodeGenOpts, genExportedNm, recurseSchema } from './codeGenerators.ts';
+import { type CodeGenOpts, genExportedNm, recurseSchema } from './tbCodeGenerators.ts';
 import {
 	type AnyOfSchema,
 	type AllOfSchema,
@@ -16,6 +16,7 @@ import {
 	isString,
 	isNumber,
 } from './typesAndGuards.ts';
+import { ajvUnsafeKeys, annotationKeys, stdIgnoreKeys } from './consts.ts';
 
 export function parseObject(opts: CodeGenOpts, schema: ObjectSchema) {
 	// schema is ObjectSchema
@@ -197,22 +198,6 @@ export function parseTypeName(
 	throw new Error(`Should never happen..? parseType got type: ${typeNm}`);
 }
 
-const stdIgnoreKeys = [
-	'title',
-	'type',
-	'items',
-	'allOf',
-	'anyOf',
-	'oneOf',
-	'not',
-	'properties',
-	'required',
-	'const',
-	'enum',
-	'$ref',
-];
-const annotationKeys = ['description', 'summary', 'example', 'examples', '$comment', 'deprecated'];
-const ajvUnsafeKeys = ['xml', 'externalDocs', 'name', 'in', 'allowEmptyValue', 'discriminator', 'required'];
 // TODO
 // [x] AJV accepts default on properties but not on objects -- remove in parseObject
 // [x] AJV doesn't accept required on properties but accepts on objects -- parseObject handles this case by adding optional if not required

@@ -121,6 +121,10 @@ export function isReferenceObject(schema: unknown): schema is OASReferenceObject
 	return typeof (schema as OASReferenceObject).$ref === 'string';
 }
 
+export function isSchemaObject(schema: unknown): schema is OASSchemaObject {
+	return typeof (schema as OASSchemaObject).type === 'string';
+}
+
 /**
  *
  * Selected types from Fastify's type definitions to support RouteOptions

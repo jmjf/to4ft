@@ -6,7 +6,7 @@ import {
 	genRefImportStatements,
 	genTypeBoxForPaths,
 	genTypeBoxForSchema,
-} from '../lib/codeGenerators.ts';
+} from '../lib/tbCodeGenerators.ts';
 import { preprocOptions, getRefPathNms, type StdOptions } from '../lib/optionHelpers.ts';
 
 export async function oas2tb(opts: CommandOptions) {
