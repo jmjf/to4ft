@@ -2,6 +2,7 @@ get:
   operationId: getUsersByQuery
   tags: 
     -  Users
+    -  Other
   security: []
   summary: GET user endpoint for tson issue
   parameters:

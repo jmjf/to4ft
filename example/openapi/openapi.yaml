@@ -17,7 +17,7 @@ tags:
     description: other stuff
 
 paths:
-  /comments/{commentId}:
+  /comments/{commentId}/{testParam}:
     $ref: paths/api_comments_commentId.yaml
   /posts/{postId}:
     $ref: paths/api_posts_postId.yaml
