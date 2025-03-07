@@ -11,8 +11,8 @@
   },
   "scripts": {
     "test": "",
-    "oas:lint": "npx @redocly/cli lint openapi/openapi.yaml",
-    "oas:doc": "npx @redocly/cli build-docs openapi/openapi.yaml -o=openapi/api-docs.html",
+    "oas:lint": "npx @redocly/cli lint example/openapi/openapi.yaml",
+    "oas:doc": "npx @redocly/cli build-docs example/openapi/openapi.yaml -o=example/openapi/api-docs.html",
     "predtb": "npm run build",
     "dtb": "./dist/src/cli.js oas2dtb -i example/openapi/openapi.yaml -o example/dtb && npm run check:ex",
     "prertb": "npm run build",
