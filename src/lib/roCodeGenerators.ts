@@ -98,27 +98,27 @@ export function genAnnotationsForParam(parameter: OASParameterObject, opts: StdC
 	return `${JSON.stringify(Object.fromEntries(validEntries)).slice(1, -1)},`;
 }
 
-export function genRequestBodyCode(requestBody: OASRequestBodyObject, opts: StdConfig) {
+export function genRequestBodyCode(requestBody: OASRequestBodyObject, imports: string[], opts: StdConfig) {
 	const res = { code: '', importTx: '', isRef: false };
 	if (!requestBody) return res;
 
 	if (isReferenceObject(requestBody)) {
-		return { ...genRefCode(requestBody.$ref, opts), isRef: true };
+		return { code: genRefCodeAndImport(requestBody.$ref, imports, opts), isRef: true };
 	}
 
 	// TODO: need to return any imports from genEntriesCode
-	return { ...res, code: genEntriesCode(Object.entries(requestBody), opts) };
+	return { ...res, code: genEntriesCode(Object.entries(requestBody), imports, opts) };
 }
 
-export function genResponsesCode(responses: OASResponsesObject, opts: StdConfig) {
+export function genResponsesCode(responses: OASResponsesObject, imports: string[], opts: StdConfig) {
 	const res = { code: '', importTx: '', isRef: false };
 	if (!responses) return res;
 
 	if (isReferenceObject(responses)) {
-		return { ...genRefCode(responses.$ref, opts), isRef: true };
+		return { code: genRefCodeAndImport(responses.$ref, imports, opts), isRef: true };
 	}
 	// TODO: need to return any imports from genEntriesCode
-	return { ...res, code: genEntriesCode(Object.entries(responses), opts) };
+	return { ...res, code: genEntriesCode(Object.entries(responses), imports, opts) };
 }
 
 // generated array of required parameter names
@@ -195,8 +195,8 @@ export async function partialDerefPaths(
 	return oasPaths;
 }
 
-// make OpenAPI path Fastify friendly
-export function cleanPath(pathURL: string): string {
+// make OpenAPI path URL Fastify friendly
+export function cleanPathURL(pathURL: string): string {
 	let cleanPath = pathURL.replaceAll('{', ':');
 	cleanPath = cleanPath.replaceAll('}', '');
 	return cleanPath;
@@ -206,7 +206,7 @@ export function stringArrayToCode(arr: string[]): string {
 	return `[${arr.map((s) => JSON.stringify(s)).join(',')}]`;
 }
 
-export function genValueCode(v: unknown, opts: StdConfig): string | unknown {
+export function genValueCode(v: unknown, imports: string[], opts: StdConfig): string | unknown {
 	if (typeof v === 'string') {
 		return JSON.stringify(v);
 	}
@@ -222,10 +222,10 @@ export function genValueCode(v: unknown, opts: StdConfig): string | unknown {
 	// TODO: Need to collect and return imports from getEntriesCode
 	if (typeof v === 'object') {
 		if (isReferenceObject(v)) {
-			const { code } = genRefCode(v.$ref, opts);
+			const code = genRefCodeAndImport(v.$ref, imports, opts);
 			return code;
 		}
-		return `{ ${genEntriesCode(Object.entries(v as object), opts)} }`;
+		return `{ ${genEntriesCode(Object.entries(v as object), imports, opts)} }`;
 	}
 
 	return v;
@@ -235,29 +235,28 @@ export function genValueCode(v: unknown, opts: StdConfig): string | unknown {
 // add import to imports but this code isn't wrapping
 //
 // TODO: need to collect and return imports to caller
-export function genEntriesCode(entries: [string, unknown][], opts: StdConfig) {
+export function genEntriesCode(entries: [string, unknown][], imports: string[], opts: StdConfig) {
 	let entriesCode = '';
-	const imports: string[] = [];
 	for (const [key, value] of entries) {
+		if (key.includes('/')) console.log('GEN ENTRIES', key, value);
 		if (key === '$ref') {
-			const { code, importTx } = genRefCode(value as string, opts);
-			imports.push(importTx);
+			const code = genRefCodeAndImport(value as string, imports, opts);
 			entriesCode += `${code},`;
 		} else {
-			entriesCode += `'${key}': ${genValueCode(value, opts)},`;
+			entriesCode += `'${key}': ${genValueCode(value, imports, opts)},`;
 		}
 	}
 	return entriesCode;
 }
 
-export function genRefCode(ref: string, stdConfig: StdConfig) {
+export function genRefCodeAndImport(ref: string, imports: string[], opts: StdConfig) {
+	console.log('GEN REF ref', ref);
 	// importing schemas from TypeBox output files, so nameType is schema
-	const { refedNm, refPathNm } = getRefNames(ref, stdConfig, path.relative(stdConfig.outPathTx, stdConfig.refPathTx));
+	const { refedNm, refPathNm } = getRefNames(ref, opts, path.relative(opts.outPathTx, opts.refPathTx));
+	console.log('GEN REF names', refedNm, refPathNm);
 	// TODO: correct import path
 	// TODO: fileNm needs type prefix (schemas, responses, etc.), so we need to split the ref here
 	// and may not follow standard "getNameFor" behavior
-	return {
-		importTx: `import {${refedNm} } from '${refPathNm}'`,
-		code: `${refedNm}`,
-	};
+	imports.push(`import {${refedNm} } from '${refPathNm}'`);
+	return refedNm;
 }

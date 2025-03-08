@@ -14,10 +14,10 @@ import type {
 } from '../lib/typesAndGuards.ts';
 import path from 'node:path';
 import {
-	cleanPath,
+	cleanPathURL,
 	genAnnotationsForParam,
 	genEntriesCode,
-	genRefCode,
+	genRefCodeAndImport,
 	genRequestBodyCode,
 	genRequiredParams,
 	genResponsesCode,
@@ -28,7 +28,7 @@ import {
 } from '../lib/roCodeGenerators.ts';
 import { removeFromParameterEntries } from '../lib/consts.ts';
 import type { Command } from 'commander';
-import { fileTypes, getFilenameFor, getNameFor, nameTypes, toCase } from '../lib/util.ts';
+import { dedupeArray, fileTypes, getFilenameFor, getNameFor, nameTypes, toCase } from '../lib/util.ts';
 
 export async function oas2ro(opts: CommandOptions, command: Command) {
 	const stdConfig = loadConfig(opts, command.name());
@@ -44,8 +44,8 @@ export async function oas2ro(opts: CommandOptions, command: Command) {
 	let oasPaths = oasDoc.paths;
 	if (stdConfig.oas2ro?.derefFl === false) oasPaths = await partialDerefPaths(stdConfig, absDir, oasDoc.paths);
 
-	console.log(JSON.stringify(oasPaths, null, 3));
-	let output = '';
+	// console.log(JSON.stringify(oasPaths, null, 3));
+
 	for (const [pathURL, pathItemRaw] of Object.entries(oasPaths)) {
 		if (pathItemRaw === undefined) continue;
 		for (const [opMethod, opObjRaw] of Object.entries(pathItemRaw)) {
@@ -58,7 +58,7 @@ export async function oas2ro(opts: CommandOptions, command: Command) {
 			const imports = [] as string[];
 
 			roCode += `const ${toCase.camel(getNameFor(opObj.operationId as string, nameTypes.routeOption, stdConfig))} = {`;
-			roCode += `url: '${cleanPath(pathURL)}',`;
+			roCode += `url: '${cleanPathURL(pathURL)}',`;
 			roCode += `method: '${opMethod.toUpperCase()}',`;
 			roCode += opObj.operationId ? `operationId: '${opObj.operationId}',` : '';
 			roCode += Array.isArray(opObj.tags) && opObj.tags.length > 0 ? `tags: ${stringArrayToCode(opObj.tags)},` : '';
@@ -93,34 +93,34 @@ export async function oas2ro(opts: CommandOptions, command: Command) {
 				roCode += querystringCode.length > 0 ? `querystring: {${querystringCode}},` : '';
 			}
 			// requestBody (body)
-			const {
-				code: bodyCode,
-				importTx: bodyImport,
-				isRef: bodyIsRef,
-			} = genRequestBodyCode(opObj.requestBody as OASRequestBodyObject, stdConfig);
+			const { code: bodyCode, isRef: bodyIsRef } = genRequestBodyCode(
+				opObj.requestBody as OASRequestBodyObject,
+				imports,
+				stdConfig,
+			);
 			roCode += bodyCode.length > 0 ? `body: ${!bodyIsRef ? '{' : ''}${bodyCode}${!bodyIsRef ? '}' : ''},` : '';
-			if (bodyImport.length > 0 && bodyIsRef) imports.push(bodyImport);
 
 			// responses (response)
-			const {
-				code: responseCode,
-				importTx: responseImport,
-				isRef: responseIsRef,
-			} = genResponsesCode(opObj.responses as OASResponsesObject, stdConfig);
-			console.log('RESPONSE', responseCode, responseImport, responseIsRef);
+			const { code: responseCode, isRef: responseIsRef } = genResponsesCode(
+				opObj.responses as OASResponsesObject,
+				imports,
+				stdConfig,
+			);
+			console.log('RESPONSE', responseCode, responseIsRef, imports, opObj.responses);
 			roCode +=
 				responseCode.length > 0
 					? `response: ${!responseIsRef ? '{' : ''}${responseCode}${!responseIsRef ? '}' : ''},`
 					: '';
-			if (responseImport.length > 0 && responseIsRef) imports.push(responseImport);
 
 			roCode += '}'; // schema
 			roCode += '}'; // RouteOptions
-			console.log(imports, '\n', roCode, '\n');
-			output += `${imports.join(';\n')};\n${roCode};\n`;
+			writeFileSync(
+				`${stdConfig.outPathTx}/${opObj.operationId ?? cleanPathURL(pathURL)}.ts`,
+				`${dedupeArray(imports).join(';\n')};\n${roCode};\n`,
+			);
 		}
 	}
-	writeFileSync('/workspace/example/ro-wip.ts', output);
+	// writeFileSync('/workspace/example/ro-wip.ts', output);
 }
 
 // handles parameters that can be single-value -- in:path, in:header
@@ -137,7 +137,7 @@ function genParameterCode(
 	const mergedParams = mergeParams(params, paramIn === 'query');
 
 	if (mergedParams.length === 0) return '';
-	// console.log('MERGED', paramIn, JSON.stringify(mergedParams, null, 3));
+	console.log('MERGED', paramIn, JSON.stringify(mergedParams, null, 3));
 
 	let paramCode = '';
 	for (const [paramNm, paramObj] of mergedParams) {
@@ -146,24 +146,22 @@ function genParameterCode(
 			continue;
 		}
 
-		// OpenAPI says to ignore these header parameters
 		if (paramIn === 'header' && ['Accept', 'Content-Type', 'Authorization'].includes(paramNm)) {
-			console.log(`${functionNm} ERROR: skipping header named ${paramNm}`);
+			console.log(`${functionNm} ERROR: skipping header named ${paramNm} per OpenAPI standards`);
 			continue;
 		}
 
-		// put '' around names because headers may be invalid JS identifiers
+		// may be invalid JS identifiers, so '' them.
 		paramCode += `'${paramNm}': `;
 		const schema = paramObj.schema as OASSchemaObject;
 
 		if (isReferenceObject(schema)) {
-			const { code, importTx } = genRefCode(schema.$ref, opts);
+			const code = genRefCodeAndImport(schema.$ref, imports, opts);
 			paramCode += `${code},`;
-			imports.push(importTx);
 		} else {
 			paramCode += '{';
 			paramCode += genAnnotationsForParam(paramObj, opts);
-			paramCode += genEntriesCode(Object.entries(schema), opts);
+			paramCode += genEntriesCode(Object.entries(schema), imports, opts);
 			paramCode += '},';
 		}
 	}
@@ -269,7 +267,7 @@ async function oas2ro_deref(stdOpts: StdConfig, dirname: string, schema: OASPath
 			console.log('opObj', opObj);
 
 			const routeOptions: RouteOptions = {
-				url: cleanPath(pathURL),
+				url: cleanPathURL(pathURL),
 				method: opMethod.toUpperCase(), // Fastify can accept a method array, but OpenAPI does one method at a time
 				operationId: opObj.operationId,
 				tags: opObj.tags,
