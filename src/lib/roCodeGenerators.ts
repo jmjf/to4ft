@@ -112,8 +112,10 @@ export function genResponsesCode(responses: OASResponsesObject, imports: string[
 	if (!responses) return { code: '', isRef: false };
 
 	if (isReferenceObject(responses)) {
+		// console.log('GEN RESPONSES REF', responses);
 		return { code: genRefCodeAndImport(responses.$ref, imports, opts), isRef: true };
 	}
+	// console.log('GEN RESPONSES NOREF', Object.entries(responses));
 	return { code: genEntriesCode(Object.entries(responses), imports, opts), isRef: false };
 }
 
@@ -167,8 +169,8 @@ export async function partialDerefPaths(
 		for (const opNm of Object.keys(oasPath)) {
 			const opObj = oasPath[opNm] as OASOperationObject;
 
-			// deref parameter objects into the oasDoc
 			if (Array.isArray(opObj.parameters)) {
+				// deref parameter objects into the oasDoc
 				// ['a','b'].entries => [ [0, 'a'], [1, 'b'] ]
 				for (const [idx, param] of opObj.parameters.entries()) {
 					if (isReferenceObject(param)) {
@@ -177,15 +179,30 @@ export async function partialDerefPaths(
 				}
 			}
 
-			// deref response object (only one) into the oasDoc
-			if (typeof opObj.responses === 'object' && isReferenceObject(opObj.responses)) {
+			if (isReferenceObject(opObj.responses)) {
+				// deref response object (only one) into the oasDoc
 				oasPath[opNm].responses = addRefedContent(opObj.responses, refFilePath);
 			}
 
-			// deref requestBody object (only one) into the oasDoc
-			if (typeof opObj.requestBody === 'object' && isReferenceObject(opObj.requestBody)) {
+			// if refed content doesn't have a schema, hoist it because we can't ref it
+			for (const [responseKey, responseObj] of Object.entries((opObj.responses ?? {}) as OASResponsesObject)) {
+				if (isReferenceObject(responseObj)) {
+					const refedContent = resolved.get(normPath(refFilePath, responseObj.$ref)) as object;
+					if (!isSchemaObject(refedContent)) {
+						oasPath[opNm].responses[responseKey] = {
+							...structuredClone(refedContent),
+							...responseObj, // keep anything from responseObj that overrides the refed content
+							$ref: undefined,
+						};
+					}
+				}
+			}
+
+			if (opObj.requestBody !== undefined && isReferenceObject(opObj.requestBody)) {
+				// deref requestBody object (only one) into the oasDoc
 				oasPath[opNm].requestBody = addRefedContent(opObj.requestBody, refFilePath);
 			}
+			// ASSUMPTION: requestBody refs won't be to a no-schema object
 		}
 	}
 	return oasPaths;
@@ -217,6 +234,7 @@ export function genValueCode(v: unknown, imports: string[], opts: StdConfig): st
 
 	if (typeof v === 'object') {
 		if (isReferenceObject(v)) {
+			// console.log('GEN VALUE', v, imports);
 			const code = genRefCodeAndImport(v.$ref, imports, opts);
 			return code;
 		}
@@ -228,13 +246,14 @@ export function genValueCode(v: unknown, imports: string[], opts: StdConfig): st
 
 export function genEntriesCode(entries: [string, unknown][], imports: string[], opts: StdConfig) {
 	let entriesCode = '';
+	// console.log('GEN ENTRIES entries', entries);
 	for (const [key, value] of entries) {
-		if (key.includes('/')) console.log('GEN ENTRIES', key, value);
-		if (key === '$ref') {
+		// console.log('GEN ENTRIES', key, value);
+		if (key !== '$ref') {
+			entriesCode += `'${key}': ${genValueCode(value, imports, opts)},`;
+		} else if (typeof value === 'string') {
 			const code = genRefCodeAndImport(value as string, imports, opts);
 			entriesCode += `${code},`;
-		} else {
-			entriesCode += `'${key}': ${genValueCode(value, imports, opts)},`;
 		}
 	}
 	return entriesCode;

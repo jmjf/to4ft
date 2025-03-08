@@ -118,7 +118,7 @@ export function isOASDocument(schema: OASDocument): schema is OASDocument {
 }
 
 export function isReferenceObject(schema: unknown): schema is OASReferenceObject {
-	return typeof (schema as OASReferenceObject).$ref === 'string';
+	return typeof (schema as OASReferenceObject)?.$ref === 'string';
 }
 
 export function isSchemaObject(schema: unknown): schema is OASSchemaObject {
