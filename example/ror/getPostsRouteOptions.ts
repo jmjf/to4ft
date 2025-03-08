@@ -1,5 +1,6 @@
 import { PostsResponseSchema } from '../tb-r/schemas_PostsResponse.ts';
-const getPosts = {
+
+export const getPostsRouteOptions = {
 	url: '/posts',
 	method: 'GET',
 	operationId: 'getPosts',

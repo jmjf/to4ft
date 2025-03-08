@@ -2,7 +2,8 @@ import { HTTP404NotFoundSchema } from '../tb-r/responses_HTTP404NotFound.ts';
 import { HTTP500InternalServerErrorSchema } from '../tb-r/responses_HTTP500InternalServerError.ts';
 import { CommentSchema } from '../tb-r/schemas_Comment.ts';
 import { CommentIdSchema } from '../tb-r/schemas_CommentId.ts';
-const getCommentById = {
+
+export const getCommentByIdRouteOptions = {
 	url: '/comments/:commentId/:testParam',
 	method: 'GET',
 	operationId: 'getCommentById',

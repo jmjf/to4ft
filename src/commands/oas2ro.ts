@@ -58,7 +58,7 @@ export async function oas2ro(opts: CommandOptions, command: Command) {
 			const imports = [] as string[];
 
 			const roNm = toCase.camel(getNameFor(opObj.operationId as string, nameTypes.routeOption, stdConfig));
-			roCode += `const ${roNm} = {`;
+			roCode += `export const ${roNm} = {`;
 			roCode += `url: '${cleanPathURL(pathURL)}',`;
 			roCode += `method: '${opMethod.toUpperCase()}',`;
 			roCode += opObj.operationId ? `operationId: '${opObj.operationId}',` : '';
@@ -115,7 +115,7 @@ export async function oas2ro(opts: CommandOptions, command: Command) {
 
 			roCode += '}'; // schema
 			roCode += '}'; // RouteOptions
-			writeFileSync(`${stdConfig.outPathTx}/${roNm}.ts`, `${dedupeArray(imports).join(';\n')};\n${roCode};\n`);
+			writeFileSync(`${stdConfig.outPathTx}/${roNm}.ts`, `${dedupeArray(imports).join(';\n')};\n\n${roCode};\n`);
 		}
 	}
 	// writeFileSync('/workspace/example/ro-wip.ts', output);
@@ -193,7 +193,7 @@ function getParameterSchema(paramType: string, parameters: OASParameterObject[])
 		// TODO: Support $ref
 		// Dereferenced schemas should have none
 		// For parsed schemas, by the time we get here, we should just need to convert $ref paths to output paths.
-		if (Object.hasOwn(param.schema, '$ref')) {
+		if (isReferenceObject(param.schema)) {
 			console.log(`getParameterSchema WARN: query is $ref, ${param.schema}`);
 			continue;
 		}

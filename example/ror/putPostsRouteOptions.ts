@@ -1,6 +1,7 @@
 import { PostRequestBodySchema } from '../tb-r/requestBodies_PostRequestBody.ts';
 import { PostsResponseSchema } from '../tb-r/schemas_PostsResponse.ts';
-const putPosts = {
+
+export const putPostsRouteOptions = {
 	url: '/posts',
 	method: 'POST',
 	operationId: 'putPosts',

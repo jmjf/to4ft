@@ -1,6 +1,7 @@
 import { PostSchema } from '../tb-r/schemas_Post.ts';
 import { PostIdSchema } from '../tb-r/schemas_PostId.ts';
-const getPostById = {
+
+export const getPostByIdRouteOptions = {
 	url: '/posts/:postId',
 	method: 'GET',
 	operationId: 'getPostById',

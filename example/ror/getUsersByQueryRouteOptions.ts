@@ -1,7 +1,8 @@
 import { XTestHeaderSchema } from '../tb-r/headers_XTestHeader.ts';
 import { UserSchema } from '../tb-r/schemas_User.ts';
 import { UserIdSchema } from '../tb-r/schemas_UserId.ts';
-const getUsersByQuery = {
+
+export const getUsersByQueryRouteOptions = {
 	url: '/users',
 	method: 'GET',
 	operationId: 'getUsersByQuery',

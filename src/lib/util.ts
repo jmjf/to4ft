@@ -84,7 +84,7 @@ export const nameTypes = {
 	schema: 'schema',
 	type: 'type',
 	routeOption: '',
-	none: '',
+	none: 'NONE',
 } as const;
 type NameType = (typeof nameTypes)[keyof typeof nameTypes];
 
@@ -112,7 +112,9 @@ export function getFilenameFor(fileType: string, name: string, nameType: NameTyp
 	const configToUse = config[fileType === fileTypes.tbOut ? 'oas2tb' : 'oas2ro'];
 	if (!configToUse) throw new Error(`getFilenameFor ERROR cannot get config to use for ${fileType}`);
 
-	return `${getNameFor(name, nameType, config)}.${configToUse[fileType] ?? 'unk'}`;
+	const fileNm = nameType === nameTypes.none ? name : getNameFor(name, nameType, config);
+
+	return `${fileNm}.${configToUse[fileType] ?? 'unk'}`;
 }
 
 export function getTypeBoxFilenameFor(componentType: string, objNm: string, config: StdConfig) {

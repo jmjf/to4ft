@@ -1,6 +1,7 @@
 import { UserSchema } from '../tb-r/schemas_User.ts';
 import { UserIdSchema } from '../tb-r/schemas_UserId.ts';
-const getUserById = {
+
+export const getUserByIdRouteOptions = {
 	url: '/users/:userId',
 	method: 'GET',
 	operationId: 'getUserById',
