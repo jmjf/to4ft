@@ -57,7 +57,8 @@ export async function oas2ro(opts: CommandOptions, command: Command) {
 			const outFile = `${stdConfig.outPathTx}/${getFilenameFor(fileTypes.roOut, opObj.operationId ?? `${opMethod}_${pathItemRaw}`, nameTypes.routeOption, stdConfig)}`;
 			const imports = [] as string[];
 
-			roCode += `const ${toCase.camel(getNameFor(opObj.operationId as string, nameTypes.routeOption, stdConfig))} = {`;
+			const roNm = toCase.camel(getNameFor(opObj.operationId as string, nameTypes.routeOption, stdConfig));
+			roCode += `const ${roNm} = {`;
 			roCode += `url: '${cleanPathURL(pathURL)}',`;
 			roCode += `method: '${opMethod.toUpperCase()}',`;
 			roCode += opObj.operationId ? `operationId: '${opObj.operationId}',` : '';
@@ -114,10 +115,7 @@ export async function oas2ro(opts: CommandOptions, command: Command) {
 
 			roCode += '}'; // schema
 			roCode += '}'; // RouteOptions
-			writeFileSync(
-				`${stdConfig.outPathTx}/${opObj.operationId ?? cleanPathURL(pathURL)}.ts`,
-				`${dedupeArray(imports).join(';\n')};\n${roCode};\n`,
-			);
+			writeFileSync(`${stdConfig.outPathTx}/${roNm}.ts`, `${dedupeArray(imports).join(';\n')};\n${roCode};\n`);
 		}
 	}
 	// writeFileSync('/workspace/example/ro-wip.ts', output);

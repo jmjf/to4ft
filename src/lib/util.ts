@@ -92,8 +92,8 @@ export function getNameFor(name: string, nameType: NameType, config: StdConfig):
 	const configToUse = config[nameType === nameTypes.routeOption ? 'oas2ro' : 'oas2tb'];
 	if (!configToUse) throw new Error(`getNameFor ERROR cannot get config to use for ${nameType}`);
 
-	const prefixTx = configToUse[`${nameType}PrefixTx`] ?? '';
-	const suffixTx = configToUse[`${nameType}SuffixTx`] ?? '';
+	const prefixTx = configToUse[`${toCase.camel(`${nameType}PrefixTx`)}`] ?? '';
+	const suffixTx = configToUse[`${toCase.camel(`${nameType}SuffixTx`)}`] ?? '';
 	return `${prefixTx}${name}${suffixTx}`;
 }
 
