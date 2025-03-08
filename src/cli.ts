@@ -7,69 +7,38 @@ import packageJSON from '../package.json' with { type: 'json' };
 
 export type CommandOptions = {
 	input: string;
-	outdir: string;
-	extension?: string;
-	prefix?: string;
-	keepanno: boolean;
-	ajvunsafe: boolean;
-	// oas2tb
-	keepref: boolean;
-	// oas2ro
-	deref: boolean;
-	suffix?: string;
+	outDir: string;
+	config?: string;
+	refDir?: string;
 };
 
 const outputOption = new Option(
-	'-o, --outdir <outDirNm>',
+	'-o, --outDir <outDirNm>',
 	'Path to directory to receive generated code',
 ).makeOptionMandatory(true);
 
-const prefixOption = new Option(
-	'--prefix <prefixTx>',
-	'Characters to add at the beginning of names; types will being with uppercase, schema consts will begin with lower case',
-).default('tb');
-
-const keepannoOption = new Option(
-	'--keepanno',
-	'Keep description, summary, example, examples, deprecated, $comment, and other annotation keywords. (Default is remove for a smaller schema.)',
-);
-
-const ajvunsafeOption = new Option(
-	'--ajvunsafe',
-	'Allow xml, externalDocs, name, in, allowEmptyValue, required, and discriminator keywords, which AJV does not support by default.',
-);
-
-const extensionOption = new Option('--extension <extTx>', 'Extension to add to import file names (no dot)').default(
-	'js',
+const configOption = new Option(
+	'-c, --config <configFilePath>',
+	'Path to config file to read; default is oas2tb4fastify.json',
 );
 
 function runProgram() {
 	program
 		.name('oas2tb4fastify')
-		.description('Utilities to convert OpenAPI specs to Typebox and Fastify RouteOptions')
+		.description('Convert OpenAPI specs to TypeBox and Fastify RouteOptions')
 		.version(packageJSON.version);
 
 	program
 		.command('oas2tb')
-		.description('Generate TypeBox schema consts and types from an OpenAPI spec. Input may be YAML or JSON Schema.')
+		.description('Generate TypeBox schema consts and types from an OpenAPI spec.')
 		.addOption(
 			new Option(
 				'-i, --input <inPathNm>',
-				'Path to an OpenAPI specification file or directory containing OpenAPI files to process',
+				'Path to an OpenAPI specification file or directory containing OpenAPI files to process (YAML or JSON Schema)',
 			).makeOptionMandatory(true),
 		)
 		.addOption(outputOption)
-		.addOption(prefixOption)
-		.addOption(keepannoOption)
-		.addOption(ajvunsafeOption)
-		.addOption(extensionOption.implies({ keepref: true }))
-		.addOption(
-			new Option('--keeprefs', 'Convert $ref keywords into clones of other TypeBox schemas (assumed to exist).')
-				.default(false)
-				.implies({
-					extension: 'js',
-				}),
-		)
+		.addOption(configOption)
 		.action(oas2tb);
 
 	program
@@ -80,16 +49,17 @@ function runProgram() {
 		.addOption(
 			new Option(
 				'-i, --input <inFileNm>',
-				'Path to an OpenAPI specification file to process. The file must contain a paths section.',
+				'Path to the YAML or JSON Schema OpenAPI specification file to process. The file must contain a paths section.',
 			).makeOptionMandatory(true),
 		)
+		.addOption(
+			new Option(
+				'-r, --refDir <refPathNm>',
+				'Required if config derefFl is false; directory from which to import referenced schemas; usually oas2tb outDir',
+			),
+		)
 		.addOption(outputOption)
-		.addOption(prefixOption)
-		.addOption(keepannoOption)
-		.addOption(ajvunsafeOption)
-		.addOption(extensionOption)
-		.addOption(new Option('--deref', 'Generate dereferenced RouteOptions that do not depend on TypeBox output'))
-		.addOption(new Option('--suffix <suffixTx>', 'Characters to add at the end of names').default('RouteOptions'))
+		.addOption(configOption)
 		.action(oas2ro);
 
 	program.parse();

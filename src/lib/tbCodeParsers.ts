@@ -1,5 +1,5 @@
 import type { JSONSchema7, JSONSchema7Type, JSONSchema7TypeName } from 'json-schema';
-import { type CodeGenOpts, genExportedNm, recurseSchema } from './tbCodeGenerators.ts';
+import { type CodeGenOpts, recurseSchema } from './tbCodeGenerators.ts';
 import {
 	type AnyOfSchema,
 	type AllOfSchema,
@@ -17,6 +17,7 @@ import {
 	isNumber,
 } from './typesAndGuards.ts';
 import { ajvUnsafeKeys, annotationKeys, stdIgnoreKeys } from './consts.ts';
+import { getRefNames } from './util.ts';
 
 export function parseObject(opts: CodeGenOpts, schema: ObjectSchema) {
 	// schema is ObjectSchema
@@ -151,18 +152,11 @@ export function parseWithMultipleTypes(opts: CodeGenOpts, schema: MultipleTypesS
 }
 
 export function parseRefName(opts: CodeGenOpts, schema: JSONSchema7 = {}): string {
-	const { refImports, extTx } = opts;
+	const refImports = opts.refImports;
+	const extTx = opts.oas2tb.extensionTx;
 	if (!schema.$ref || schema.$ref.length === 0 || !Array.isArray(refImports)) return '';
 
-	// get the refed name and add to imports
-	// ex: #/components/schemas/User -> import { ${prefixTx}User } from './schemasUser.ext'
-	// ex: ../User.yaml#/components/responses/UserResponse -> import { ${prefixTx}UserResponse}} from './responsesUserResponse.ext'
-	const splitRef = schema.$ref?.split('#'); // 0 = left of #, 1 = right of #
-	const splitRefPath = splitRef[splitRef.length - 1].split('/'); // 0 = empty, 1 = components, 2 = responses, 3 = UserResponse
-	const refedObjectNm = splitRefPath[splitRefPath.length - 1]; // UserResponse
-	const refedNm = genExportedNm(opts, refedObjectNm); // ${prefixTx}UserResponse
-	const refPathNm = `./${splitRefPath[splitRefPath.length - 2]}${refedObjectNm}.${extTx}`; // ./responsesUserResponse.${extTx}
-
+	const { refedNm, refPathNm } = getRefNames(schema.$ref, opts, '.');
 	refImports.push(`import { ${refedNm} } from '${refPathNm}';`);
 
 	const schemaOptionsTx = parseSchemaOptions(schema, opts);
@@ -202,9 +196,15 @@ export function parseTypeName(
 // [x] AJV accepts default on properties but not on objects -- remove in parseObject
 // [x] AJV doesn't accept required on properties but accepts on objects -- parseObject handles this case by adding optional if not required
 // [ ] AJV doesn't accept content in headers, params, querystring, but may accept for body and definitely for responses
-//     Redocly lint doesn't like content in requestBodies (though OpenAPI spec requires), so recommend against using
-function parseSchemaOptions(schema: JSONSchema7, { keepAnnoFl, ajvUnsafeFl }: CodeGenOpts): string | undefined {
-	const ignoreKeys = [...stdIgnoreKeys, ...(keepAnnoFl ? [] : annotationKeys), ...(ajvUnsafeFl ? [] : ajvUnsafeKeys)];
+function parseSchemaOptions(
+	schema: JSONSchema7,
+	{ keepAnnotationsFl, allowUnsafeKeywordsFl }: CodeGenOpts,
+): string | undefined {
+	const ignoreKeys = [
+		...stdIgnoreKeys,
+		...(keepAnnotationsFl ? [] : annotationKeys),
+		...(allowUnsafeKeywordsFl ? [] : ajvUnsafeKeys),
+	];
 
 	const propertiesEntries = Object.entries(schema).filter(([key, _value]) => !ignoreKeys.includes(key));
 	if (propertiesEntries.length === 0) {

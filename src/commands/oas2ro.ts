@@ -1,7 +1,7 @@
 import { writeFileSync } from 'node:fs';
 import { $RefParser } from '@apidevtools/json-schema-ref-parser';
 import type { CommandOptions } from '../cli.ts';
-import { preprocOptions, type StdOptions } from '../lib/optionHelpers.ts';
+import { loadConfig, type StdConfig } from '../lib/config.ts';
 import { isReferenceObject, type OASPathsObject, type RouteOptions } from '../lib/typesAndGuards.ts';
 import type {
 	OASDocument,
@@ -25,23 +25,24 @@ import {
 	mergeParams,
 	partialDerefPaths,
 	stringArrayToCode,
-	toROName,
 } from '../lib/roCodeGenerators.ts';
 import { removeFromParameterEntries } from '../lib/consts.ts';
+import type { Command } from 'commander';
+import { fileTypes, getFilenameFor, getNameFor, nameTypes, toCase } from '../lib/util.ts';
 
-export async function oas2ro(opts: CommandOptions) {
-	const stdOpts = preprocOptions(opts);
-	const absDir = path.resolve(path.dirname(stdOpts.inPathTx));
+export async function oas2ro(opts: CommandOptions, command: Command) {
+	const stdConfig = loadConfig(opts, command.name());
+	const absDir = path.resolve(path.dirname(stdConfig.inPathTx));
 
 	const rp = new $RefParser();
 	const oasDoc = (
-		stdOpts.derefFl === true ? await rp.dereference(stdOpts.inPathTx) : await rp.parse(stdOpts.inPathTx)
+		stdConfig.oas2ro?.derefFl === true ? await rp.dereference(stdConfig.inPathTx) : await rp.parse(stdConfig.inPathTx)
 	) as OASDocument;
 	if (oasDoc.paths === undefined) throw new Error('oas2ro ERROR: schema does not include paths.');
 
 	// If we dereferenced, paths are okay as-is. If not, we need to partially dereference to make handling easier.
 	let oasPaths = oasDoc.paths;
-	if (stdOpts.derefFl === false) oasPaths = await partialDerefPaths(stdOpts, absDir, oasDoc.paths);
+	if (stdConfig.oas2ro?.derefFl === false) oasPaths = await partialDerefPaths(stdConfig, absDir, oasDoc.paths);
 
 	console.log(JSON.stringify(oasPaths, null, 3));
 	let output = '';
@@ -53,10 +54,10 @@ export async function oas2ro(opts: CommandOptions) {
 
 			const opObj = opObjRaw as OASOperationObject;
 			let roCode = '';
-			const outFile = `${stdOpts.outPathTx}/${opObj.operationId}${stdOpts.suffixTx}.ts`;
+			const outFile = `${stdConfig.outPathTx}/${getFilenameFor(fileTypes.roOut, opObj.operationId ?? `${opMethod}_${pathItemRaw}`, nameTypes.routeOption, stdConfig)}`;
 			const imports = [] as string[];
 
-			roCode += `const ${toROName(opObj.operationId as string, stdOpts)} = {`;
+			roCode += `const ${toCase.camel(getNameFor(opObj.operationId as string, nameTypes.routeOption, stdConfig))} = {`;
 			roCode += `url: '${cleanPath(pathURL)}',`;
 			roCode += `method: '${opMethod.toUpperCase()}',`;
 			roCode += opObj.operationId ? `operationId: '${opObj.operationId}',` : '';
@@ -70,18 +71,23 @@ export async function oas2ro(opts: CommandOptions) {
 
 			if (Array.isArray(opObj.parameters) && opObj.parameters.length > 0) {
 				// in: path (params)
-				const paramsCode = genParameterCode('path', opObj.parameters as OASParameterObject[], stdOpts, imports);
+				const paramsCode = genParameterCode('path', opObj.parameters as OASParameterObject[], stdConfig, imports);
 				roCode += paramsCode.length > 0 ? `params: {${paramsCode}},` : '';
 
 				// in: header (headers)
-				const headersCode = genParameterCode('header', opObj.parameters as OASParameterObject[], stdOpts, imports);
+				const headersCode = genParameterCode(
+					'header',
+					opObj.parameters as OASParameterObject[],
+					stdConfig,
+					imports,
+				);
 				roCode += headersCode.length > 0 ? `headers: {${headersCode}},` : '';
 
 				// in: query (querystring)
 				const querystringCode = genParameterCode(
 					'query',
 					opObj.parameters as OASParameterObject[],
-					stdOpts,
+					stdConfig,
 					imports,
 				);
 				roCode += querystringCode.length > 0 ? `querystring: {${querystringCode}},` : '';
@@ -91,7 +97,7 @@ export async function oas2ro(opts: CommandOptions) {
 				code: bodyCode,
 				importTx: bodyImport,
 				isRef: bodyIsRef,
-			} = genRequestBodyCode(opObj.requestBody as OASRequestBodyObject, stdOpts);
+			} = genRequestBodyCode(opObj.requestBody as OASRequestBodyObject, stdConfig);
 			roCode += bodyCode.length > 0 ? `body: ${!bodyIsRef ? '{' : ''}${bodyCode}${!bodyIsRef ? '}' : ''},` : '';
 			if (bodyImport.length > 0 && bodyIsRef) imports.push(bodyImport);
 
@@ -100,7 +106,7 @@ export async function oas2ro(opts: CommandOptions) {
 				code: responseCode,
 				importTx: responseImport,
 				isRef: responseIsRef,
-			} = genResponsesCode(opObj.responses as OASResponsesObject, stdOpts);
+			} = genResponsesCode(opObj.responses as OASResponsesObject, stdConfig);
 			console.log('RESPONSE', responseCode, responseImport, responseIsRef);
 			roCode +=
 				responseCode.length > 0
@@ -121,7 +127,7 @@ export async function oas2ro(opts: CommandOptions) {
 function genParameterCode(
 	paramIn: string,
 	parameters: OASParameterObject[],
-	opts: StdOptions,
+	opts: StdConfig,
 	imports: string[],
 ): string {
 	const functionNm = 'genParameterCode';
@@ -227,7 +233,7 @@ function getParameterSchema(paramType: string, parameters: OASParameterObject[])
 			};
 }
 
-async function oas2ro_deref(stdOpts: StdOptions, dirname: string, schema: OASPathsObject) {
+async function oas2ro_deref(stdOpts: StdConfig, dirname: string, schema: OASPathsObject) {
 	/**
 	 * if derefFl === false
 	 *

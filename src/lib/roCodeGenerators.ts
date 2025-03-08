@@ -1,6 +1,6 @@
 import { $RefParser } from '@apidevtools/json-schema-ref-parser';
 import { annotationKeys } from './consts.ts';
-import type { StdOptions } from './optionHelpers.ts';
+import type { StdConfig } from './config.ts';
 import {
 	isReferenceObject,
 	isSchemaObject,
@@ -14,7 +14,7 @@ import {
 	type OASResponsesObject,
 } from './typesAndGuards.ts';
 import path from 'node:path';
-import { genExportedNm } from './tbCodeGenerators.ts';
+import { fileTypes, getFilenameFor, getNameFor, nameTypes } from './util.ts';
 
 // for object-type parameters, hoist the schema of the first property of the object
 // if the object has more than one properties log an error
@@ -92,13 +92,13 @@ export function mergeParams(parameters: OASParameterObject[], allowArray = false
 // generate annotation code for a parameter
 // Filter invalid keywords
 // JSON.stringify what's left
-export function genAnnotationsForParam(parameter: OASParameterObject, opts: StdOptions) {
+export function genAnnotationsForParam(parameter: OASParameterObject, opts: StdConfig) {
 	const param = structuredClone(parameter);
 	const validEntries = Object.entries(param).filter(([key, value]) => annotationKeys.includes(key));
 	return `${JSON.stringify(Object.fromEntries(validEntries)).slice(1, -1)},`;
 }
 
-export function genRequestBodyCode(requestBody: OASRequestBodyObject, opts: StdOptions) {
+export function genRequestBodyCode(requestBody: OASRequestBodyObject, opts: StdConfig) {
 	const res = { code: '', importTx: '', isRef: false };
 	if (!requestBody) return res;
 
@@ -110,7 +110,7 @@ export function genRequestBodyCode(requestBody: OASRequestBodyObject, opts: StdO
 	return { ...res, code: genEntriesCode(Object.entries(requestBody), opts) };
 }
 
-export function genResponsesCode(responses: OASResponsesObject, opts: StdOptions) {
+export function genResponsesCode(responses: OASResponsesObject, opts: StdConfig) {
 	const res = { code: '', importTx: '', isRef: false };
 	if (!responses) return res;
 
@@ -135,7 +135,7 @@ export function genRequiredParams(params: [string, OASParameterObject][]) {
 // Dereference a set of PathsObjects enough that a ref-maintaining RouteOptions
 // generation process can use them.
 export async function partialDerefPaths(
-	stdOpts: StdOptions,
+	stdOpts: StdConfig,
 	absDir: string,
 	schema: OASPathsObject,
 ): Promise<OASPathsObject> {
@@ -202,16 +202,11 @@ export function cleanPath(pathURL: string): string {
 	return cleanPath;
 }
 
-export function toROName(opNm: string, stdOpts: StdOptions): string {
-	// TODO: Make this give safe names
-	return `${opNm}${stdOpts.suffixTx}`;
-}
-
 export function stringArrayToCode(arr: string[]): string {
 	return `[${arr.map((s) => JSON.stringify(s)).join(',')}]`;
 }
 
-export function genValueCode(v: unknown, opts: StdOptions): string | unknown {
+export function genValueCode(v: unknown, opts: StdConfig): string | unknown {
 	if (typeof v === 'string') {
 		return JSON.stringify(v);
 	}
@@ -240,7 +235,7 @@ export function genValueCode(v: unknown, opts: StdOptions): string | unknown {
 // add import to imports but this code isn't wrapping
 //
 // TODO: need to collect and return imports to caller
-export function genEntriesCode(entries: [string, unknown][], opts: StdOptions) {
+export function genEntriesCode(entries: [string, unknown][], opts: StdConfig) {
 	let entriesCode = '';
 	const imports: string[] = [];
 	for (const [key, value] of entries) {
@@ -255,8 +250,14 @@ export function genEntriesCode(entries: [string, unknown][], opts: StdOptions) {
 	return entriesCode;
 }
 
-export function genRefCode(ref: string, opts: StdOptions) {
-	const refNm = genExportedNm(opts, path.basename(ref));
+export function genRefCode(ref: string, stdConfig: StdConfig) {
+	// importing schemas from TypeBox output files, so nameType is schema
+	const refNm = getNameFor(path.basename(ref), nameTypes.schema, stdConfig);
 	// TODO: correct import path
-	return { importTx: `import {${refNm} } from 'opts.tbPathTx/${refNm}'`, code: `${refNm}` };
+	// TODO: fileNm needs type prefix (schemas, responses, etc.), so we need to split the ref here
+	// and may not follow standard "getNameFor" behavior
+	return {
+		importTx: `import {${refNm} } from 'opts.tbPathTx/${getFilenameFor(fileTypes.tbOut, path.basename(ref), nameTypes.schema, stdConfig)}'`,
+		code: `${refNm}`,
+	};
 }

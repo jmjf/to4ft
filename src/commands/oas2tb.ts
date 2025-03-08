@@ -7,30 +7,31 @@ import {
 	genTypeBoxForPaths,
 	genTypeBoxForSchema,
 } from '../lib/tbCodeGenerators.ts';
-import { preprocOptions, getRefPathNms, type StdOptions } from '../lib/optionHelpers.ts';
+import { loadConfig, getRefPathNms, type StdConfig } from '../lib/config.ts';
+import type { Command } from 'commander';
+import { getTypeBoxFilenameFor } from '../lib/util.ts';
 
-export async function oas2tb(opts: CommandOptions) {
-	const stdOpts = preprocOptions(opts);
+export async function oas2tb(opts: CommandOptions, command: Command) {
+	const stdOpts = loadConfig(opts, command.name());
 
 	const refPathNms = await getRefPathNms(stdOpts.fileNms);
 
-	if (stdOpts.keepRefFl) {
-		genTypeBoxForPaths(refPathNms, 'parse', genRefTypeBox, stdOpts);
-	} else {
+	if (stdOpts[stdOpts.commandNm].derefFl) {
 		genTypeBoxForPaths(refPathNms, 'dereference', genDerefTypeBox, stdOpts);
+	} else {
+		genTypeBoxForPaths(refPathNms, 'parse', genRefTypeBox, stdOpts);
 	}
 }
 
-function genDerefTypeBox(schema: JSONSchema7, objNm: string, componentFieldNm: string, stdOpts: StdOptions) {
-	const tb = genTypeBoxForSchema(objNm, schema, stdOpts);
-	writeFileSync(`${stdOpts.outPathTx}/${componentFieldNm}${objNm}.ts`, `${genDerefImportStatements()}\n\n${tb}`);
+function genDerefTypeBox(schema: JSONSchema7, objNm: string, componentType: string, stdConfig: StdConfig) {
+	const tb = genTypeBoxForSchema(objNm, schema, stdConfig);
+	const outFileNm = getTypeBoxFilenameFor(componentType, objNm, stdConfig);
+	writeFileSync(`${stdConfig.outPathTx}/${outFileNm}`, `${genDerefImportStatements()}\n\n${tb}`);
 }
 
-function genRefTypeBox(schema: JSONSchema7, objNm: string, componentFieldNm: string, stdOpts: StdOptions) {
+function genRefTypeBox(schema: JSONSchema7, objNm: string, componentType: string, stdConfig: StdConfig) {
 	const refImports: string[] = [];
-	const tb = genTypeBoxForSchema(objNm, schema, { ...stdOpts, refImports });
-	writeFileSync(
-		`${stdOpts.outPathTx}/${componentFieldNm}${objNm}.ts`,
-		`${genRefImportStatements(refImports)}\n\n${tb}`,
-	);
+	const tb = genTypeBoxForSchema(objNm, schema, { ...stdConfig, refImports });
+	const outFileNm = getTypeBoxFilenameFor(componentType, objNm, stdConfig);
+	writeFileSync(`${stdConfig.outPathTx}/${outFileNm}`, `${genRefImportStatements(refImports)}\n\n${tb}`);
 }

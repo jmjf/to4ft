@@ -122,7 +122,7 @@ export function isReferenceObject(schema: unknown): schema is OASReferenceObject
 }
 
 export function isSchemaObject(schema: unknown): schema is OASSchemaObject {
-	return typeof (schema as OASSchemaObject).type === 'string';
+	return typeof (schema as OASSchemaObject)?.type === 'string';
 }
 
 /**
