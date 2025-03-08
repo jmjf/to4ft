@@ -14,7 +14,9 @@ get:
       content:
         application/json:
           schema:
-            $ref: ../components/User.yaml#/components/schemas/User
+            type: array
+            items: 
+              $ref: ../components/User.yaml#/components/schemas/User
       headers:
         x-test-header:     # this is the name used in the response
           $ref: ../components/User.yaml#/components/headers/XTestHeader
