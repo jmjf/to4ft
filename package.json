@@ -22,6 +22,7 @@
     "tbdkeys:dev": "node --experimental-strip-types src/cli.ts oas2tb -i example/openapi/openapi.yaml -o example/tb-keys --keepanno --ajvunsafe && npm run check:ex",
     "rod:dev": "node --experimental-strip-types src/cli.ts oas2ro -i example/openapi/openapi.yaml -o example/rod --refDir example/tb-d -c oas2tb4fastify_deref.json && npm run check:ex",
     "ror:dev": "node --experimental-strip-types src/cli.ts oas2ro -i example/openapi/openapi.yaml -o example/ror --refDir example/tb-r -c oas2tb4fastify_ref.json && npm run check:ex",
+    "ror2:dev": "node --experimental-strip-types src/cli.ts oas2ro -i example/openapi/openapi.yaml -o example/ror --refDir example/tb-r -c oas2tb4fastify_ref.json",
     "check:ex": "npx @biomejs/biome check --write example",
     "format": "npx @biomejs/biome format --write",
     "lint": "npm run lint:only && npm run lint:typecheck",
