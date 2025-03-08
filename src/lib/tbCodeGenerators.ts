@@ -71,14 +71,14 @@ const schemaGetters = {
  * @param {string} componentType - component type being processed (schemas, responses, etc.)
  * @param {StdConfig} - destructured as { outPathTx, prefixTx, extTx }
  */
-type GenTypeBoxFn = (schema: JSONSchema7, objNm: string, componentType: string, opts: StdConfig) => void;
+type GenTypeBoxFn = (schema: JSONSchema7, objNm: string, componentType: string, config: StdConfig) => void;
 
 /**
  * Generate TypeBox code for a list of ref paths
  * @param {string[]} pathNms - list of referenced paths for which to generate TypeBox
  * @param {'dereference' | 'parse'} refParserFnNm - name of the $RefParser function to use to read each refPath
  * @param {GenTypeBoxFn} genToTypeBox - a function that handles specifics of calling `schemaToTypeBox` and writing output
- * @param {StdConfig} stdOpts - standard options object
+ * @param {StdConfig} config - standard configuration object
  * @async
  *
  */
@@ -86,11 +86,11 @@ export async function genTypeBoxForPaths(
 	pathNms: string[],
 	refParserFnNm: 'dereference' | 'parse',
 	genToTypeBox: GenTypeBoxFn,
-	stdOpts: StdConfig,
+	config: StdConfig,
 ) {
 	for (const refPathNm of pathNms) {
 		const rpSchema = (await $RefParser[refParserFnNm](refPathNm, {
-			dereference: { preservedProperties: stdOpts.preserveKeywords },
+			dereference: { preservedProperties: config.preserveKeywords },
 		})) as OASDocument;
 		if (!isOASDocument(rpSchema)) continue;
 
@@ -105,7 +105,7 @@ export async function genTypeBoxForPaths(
 				// Is there no schema? (skip it)
 				if (schema === undefined) continue;
 
-				genToTypeBox(schema, objNm, componentFieldNm, stdOpts);
+				genToTypeBox(schema, objNm, componentFieldNm, config);
 			}
 		}
 	}

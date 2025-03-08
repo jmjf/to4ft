@@ -131,13 +131,13 @@ export function genRequiredParams(params: [string, OASParameterObject][]) {
 // Dereference a set of PathsObjects enough that a ref-maintaining RouteOptions
 // generation process can use them.
 export async function partialDerefPaths(
-	stdOpts: StdConfig,
+	config: StdConfig,
 	absDir: string,
 	schema: OASPathsObject,
 ): Promise<OASPathsObject> {
 	// resolved makes it easier to get referenced content
 	const rp = new $RefParser();
-	const resolved = await rp.resolve(stdOpts.inPathTx);
+	const resolved = await rp.resolve(config.inPathTx);
 
 	const oasPaths = structuredClone(schema);
 
