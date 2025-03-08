@@ -1,4 +1,4 @@
-import { CommentIdSchema } from 'opts.tbPathTx/CommentIdSchema.ts';
+import { CommentIdSchema } from '../tb-r/schemas_CommentId.ts';
 const getCommentById = {
 	url: '/comments/:commentId/:testParam',
 	method: 'GET',
@@ -22,7 +22,7 @@ const getCommentById = {
 		},
 	},
 };
-import { PostIdSchema } from 'opts.tbPathTx/PostIdSchema.ts';
+import { PostIdSchema } from '../tb-r/schemas_PostId.ts';
 const getPostById = {
 	url: '/posts/:postId',
 	method: 'GET',
@@ -59,7 +59,7 @@ const getPosts = {
 		},
 	},
 };
-import { PostRequestBodySchema } from 'opts.tbPathTx/PostRequestBodySchema.ts';
+import { PostRequestBodySchema } from '../tb-r/requestBodies_PostRequestBody.ts';
 const putPosts = {
 	url: '/posts',
 	method: 'POST',
@@ -88,7 +88,7 @@ const getUserById = {
 		},
 	},
 };
-import { UserIdSchema } from 'opts.tbPathTx/UserIdSchema.ts';
+import { UserIdSchema } from '../tb-r/schemas_UserId.ts';
 const getUsersByQuery = {
 	url: '/users',
 	method: 'GET',

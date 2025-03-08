@@ -14,7 +14,7 @@ import {
 	type OASResponsesObject,
 } from './typesAndGuards.ts';
 import path from 'node:path';
-import { fileTypes, getFilenameFor, getNameFor, nameTypes } from './util.ts';
+import { getRefNames } from './util.ts';
 
 // for object-type parameters, hoist the schema of the first property of the object
 // if the object has more than one properties log an error
@@ -252,12 +252,12 @@ export function genEntriesCode(entries: [string, unknown][], opts: StdConfig) {
 
 export function genRefCode(ref: string, stdConfig: StdConfig) {
 	// importing schemas from TypeBox output files, so nameType is schema
-	const refNm = getNameFor(path.basename(ref), nameTypes.schema, stdConfig);
+	const { refedNm, refPathNm } = getRefNames(ref, stdConfig, path.relative(stdConfig.outPathTx, stdConfig.refPathTx));
 	// TODO: correct import path
 	// TODO: fileNm needs type prefix (schemas, responses, etc.), so we need to split the ref here
 	// and may not follow standard "getNameFor" behavior
 	return {
-		importTx: `import {${refNm} } from 'opts.tbPathTx/${getFilenameFor(fileTypes.tbOut, path.basename(ref), nameTypes.schema, stdConfig)}'`,
-		code: `${refNm}`,
+		importTx: `import {${refedNm} } from '${refPathNm}'`,
+		code: `${refedNm}`,
 	};
 }
