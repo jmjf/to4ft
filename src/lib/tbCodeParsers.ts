@@ -26,7 +26,7 @@ export function parseObject(opts: CodeGenOpts, schema: ObjectSchema) {
 	const properties = schema.properties;
 	const requiredProperties = schema.required;
 	if (properties === undefined) {
-		return 'Type.Unknown()';
+		return parseUnknown(opts, schema as UnknownSchema);
 	}
 	const attributes = Object.entries(properties);
 	// NOTE: Just always quote the propertyName here to make sure we don't run
@@ -73,8 +73,9 @@ export function parseConst(opts: CodeGenOpts, schema: ConstSchema): string {
 		: `Type.Literal(${schema.const}, ${schemaOptionsTx})`;
 }
 
-export function parseUnknown(_: UnknownSchema): string {
-	return 'Type.Unknown()';
+export function parseUnknown(opts: CodeGenOpts, schema: UnknownSchema): string {
+	const schemaOptionsTx = parseSchemaOptions(schema, opts);
+	return schemaOptionsTx === undefined ? 'Type.Unknown()' : `Type.Unknown(${schemaOptionsTx})`;
 }
 
 export function parseType(type: JSONSchema7Type): string {
