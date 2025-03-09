@@ -138,7 +138,7 @@ export function genTypeBoxForSchema(schemaNm: string, schema: JSONSchema7, opts:
  */
 
 const typeboxImports = [
-	'import {type Static, Type, SchemaOptions, Clone, Kind, TypeRegistry} from "@sinclair/typebox"',
+	'import {type Static, Type, SchemaOptions, Clone, Kind, TypeRegistry, TSchema, TUnion} from "@sinclair/typebox"',
 	'import { Value } from "@sinclair/typebox/value";',
 ];
 export function genDerefImportStatements(): string {
@@ -192,7 +192,7 @@ export function recurseSchema(opts: CodeGenOpts, schema: JSONSchema7Definition):
 	}
 	// unknown is an object schema with no keys
 	if (isUnknownSchema(schema)) {
-		return parseUnknown(schema);
+		return parseUnknown(opts, schema);
 	}
 	if (schema.$ref !== undefined) {
 		return parseRefName(opts, schema);
@@ -209,7 +209,7 @@ export function recurseSchema(opts: CodeGenOpts, schema: JSONSchema7Definition):
  */
 export function genOneOfTypeboxSupportCode(): string {
 	return [
-		"TypeRegistry.Set('ExtendedOneOf', (schema: any, value) => 1 === schema.oneOf.reduce((acc: number, schema: any) => acc + (Value.Check(schema, value) ? 1 : 0), 0))",
+		"TypeRegistry.Set('ExtendedOneOf', (schema: {oneOf: unknown[]}, value) => 1 === schema.oneOf.reduce((acc: number, schema: unknown) => acc + (Value.Check(schema as TSchema, value) ? 1 : 0), 0))",
 		"const OneOf = <T extends TSchema[]>(oneOf: [...T], options: SchemaOptions = {}) => Type.Unsafe<Static<TUnion<T>>>({ ...options, [Kind]: 'ExtendedOneOf', oneOf })",
 	].reduce((acc, curr) => {
 		return `${acc + curr}\n\n`;
