@@ -9,10 +9,9 @@ See `docs/Roadmap.md` for details of what's done
 
 ### Core/common
 
-- [ ] `--camel` -- force camelcase (squeeze out `_` in names)
 - [ ] tests
 - [ ] documentation (work in progress)
-- [ ] redo options to use config file; `oas2ro` needs `oas2tb` options to generate references and imports
+- [ ] better error logging
 
 ### `oas2tb`
 
@@ -20,14 +19,12 @@ Nothing pending.
 
 ### `oas2ro`
 
-This part of the code is a hot mess at the moment. Reference-maintaining version is close to working.
+Problems are fixed for ref-maintaining `oas2ro` for the blog-like test schema.
 
-- [ ] when generating code descending into objects, generate imports and bubble them up so they can be added
-- [ ] redo options to use a config file (dupe of above)
-- [ ] write individual files
+- [ ] test ref-maintaining with other schemas to find remaining issues and edge cases
+- [ ] refactor code; remove all the `console.log`s supporting development
 - [ ] rewrite deref code in light of ref-maintaining work (should have solved most of the issues)
 - [ ] find and flatten overlaps between ref/deref
-- [ ] improve unsafe keyword handling
 
 ### Demo server
 

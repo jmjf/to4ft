@@ -22,7 +22,7 @@
 - [x] why does redocly lint complain about my `headers`
   - `components.headers` are for responses, cannot be used for request headers
   - See `User.yaml` and `api_users.yaml` for examples
-- [ ] `--camel` -- force camelcase (squeeze out `_` in names)
+- [x] `--camel` -- force camelcase (squeeze out `_` in names) -- Done by setting case in the config file
 - [ ] tests
 
 - [ ] documentation (work in progress)
@@ -50,9 +50,15 @@ Currently, generates dereferenced `RouteOptions` object. Code is still WIP, but 
     - [x] response
     - [x] remove keywords AJV doesn't recognize
 - [x] write files to output directory
-- [ ] build reference maintaining version
-- [ ] write TypesScript/JavaScript, not JSON
+- [x] build reference maintaining version
+- [x] write TypesScript/JavaScript, not JSON
 - [ ] refactor code
+- [x] when generating code descending into objects, generate imports and bubble them up so they can be added
+- [x] redo options to use a config file (dupe of above)
+- [x] write individual files
+- [ ] rewrite deref code in light of ref-maintaining work (should have solved most of the issues)
+- [ ] find and flatten overlaps between ref/deref
+- [x] improve unsafe keyword handling
 
 ## Demo server
 
