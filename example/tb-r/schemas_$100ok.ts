@@ -1,4 +1,4 @@
 import { type Static, Type } from '@sinclair/typebox';
 
-export const $100okSchema = Type.String();
-export type $100ok = Static<typeof $100okSchema>;
+export const $100OkSchema = Type.String();
+export type $100Ok = Static<typeof $100OkSchema>;

@@ -1,4 +1,4 @@
 import { type Static, Type } from '@sinclair/typebox';
 
-export const x𒐗Schema = Type.Number();
-export type x𒐗 = Static<typeof x𒐗Schema>;
+export const X𒐗Schema = Type.Number();
+export type X𒐗 = Static<typeof X𒐗Schema>;

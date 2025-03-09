@@ -28,9 +28,7 @@ export function ensureCleanDirectoryExists(dirPathNm: string) {
 		rmSync(dirPathNm, { recursive: true });
 	}
 	ensureDirectoryExists(dirPathNm);
-}
-
-//
+} //
 // Name generating or parsing utility functions
 //
 
@@ -38,10 +36,24 @@ export function ensureCleanDirectoryExists(dirPathNm: string) {
  * find word breaks dealing with issues like
  * - consecutive upper case alphas (HTML)
  * - lower preceding upper (McMullen)
- * - separator characters (_-; and other non-alphanumerics)
+ * - separator characters (anything not alphanumeric or $ or _)
  * - the resulting capturing groups can be processed to form different case patterns
+ *
+ * It also copes as best it can with Unicode
+ * - Lu = Uppercase_Letter
+ * - Lt = Titlecase_Letter (letters with special capitalization rules that are considered capitals)
+ * - Ll = Lowercase_Letter
+ * - Lo = Other_Letter (treated as lowercase)
+ * - Nd = Decimal_Number (any number from a decimal-based number system)
+ * - Nl = Letter_Number (Roman numerals, cuneiform, and other characters no one is likely to use but JavaScript accepts)
+ *
+ * It should work together with the name sanitizer Regex.
+ *
+ * But just because it supports Greek Acrophonic characters doesn't mean you should use them. :)
+ *
  */
-const wordBreakerRegex = /[A-Z]{2,}(?=[A-Z][a-z]+[0-9]*|\b)|[A-Z]?[a-z]+[0-9]*|[A-Z]|[0-9]+/g;
+const wordBreakerRegex =
+	/[$_\p{Lu}\p{Lt}]{2,}(?=[\p{Lu}\p{Lt}][\p{Ll}\p{Lo}]+[\p{Nd}\p{Nl}]*|\b)|[\p{Lu}\p{Lt}]?[\p{Ll}\p{Lo}]+[\p{Nd}\p{Nl}]*|[$_\p{Lu}\p{Lt}]|[\p{Nd}\p{Nl}]+/gu;
 
 export const toCase = {
 	// lower-first camel case.
@@ -80,6 +92,20 @@ export const toCase = {
 };
 type CaseType = keyof typeof toCase;
 
+/**
+ * This Regex attempts to support JavaScripts Unicode-friendly naming rules. It should support
+ * most modern and quite a few ancient or niche languages and characters.
+ *
+ * Nevertheless, just because it supports Old Persian and cuneiform doesn't mean you should use them.
+ */
+const invalidCharsRegExp = /[^\p{L}\p{Nd}\p{Nl}_$]/giu;
+const invalidFirstCharRegExp = /^[^\p{L}_$]/iu;
+function sanitizeName(s: string): string {
+	if (typeof s !== 'string') throw new Error(`sanitizeIdentifierNames ERROR: received non-string; ${s}`);
+
+	return s.replace(invalidCharsRegExp, '_').replace(invalidFirstCharRegExp, '_');
+}
+
 export const nameTypes = {
 	schema: 'schema',
 	type: 'type',
@@ -94,7 +120,7 @@ export function getNameFor(name: string, nameType: NameType, config: StdConfig):
 
 	const prefixTx = configToUse[`${toCase.camel(`${nameType}PrefixTx`)}`] ?? '';
 	const suffixTx = configToUse[`${toCase.camel(`${nameType}SuffixTx`)}`] ?? '';
-	return `${prefixTx}${name}${suffixTx}`;
+	return `${prefixTx}${sanitizeName(name)}${suffixTx}`;
 }
 
 export function getCasedNameFor(name: string, nameType: NameType, config: StdConfig): string {

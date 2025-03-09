@@ -1,7 +1,7 @@
 import type { JSONSchema7, JSONSchema7Definition } from 'json-schema';
 import { $RefParser } from '@apidevtools/json-schema-ref-parser';
 import type { StdConfig } from './config.ts';
-import { dedupeArray, getNameFor, nameTypes, toUpperFirstChar } from './util.ts';
+import { dedupeArray, getCasedNameFor, nameTypes } from './util.ts';
 import {
 	isAllOfSchema,
 	isAnyOfSchema,
@@ -118,8 +118,8 @@ export async function genTypeBoxForPaths(
  * @param {StdConfig} opts - options used in code generation
  */
 export function genTypeBoxForSchema(schemaNm: string, schema: JSONSchema7, opts: CodeGenOpts) {
-	const exportSchemaNm = getNameFor(schemaNm, nameTypes.schema, opts);
-	const exportTypeNm = getNameFor(schemaNm, nameTypes.type, opts);
+	const exportSchemaNm = getCasedNameFor(schemaNm, nameTypes.schema, opts);
+	const exportTypeNm = getCasedNameFor(schemaNm, nameTypes.type, opts);
 
 	// Including id doesn't play nice with fastify for ref-maintaining
 	// Ensuring that generated typebox code will contain an '$id' field.
@@ -203,14 +203,6 @@ export function recurseSchema(opts: CodeGenOpts, schema: JSONSchema7Definition):
 	throw new Error(`Unsupported schema. Did not match any type of the parsers. Schema was: ${JSON.stringify(schema)}`);
 }
 
-/*
- * UTILITIES
- */
-
-export function genExportFileNm(schemaNm: string): string {
-	return toUpperFirstChar(sanitizeName(schemaNm));
-}
-
 /**
  * Creates custom typebox code to support the JSON schema keyword 'oneOf'. Based
  * on the suggestion here: https://github.com/xddq/schema2typebox/issues/16#issuecomment-1603731886
@@ -222,12 +214,4 @@ export function genOneOfTypeboxSupportCode(): string {
 	].reduce((acc, curr) => {
 		return `${acc + curr}\n\n`;
 	}, '');
-}
-
-const invalidCharsRegExp = /[^\p{L}\p{Nd}\p{Nl}_$]/giu;
-const invalidFirstCharRegExp = /^[^\p{L}_$]/iu;
-function sanitizeName(s: string): string {
-	if (typeof s !== 'string') throw new Error(`sanitizeIdentifierNames ERROR: received non-string; ${s}`);
-
-	return s.replace(invalidCharsRegExp, '_').replace(invalidFirstCharRegExp, '_');
 }
