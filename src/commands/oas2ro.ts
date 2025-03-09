@@ -17,6 +17,7 @@ import {
 	cleanPathURL,
 	genAnnotationsForParam,
 	genEntriesCode,
+	genQueryParameterCode,
 	genRefCodeAndImport,
 	genRequestBodyCode,
 	genRequiredParams,
@@ -80,13 +81,9 @@ export async function oas2ro(opts: CommandOptions, command: Command) {
 				roCode += headersCode.length > 0 ? `headers: {${headersCode}},` : '';
 
 				// in: query (querystring)
-				const querystringCode = genParameterCode(
-					'query',
-					opObj.parameters as OASParameterObject[],
-					config,
-					imports,
-				);
+				const querystringCode = genQueryParameterCode(opObj.parameters as OASParameterObject[], imports, config);
 				roCode += querystringCode.length > 0 ? `querystring: {${querystringCode}},` : '';
+				const tempImports: string[] = [];
 			}
 			// requestBody (body)
 			const { code: bodyCode, isRef: bodyIsRef } = genRequestBodyCode(
@@ -126,8 +123,8 @@ function genParameterCode(
 	const functionNm = 'genParameterCode';
 
 	let params = parameters.filter((s) => s.in === paramIn);
-	params = hoistSchemas(params, paramIn === 'query') as OASParameterObject[];
-	const mergedParams = mergeParams(params, paramIn === 'query');
+	params = hoistSchemas(params) as OASParameterObject[];
+	const mergedParams = mergeParams(params);
 
 	if (mergedParams.length === 0) return '';
 	console.log('MERGED', paramIn, JSON.stringify(mergedParams, null, 3));
@@ -163,6 +160,12 @@ function genParameterCode(
 	}
 	return paramCode;
 }
+
+/**
+ *
+ * Code below supports deref and is probably broken for now
+ *
+ */
 
 // I think I can handle query (yes), path (yes), and header (yes) in one function. TBD.
 function getParameterSchema(paramType: string, parameters: OASParameterObject[]) {

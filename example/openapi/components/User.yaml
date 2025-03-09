@@ -53,6 +53,10 @@ components:
             $ref: Fields.yaml#/components/schemas/UserId
           userNm:
             $ref: Fields.yaml#/components/schemas/UserNm
+          inline:
+            type: string
+            minLength: 1
+            description: an inline property
   schemas:
     User:
       title: User

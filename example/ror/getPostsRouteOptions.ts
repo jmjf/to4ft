@@ -1,3 +1,5 @@
+import { PaginationLimitSchema } from '../tb-r/parameters_PaginationLimit.ts';
+import { PaginationPageSchema } from '../tb-r/parameters_PaginationPage.ts';
 import { PostsResponseSchema } from '../tb-r/schemas_PostsResponse.ts';
 
 export const getPostsRouteOptions = {
@@ -10,11 +12,10 @@ export const getPostsRouteOptions = {
 		querystring: {
 			type: 'object',
 			properties: {
-				page: { description: 'Page number to retrieve.', type: 'integer', default: 1, example: 2 },
-				limit: { description: 'Number of days per page.', type: 'integer', default: 10, maximum: 30, example: 15 },
-				tags: { description: 'Tags to filter by', type: 'array', items: { type: 'string' } },
+				page: PaginationPageSchema,
+				limit: PaginationLimitSchema,
+				tags: { type: 'array', items: { type: 'string' }, required: undefined, description: 'Tags to filter by' },
 			},
-			required: ['tags'],
 		},
 		response: {
 			'200': { description: 'result', content: { 'application/json': { schema: PostsResponseSchema } } },

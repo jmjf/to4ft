@@ -29,3 +29,4 @@ export const removeFromParameterEntries = {
 	style: undefined,
 	allowReserved: undefined,
 };
+export const removeFromParameterKeywords = Object.keys(removeFromParameterEntries);

@@ -9,6 +9,7 @@ export const getUserByIdRouteOptions = {
 	summary: 'GET user endpoint for tson issue',
 	schema: {
 		params: { type: 'object', properties: { userId: UserIdSchema } },
+		querystring: { type: 'object', properties: {} },
 		response: {
 			'200': { description: 'result', content: { 'application/json': { schema: UserSchema } } },
 			'4xx': { description: 'error' },

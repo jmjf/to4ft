@@ -9,6 +9,7 @@ export const getPostByIdRouteOptions = {
 	summary: 'GET post endpoint for tson issue',
 	schema: {
 		params: { type: 'object', properties: { postId: PostIdSchema } },
+		querystring: { type: 'object', properties: {} },
 		response: {
 			'200': { description: 'result', content: { 'application/json': { schema: PostSchema } } },
 			'4xx': { description: 'error' },

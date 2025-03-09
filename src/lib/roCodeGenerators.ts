@@ -1,5 +1,5 @@
 import { $RefParser } from '@apidevtools/json-schema-ref-parser';
-import { annotationKeys } from './consts.ts';
+import { annotationKeys, removeFromParameterKeywords } from './consts.ts';
 import type { StdConfig } from './config.ts';
 import {
 	isReferenceObject,
@@ -19,13 +19,13 @@ import { getRefNames } from './util.ts';
 // for object-type parameters, hoist the schema of the first property of the object
 // if the object has more than one properties log an error
 // if the parameter is an array, omit it and log an error
-export function hoistSchemas(parameters: OASParameterObject[], allowArray = false) {
+export function hoistSchemas(parameters: OASParameterObject[]) {
 	const functionNm = 'hoistSchemas';
 	const params = structuredClone(parameters);
 
 	return params.map((param) => {
 		const schema = param.schema as OASSchemaObject;
-		if (!allowArray && isSchemaObject(schema) && schema.type === 'array') {
+		if (isSchemaObject(schema) && schema.type === 'array') {
 			console.log(`${functionNm} ERROR: skipping array type parameter ${param.name}`);
 			return {} as OASParameterObject;
 		}
@@ -59,7 +59,7 @@ export function hoistSchemas(parameters: OASParameterObject[], allowArray = fals
 
 // merge parameters into a single object so they're ready to convert
 // to a Fastify RouteOptions schema member
-export function mergeParams(parameters: OASParameterObject[], allowArray = false) {
+export function mergeParams(parameters: OASParameterObject[]) {
 	const functionNm = 'mergeParameters';
 	const params = structuredClone(parameters);
 
@@ -70,7 +70,7 @@ export function mergeParams(parameters: OASParameterObject[], allowArray = false
 			continue;
 		}
 
-		if (!allowArray && isSchemaObject(param.schema) && param.schema.type === 'array') {
+		if (isSchemaObject(param.schema) && param.schema.type === 'array') {
 			console.log(`${functionNm} ERROR: skipping array type parameter ${param.name}`);
 			continue;
 		}
@@ -89,34 +89,90 @@ export function mergeParams(parameters: OASParameterObject[], allowArray = false
 	return entries as [string, OASParameterObject][];
 }
 
+// Query parameters are different from other parameters because they accept all properties
+// of any objects.
+// const removeFromQueryParams = [
+// 	'in',
+// 	'name',
+// 	'allowEmptyValue',
+// 	'content',
+// 	'xml',
+// 	'externalDocs',
+// 	'explode',
+// 	'style',
+// 	'allowReserved',
+// 	'schema',
+// ];
+export function genQueryParameterCode(parameters: OASParameterObject[], imports: string[], config: StdConfig) {
+	const functionNm = 'genQueryParameterCode';
+
+	const params = parameters.filter((s) => s.in === 'query');
+	const entries: [string, Partial<OASParameterObject> | OASReferenceObject][] = [];
+	const required: string[] = [];
+	let objectDe = '';
+
+	// build entries for individual parameters and object properties, flattening objects
+	for (const param of params) {
+		if (isSchemaObject(param.schema) && param.schema.type === 'object') {
+			for (const [propNm, prop] of Object.entries(param.schema.properties ?? {})) {
+				entries.push([
+					propNm,
+					Object.fromEntries(
+						Object.entries(prop).filter((entry) => !removeFromParameterKeywords.includes(entry[0])),
+					),
+				]);
+
+				objectDe = param.description ?? param.schema.description ?? objectDe;
+			}
+			required.push(...(param.schema.required ?? []));
+		} else {
+			const keepObj = Object.fromEntries(
+				Object.entries(param).filter((entry) => !removeFromParameterKeywords.includes(entry[0])),
+			);
+			// either info from the param (for $ref) or what should be in the property with required from param
+			const paramObj = isReferenceObject(param) ? keepObj : { ...param.schema, required: undefined, ...keepObj };
+			entries.push([param.name, paramObj]);
+		}
+	}
+
+	// Close, but required is a problem.
+	const props = genEntriesCode(entries, imports, config);
+	const desc = objectDe.length > 0 ? `description: '${objectDe}',` : '';
+	const req = required.length > 0 ? `required: ['${required.join("','")}'],` : '';
+	const code = `type: 'object', properties: {${props}},${desc}${req}`;
+
+	console.log('*********** QPC', code);
+	return code;
+}
+
 // generate annotation code for a parameter
 // Filter invalid keywords
 // JSON.stringify what's left
-export function genAnnotationsForParam(parameter: OASParameterObject, opts: StdConfig) {
+export function genAnnotationsForParam(parameter: OASParameterObject, config: StdConfig) {
 	const param = structuredClone(parameter);
 	const validEntries = Object.entries(param).filter(([key, value]) => annotationKeys.includes(key));
 	return `${JSON.stringify(Object.fromEntries(validEntries)).slice(1, -1)},`;
 }
 
-export function genRequestBodyCode(requestBody: OASRequestBodyObject, imports: string[], opts: StdConfig) {
+export function genRequestBodyCode(requestBody: OASRequestBodyObject, imports: string[], config: StdConfig) {
 	if (!requestBody) return { code: '', isRef: false };
 
 	if (isReferenceObject(requestBody)) {
-		return { code: genRefCodeAndImport(requestBody.$ref, imports, opts), isRef: true };
+		return { code: genRefCodeAndImport(requestBody.$ref, imports, config), isRef: true };
 	}
 
-	return { code: genEntriesCode(Object.entries(requestBody), imports, opts), isRef: false };
+	return { code: genEntriesCode(Object.entries(requestBody), imports, config), isRef: false };
 }
 
-export function genResponsesCode(responses: OASResponsesObject, imports: string[], opts: StdConfig) {
+export function genResponsesCode(responses: OASResponsesObject, imports: string[], config: StdConfig) {
 	if (!responses) return { code: '', isRef: false };
 
 	if (isReferenceObject(responses)) {
 		// console.log('GEN RESPONSES REF', responses);
-		return { code: genRefCodeAndImport(responses.$ref, imports, opts), isRef: true };
+		return { code: genRefCodeAndImport(responses.$ref, imports, config), isRef: true };
 	}
 	// console.log('GEN RESPONSES NOREF', Object.entries(responses));
-	return { code: genEntriesCode(Object.entries(responses), imports, opts), isRef: false };
+	return { code: genEntriesCode(Object.entries(responses), imports, config), isRef: false };
 }
 
 // generated array of required parameter names
@@ -219,7 +275,7 @@ export function stringArrayToCode(arr: string[]): string {
 	return `[${arr.map((s) => JSON.stringify(s)).join(',')}]`;
 }
 
-export function genValueCode(v: unknown, imports: string[], opts: StdConfig): string | unknown {
+export function genValueCode(v: unknown, imports: string[], config: StdConfig): string | unknown {
 	if (typeof v === 'string') {
 		return JSON.stringify(v);
 	}
@@ -235,33 +291,34 @@ export function genValueCode(v: unknown, imports: string[], opts: StdConfig): st
 	if (typeof v === 'object') {
 		if (isReferenceObject(v)) {
 			// console.log('GEN VALUE', v, imports);
-			const code = genRefCodeAndImport(v.$ref, imports, opts);
+			const code = genRefCodeAndImport(v.$ref, imports, config);
 			return code;
 		}
-		return `{ ${genEntriesCode(Object.entries(v as object), imports, opts)} }`;
+		return `{ ${genEntriesCode(Object.entries(v as object), imports, config)} }`;
 	}
 
 	return v;
 }
 
-export function genEntriesCode(entries: [string, unknown][], imports: string[], opts: StdConfig) {
+export function genEntriesCode(entries: [string, unknown][], imports: string[], config: StdConfig) {
 	let entriesCode = '';
 	// console.log('GEN ENTRIES entries', entries);
 	for (const [key, value] of entries) {
 		// console.log('GEN ENTRIES', key, value);
 		if (key !== '$ref') {
-			entriesCode += `'${key}': ${genValueCode(value, imports, opts)},`;
+			entriesCode += `'${key}': ${genValueCode(value, imports, config)},`;
 		} else if (typeof value === 'string') {
-			const code = genRefCodeAndImport(value as string, imports, opts);
+			const code = genRefCodeAndImport(value as string, imports, config);
 			entriesCode += `${code},`;
 		}
 	}
 	return entriesCode;
 }
 
-export function genRefCodeAndImport(ref: string, imports: string[], opts: StdConfig) {
+export function genRefCodeAndImport(ref: string, imports: string[], config: StdConfig) {
+	// console.log('***GRI', ref, config);
 	// importing schemas from TypeBox output files, so nameType is schema
-	const { refedNm, refPathNm } = getRefNames(ref, opts, path.relative(opts.outPathTx, opts.refPathTx));
+	const { refedNm, refPathNm } = getRefNames(ref, config, path.relative(config.outPathTx, config.refPathTx));
 	imports.push(`import {${refedNm} } from '${refPathNm}'`);
 	return refedNm;
 }

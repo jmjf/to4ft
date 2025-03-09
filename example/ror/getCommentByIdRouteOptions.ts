@@ -13,6 +13,7 @@ export const getCommentByIdRouteOptions = {
 			properties: { commentId: CommentIdSchema, testParam: { description: 'test parameter', type: 'string' } },
 			required: ['commentId'],
 		},
+		querystring: { type: 'object', properties: {} },
 		response: {
 			'200': {
 				description: 'result',
