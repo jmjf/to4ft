@@ -16,6 +16,7 @@ export const getPostsRouteOptions = {
 				limit: PaginationLimitSchema,
 				tags: { type: 'array', items: { type: 'string' }, required: undefined, description: 'Tags to filter by' },
 			},
+			required: ['page', 'tags'],
 		},
 		response: {
 			'200': { description: 'result', content: { 'application/json': { schema: PostsResponseSchema } } },

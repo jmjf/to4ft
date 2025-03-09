@@ -13,9 +13,15 @@ export function dedupeArray<T>(arr: T[]): T[] {
 	return Array.from(new Set(arr));
 }
 
-//
-// File and filesystem related utility functions
-//
+export function removeKeysFromObject(obj: object, keys: string[]) {
+	return Object.fromEntries(Object.entries(obj).filter((entry) => !keys.includes(entry[0])));
+}
+
+/**
+ *
+ * File and filesystem related utility functions
+ *
+ */
 
 export function ensureDirectoryExists(dirPathNm: string) {
 	if (!existsSync(dirPathNm)) {
@@ -28,9 +34,13 @@ export function ensureCleanDirectoryExists(dirPathNm: string) {
 		rmSync(dirPathNm, { recursive: true });
 	}
 	ensureDirectoryExists(dirPathNm);
-} //
-// Name generating or parsing utility functions
-//
+}
+
+/**
+ *
+ * Name generating or parsing utility functions
+ *
+ */
 
 /**
  * find word breaks dealing with issues like

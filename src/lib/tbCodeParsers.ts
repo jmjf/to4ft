@@ -17,7 +17,7 @@ import {
 	isNumber,
 } from './typesAndGuards.ts';
 import { ajvUnsafeKeys, annotationKeys, stdIgnoreKeys } from './consts.ts';
-import { getRefNames } from './util.ts';
+import { getRefNames, removeKeysFromObject } from './util.ts';
 
 export function parseObject(opts: CodeGenOpts, schema: ObjectSchema) {
 	// schema is ObjectSchema
@@ -206,7 +206,7 @@ function parseSchemaOptions(
 		...(allowUnsafeKeywordsFl ? [] : ajvUnsafeKeys),
 	];
 
-	const propertiesEntries = Object.entries(schema).filter(([key, _value]) => !ignoreKeys.includes(key));
+	const propertiesEntries = Object.entries(removeKeysFromObject(schema, ignoreKeys));
 	if (propertiesEntries.length === 0) {
 		return undefined;
 	}

@@ -14,7 +14,7 @@ import {
 	type OASResponsesObject,
 } from './typesAndGuards.ts';
 import path from 'node:path';
-import { getRefNames } from './util.ts';
+import { getRefNames, removeKeysFromObject } from './util.ts';
 
 // for object-type parameters, hoist the schema of the first property of the object
 // if the object has more than one properties log an error
@@ -113,25 +113,21 @@ export function genQueryParameterCode(parameters: OASParameterObject[], imports:
 
 	// build entries for individual parameters and object properties, flattening objects
 	for (const param of params) {
+		console.log('QPC PARAM', param);
 		if (isSchemaObject(param.schema) && param.schema.type === 'object') {
 			for (const [propNm, prop] of Object.entries(param.schema.properties ?? {})) {
-				entries.push([
-					propNm,
-					Object.fromEntries(
-						Object.entries(prop).filter((entry) => !removeFromParameterKeywords.includes(entry[0])),
-					),
-				]);
-
+				entries.push([propNm, removeKeysFromObject(prop, removeFromParameterKeywords)]);
 				objectDe = param.description ?? param.schema.description ?? objectDe;
 			}
 			required.push(...(param.schema.required ?? []));
 		} else {
-			const keepObj = Object.fromEntries(
-				Object.entries(param).filter((entry) => !removeFromParameterKeywords.includes(entry[0])),
-			);
+			const keepObj = removeKeysFromObject(param, removeFromParameterKeywords);
 			// either info from the param (for $ref) or what should be in the property with required from param
 			const paramObj = isReferenceObject(param) ? keepObj : { ...param.schema, required: undefined, ...keepObj };
 			entries.push([param.name, paramObj]);
+			if (param.required === true) {
+				required.push(param.name);
+			}
 		}
 	}
 
@@ -141,7 +137,6 @@ export function genQueryParameterCode(parameters: OASParameterObject[], imports:
 	const req = required.length > 0 ? `required: ['${required.join("','")}'],` : '';
 	const code = `type: 'object', properties: {${props}},${desc}${req}`;
 
-	console.log('*********** QPC', code);
 	return code;
 }
 
