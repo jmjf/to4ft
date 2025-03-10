@@ -16,8 +16,8 @@ import {
 	isString,
 	isNumber,
 } from './typesAndGuards.ts';
-import { ajvUnsafeKeys, annotationKeys, stdIgnoreKeys } from './consts.ts';
-import { getRefNames, removeKeysFromObject } from './util.ts';
+import { stdIgnoreKeys } from './consts.ts';
+import { getRefNames, getSharedIgnoreKeys, removeKeysFromObject } from './util.ts';
 
 export function parseObject(opts: CodeGenOpts, schema: ObjectSchema) {
 	// schema is ObjectSchema
@@ -197,15 +197,8 @@ export function parseTypeName(
 // [x] AJV accepts default on properties but not on objects -- remove in parseObject
 // [x] AJV doesn't accept required on properties but accepts on objects -- parseObject handles this case by adding optional if not required
 // [ ] AJV doesn't accept content in headers, params, querystring, but may accept for body and definitely for responses
-function parseSchemaOptions(
-	schema: JSONSchema7,
-	{ keepAnnotationsFl, allowUnsafeKeywordsFl }: CodeGenOpts,
-): string | undefined {
-	const ignoreKeys = [
-		...stdIgnoreKeys,
-		...(keepAnnotationsFl ? [] : annotationKeys),
-		...(allowUnsafeKeywordsFl ? [] : ajvUnsafeKeys),
-	];
+function parseSchemaOptions(schema: JSONSchema7, config: CodeGenOpts): string | undefined {
+	const ignoreKeys = [...stdIgnoreKeys, ...getSharedIgnoreKeys(config)];
 
 	const propertiesEntries = Object.entries(removeKeysFromObject(schema, ignoreKeys));
 	if (propertiesEntries.length === 0) {

@@ -27,7 +27,7 @@ import {
 	partialDerefPaths,
 	stringArrayToCode,
 } from '../lib/roCodeGenerators.ts';
-import { removeFromParameterEntries } from '../lib/consts.ts';
+import { pathItemOperations, removeFromParameterEntries } from '../lib/consts.ts';
 import type { Command } from 'commander';
 import { dedupeArray, fileTypes, getFilenameFor, getNameFor, nameTypes, toCase } from '../lib/util.ts';
 
@@ -45,13 +45,11 @@ export async function oas2ro(opts: CommandOptions, command: Command) {
 	let oasPaths = oasDoc.paths;
 	if (config.oas2ro?.derefFl === false) oasPaths = await partialDerefPaths(config, absDir, oasDoc.paths);
 
-	// console.log(JSON.stringify(oasPaths, null, 3));
-
 	for (const [pathURL, pathItemRaw] of Object.entries(oasPaths)) {
 		if (pathItemRaw === undefined) continue;
 		for (const [opMethod, opObjRaw] of Object.entries(pathItemRaw)) {
 			console.log('******', pathURL, opMethod);
-			if (opMethod === '$ref') continue;
+			if (!pathItemOperations.includes(opMethod)) continue;
 
 			const opObj = opObjRaw as OASOperationObject;
 			let roCode = '';

@@ -1,5 +1,6 @@
 import { existsSync, mkdirSync, rmSync } from 'node:fs';
 import type { StdConfig } from './config.ts';
+import { ajvUnsafeKeys, annotationKeys } from './consts.ts';
 
 export function toLowerFirstChar(s: string): string {
 	return `${s.charAt(0).toLowerCase()}${s.slice(1)}`;
@@ -15,6 +16,10 @@ export function dedupeArray<T>(arr: T[]): T[] {
 
 export function removeKeysFromObject(obj: object, keys: string[]) {
 	return Object.fromEntries(Object.entries(obj).filter((entry) => !keys.includes(entry[0])));
+}
+
+export function getSharedIgnoreKeys({ keepAnnotationsFl, allowUnsafeKeywordsFl }: StdConfig) {
+	return [...(keepAnnotationsFl ? [] : annotationKeys), ...(allowUnsafeKeywordsFl ? [] : ajvUnsafeKeys)];
 }
 
 /**
@@ -128,8 +133,12 @@ export function getNameFor(name: string, nameType: NameType, config: StdConfig):
 	const configToUse = config[nameType === nameTypes.routeOption ? 'oas2ro' : 'oas2tb'];
 	if (!configToUse) throw new Error(`getNameFor ERROR cannot get config to use for ${nameType}`);
 
+	// toCase.camel because we're selecting camel cased names from the config
 	const prefixTx = configToUse[`${toCase.camel(`${nameType}PrefixTx`)}`] ?? '';
 	const suffixTx = configToUse[`${toCase.camel(`${nameType}SuffixTx`)}`] ?? '';
+	const sanitizedName =
+		prefixTx.length > 0 ? toCase.pascal(sanitizeName(name)) : toCase[config.caseNm](sanitizeName(name));
+
 	return `${prefixTx}${sanitizeName(name)}${suffixTx}`;
 }
 
@@ -169,7 +178,7 @@ export function getRefNames(ref: string, config: StdConfig, prePath: string) {
 	return {
 		refedObjectNm,
 		componentType,
-		refedNm: getNameFor(refedObjectNm, nameTypes.schema, config),
+		refedNm: getNameFor(toCase.pascal(refedObjectNm), nameTypes.schema, config),
 		// refs are always to TypeBox output, so use oas2tb extension here
 		refPathNm: `${prePath}/${getTypeBoxFilenameFor(componentType, refedObjectNm, config)}`,
 	};

@@ -30,3 +30,6 @@ export const removeFromParameterEntries = {
 	allowReserved: undefined,
 };
 export const removeFromParameterKeywords = Object.keys(removeFromParameterEntries);
+
+// from https://spec.openapis.org/oas/latest.html#fixed-fields-6
+export const pathItemOperations = ['get', 'put', 'post', 'delete', 'options', 'head', 'path', 'trace'];

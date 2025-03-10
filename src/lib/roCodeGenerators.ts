@@ -1,5 +1,5 @@
 import { $RefParser } from '@apidevtools/json-schema-ref-parser';
-import { annotationKeys, removeFromParameterKeywords } from './consts.ts';
+import { annotationKeys, pathItemOperations, removeFromParameterKeywords } from './consts.ts';
 import type { StdConfig } from './config.ts';
 import {
 	isReferenceObject,
@@ -14,7 +14,7 @@ import {
 	type OASResponsesObject,
 } from './typesAndGuards.ts';
 import path from 'node:path';
-import { getRefNames, removeKeysFromObject } from './util.ts';
+import { getRefNames, getSharedIgnoreKeys, removeKeysFromObject } from './util.ts';
 
 // for object-type parameters, hoist the schema of the first property of the object
 // if the object has more than one properties log an error
@@ -131,7 +131,6 @@ export function genQueryParameterCode(parameters: OASParameterObject[], imports:
 		}
 	}
 
-	// Close, but required is a problem.
 	const props = genEntriesCode(entries, imports, config);
 	const desc = objectDe.length > 0 ? `description: '${objectDe}',` : '';
 	const req = required.length > 0 ? `required: ['${required.join("','")}'],` : '';
@@ -160,7 +159,7 @@ export function genRequestBodyCode(requestBody: OASRequestBodyObject, imports: s
 }
 
 export function genResponsesCode(responses: OASResponsesObject, imports: string[], config: StdConfig) {
-	if (!responses) return { code: '', isRef: false };
+	if (!responses || Object.keys(responses).length === 0) return { code: '', isRef: false };
 
 	if (isReferenceObject(responses)) {
 		// console.log('GEN RESPONSES REF', responses);
@@ -194,7 +193,8 @@ export async function partialDerefPaths(
 
 	const oasPaths = structuredClone(schema);
 
-	const normPath = (refFilePath: string, refPath: string) => path.normalize(`${refFilePath}/${refPath}`);
+	const normPath = (refFilePath: string, refPath: string) =>
+		path.normalize(`${refFilePath.length > 0 ? `${refFilePath}/` : ''}${refPath}`);
 	const addRefedContent = (base: OASReferenceObject, refFilePath: string) => {
 		const refedContent = resolved.get(normPath(refFilePath, base.$ref)) as object;
 		return { $ref: normPath(refFilePath, base.$ref), ...structuredClone(refedContent) };
@@ -215,12 +215,23 @@ export async function partialDerefPaths(
 			};
 		}
 		const oasPath = oasPaths[pathURL] as OASPathItemObject;
+		const pathParams: OASParameterObject[] = [];
 
-		// for each operation in the PathItem
+		// operations (or possible operations)
 		for (const opNm of Object.keys(oasPath)) {
+			// path level parameters
+			if (opNm === 'parameters') {
+				pathParams.push(...(oasPath[opNm] as OASParameterObject[]));
+			}
+			// skip non-operations
+			if (!pathItemOperations.includes(opNm)) continue;
+
 			const opObj = oasPath[opNm] as OASOperationObject;
 
-			if (Array.isArray(opObj.parameters)) {
+			// add any path parameters to parameters
+			oasPath[opNm].parameters = [...pathParams, ...(opObj.parameters ?? [])];
+
+			if (Array.isArray(opObj.parameters) && opObj.parameters.length > 0) {
 				// deref parameter objects into the oasDoc
 				// ['a','b'].entries => [ [0, 'a'], [1, 'b'] ]
 				for (const [idx, param] of opObj.parameters.entries()) {
@@ -279,8 +290,17 @@ export function genValueCode(v: unknown, imports: string[], config: StdConfig): 
 		if (typeof v[0] === 'string') {
 			return stringArrayToCode(v);
 		}
-		// TODO: array of objects or array of arrays (recurse)
-		return `[${v.join(',')}]`;
+		if (typeof v[0] === 'object') {
+			const itemsCode = v.map((vItem) => {
+				const code = genEntriesCode(Object.entries(vItem as object), imports, config);
+				if (code.length > 0 && code[0] === "'") return `{ ${code} },\n`;
+				return `${code}\n`;
+			});
+
+			return `[${itemsCode.join('')}]`;
+		}
+		// TODO: array of arrays (recurse)
+		return `[${v}]`;
 	}
 
 	if (typeof v === 'object') {
@@ -297,9 +317,11 @@ export function genValueCode(v: unknown, imports: string[], config: StdConfig): 
 
 export function genEntriesCode(entries: [string, unknown][], imports: string[], config: StdConfig) {
 	let entriesCode = '';
+	const ignoreKeys = getSharedIgnoreKeys(config);
 	// console.log('GEN ENTRIES entries', entries);
 	for (const [key, value] of entries) {
 		// console.log('GEN ENTRIES', key, value);
+		if (value === undefined || ignoreKeys.includes(key)) continue;
 		if (key !== '$ref') {
 			entriesCode += `'${key}': ${genValueCode(value, imports, config)},`;
 		} else if (typeof value === 'string') {

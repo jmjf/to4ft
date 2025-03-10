@@ -4,6 +4,8 @@ Using `/example/otherpsecs/train-travel-api.yaml`.
 
 ## Ref-maintaining oas2tb
 
+Command: `node --experimental-strip-types src/cli.ts oas2tb -i example/otherspecs/train-travel-api.yaml -o example/tb-tr -c oas2tb4fastify_ref.json && npm run check:ex`
+
 ### Unavailable local file
 
 Reading the spec fails because it has a reference to a local file that doesn't exist.
@@ -156,10 +158,95 @@ I need to decide if `isUnknown` is worth keeping or needs to be changed to actua
 
 ## Dereferenced oas2tb
 
+Command: `node --experimental-strip-types src/cli.ts oas2tb -i example/otherspecs/train-travel-api.yaml -o example/tb-td -c oas2tb4fastify_deref.json && npm run check:ex` -- note, only changes are the config file and output directory name.
+
 Having sorted through the issues above, this was boringly perfect. (lol)
 
 I will note, this schema has no `components.*` that `$ref` other schemas, so derefed is the same as refed.
 
 ## Ref-maintaining oas2ro
+
+Note, it requires the output from one of the commands above for imports for any refed schemas.
+
+Command: `node --experimental-strip-types src/cli.ts oas2ro -i example/otherspecs/train-travel-api.yaml -o example/ro-tr --refDir example/tb-tr -c oas2tb4fastify_ref.json && npm run check:ex`
+
+And we have an error resolving a ref `/#/components/parameters/page` from `json-schema-ref-parser`. There is no such ref in the schema, so I suspect partial deref is adding the leading `/`. The stack trace supports this idea.
+
+The cheap solution is to make `addRefedContent` strip a leading `/#` to `#`. Actually, the issue is in `addRefedContent` and the fact that `refFilePath` is empty. I think I conflated the path item `$ref` with the param's `$ref`. I think I need a function to get the various path bits. (The issue here is, this spec doesn't `$ref` in paths, so `refFilePath` is `''`. But, the param refs won't have a `refFilePath` either. So `addRefedContent` may need to normalize the path only if `refFilePath` is non-empty.)
+
+Adding a ternary to choose the path seems to have solved that problem. Now it's `#/components/responses/BadRequest`, so I'm guessing somewhere else is doing something similar. Maybe some refactoring is in order.
+
+Ah, here's the problem.
+
+```typescript
+const normPath = (refFilePath: string, refPath: string) => path.normalize(`${refFilePath}/${refPath}`);
+```
+
+So make that below to avoid the `/` if `refFilePath` is empty.
+
+```typescript
+const normPath = (refFilePath: string, refPath: string) =>
+		path.normalize(`${refFilePath.length > 0 ? `${refFilePath}/` : ''}${refPath}`);
+```
+
+We get much further. Now `sanitizeName` has an issue with a non-string (undefined) in `/bookings/{bookingId}`'s parameters. (I'm glad I left all the earlier test logging in place for now!)
+
+The issue here is, this spec uses a parameter defined at the path level, not the operation level. How would I support that? I think partial deref would need to understand that and propagate that parameter into each operation. Or I'd need to know about it when processing the operation.
+
+Partial deref gets a path item. If it's refed, it derefs it. (It isn't refed in this spec.)
+
+Then it processes the spec assuming it's getting operation objects. So, if I get an operation name `parameters`, I have parameters at the path level. I need to stash these parameters for the whole path.
+
+Then if I have a valid operation as defined by OpenAPI (added constant), add the path parameters to its parameters.
+
+That seems to be working, and with little change to code.
+
+It's still failing because we're trying to process the operation `parameters`, so exclude non-operations (another small change).
+
+Now we're getting lint errors. That's progress!
+
+Now the issue is an `allOf` array is getting `'allOf': [[object Object],[object Object]]`.
+
+The error is happening in a response schema. We pass `responses` to `genResponsesCode`. This is a no-ref response, so it's calling `genEntriesCode` with the entries from `responses`. That should get us 200, 400, etc. a recursively process the members.
+
+Ah. The issue is this. `// TODO: array of objects or array of arrays (recurse)`. If we hit a value that's an array and the array isn't a string, we naively join the array. So, time to do that "to do".
+
+Right now, I'm assuming that all items in the array are the same type. That may not be safe, but let's get the basics working for objects and then deal with different-type items.
+
+In `genValueCode` in the array branch, I think this will do it.
+
+```typescript
+if (typeof v[0] === 'object') {
+   const itemsCode = v.map((vItem) => `{ ${genEntriesCode(Object.entries(vItem as object), imports, config)} }`);
+   return `[${itemsCode.join(',')}]`;
+}
+```
+
+Now the linter doesn't complain about the generated code.
+
+Problems I'm seeing:
+
+- [x] `allOf: [{ TripSchema }, { Links_OriginSchema }, { Links_DestinationSchema }]`. I think the `{}` around the schemas is wrong, so need a way to decide if we need the `{}`. For example if we get an object with properties.
+  - The object array handling code (above) calls `genEntriesCode`. If the returned value begins with a `'`, it's a literal object and needs to be wrapped. If not, it's a schema a doesn't need to be wrapped.
+  - And we need a comma after `{}` wrappers.
+  
+- [ ] The `limit` and `page` parameters are getting imports like `import { limitSchema } from '../tb-tr/parameters_limit.ts';` and are being used with that name. The exported schema is `LimitSchema`.
+  - These are query parameters, so let's look at `genQueryParameterCode`. It builds a set of parameters with names `limit` and `page` with a `$ref`, then calls `genEntriesCode`. That calls `genRefCodeAndImport` with the value which is, for example, `#/components/parameters/page`
+  - We call `getRefNames` with that string. It calls `getNameFor` with `page` for a `schema`. Nothing is applying a case to the name.
+  - If I use the default case (go-case), `page` will remain lower case. If I have a prefix and don't Pascal case it, the name will be wrong. But if I don't have a prefix and am using camel case or go-case, the name will be wrong in this instance. In other instances, it might be correct.
+  - Can I Pascal case the name before getting it? That lets me keep the Pascal case in `getRefNames` where I know it needs to be Pascal case.
+  - That solves that problem but creates another problem with hyphenated names. Looking at these, I like them better, so TypeBox needs to use the same pattern.
+
+- [ ] Make TypeBox code use same names as `RouteOptions`.
+
+- [x] Annotation keywords are present. They should be stripped based on settings, so when running `genEntriesForCode`, I need to exclude keywords (or not) based on config.
+  - The ignore keywords are different for TypeBox and `RouteOptions`. I can build a function to get the common ignore keys and add the TypeBox extras in TypeBox code.
+
+- [x] I'm seeing schemas for individual with `required: undefined`. I need to exclude keywords whose value is undefined.
+  - In `genEntriesCode`, if value is undefined continue;
+
+- [ ] Some annotation keywords remain in the top level of `RouteOptions`
+
+
 
 ## Dereferenced oas2ro
