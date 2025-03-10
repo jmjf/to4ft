@@ -230,14 +230,17 @@ Problems I'm seeing:
   - The object array handling code (above) calls `genEntriesCode`. If the returned value begins with a `'`, it's a literal object and needs to be wrapped. If not, it's a schema a doesn't need to be wrapped.
   - And we need a comma after `{}` wrappers.
   
-- [ ] The `limit` and `page` parameters are getting imports like `import { limitSchema } from '../tb-tr/parameters_limit.ts';` and are being used with that name. The exported schema is `LimitSchema`.
+- [x] The `limit` and `page` parameters are getting imports like `import { limitSchema } from '../tb-tr/parameters_limit.ts';` and are being used with that name. The exported schema is `LimitSchema`.
   - These are query parameters, so let's look at `genQueryParameterCode`. It builds a set of parameters with names `limit` and `page` with a `$ref`, then calls `genEntriesCode`. That calls `genRefCodeAndImport` with the value which is, for example, `#/components/parameters/page`
   - We call `getRefNames` with that string. It calls `getNameFor` with `page` for a `schema`. Nothing is applying a case to the name.
   - If I use the default case (go-case), `page` will remain lower case. If I have a prefix and don't Pascal case it, the name will be wrong. But if I don't have a prefix and am using camel case or go-case, the name will be wrong in this instance. In other instances, it might be correct.
   - Can I Pascal case the name before getting it? That lets me keep the Pascal case in `getRefNames` where I know it needs to be Pascal case.
   - That solves that problem but creates another problem with hyphenated names. Looking at these, I like them better, so TypeBox needs to use the same pattern.
 
-- [ ] Make TypeBox code use same names as `RouteOptions`.
+- [x] Make TypeBox code use same names as `RouteOptions`.
+  - RO gets `CacheControlSchema`, but TB gets `Cache_ControlSchema`.
+  - RO is getting a `$ref`, so calling `getRefName`, but TB is getting the schema, etc., so is using `getCasedNameFor`.
+  - The issue was, `getRefName` should call `getCasedNameFor` for the ref name it gets.
 
 - [x] Annotation keywords are present. They should be stripped based on settings, so when running `genEntriesForCode`, I need to exclude keywords (or not) based on config.
   - The ignore keywords are different for TypeBox and `RouteOptions`. I can build a function to get the common ignore keys and add the TypeBox extras in TypeBox code.
@@ -245,8 +248,14 @@ Problems I'm seeing:
 - [x] I'm seeing schemas for individual with `required: undefined`. I need to exclude keywords whose value is undefined.
   - In `genEntriesCode`, if value is undefined continue;
 
-- [ ] Some annotation keywords remain in the top level of `RouteOptions`
+- [x] Some annotation keywords remain in the top level of `RouteOptions`
+  - Because we add them in `oas2ro` directly; check `keepAnnotationsFl`.
 
+- [x] `params` schemas have a description and example, but we should be stripping.
+  - because `getAnnotationsForParam` doesn't check `keepAnnotationsFl`.
 
+That should be everything for ref-maintaining oas2ro.
 
 ## Dereferenced oas2ro
+
+Before I start working on derefed, I need to clean up the code and organize pieces. Deref is going to reuse parts of the ref-maintaining code.

@@ -1,8 +1,8 @@
-import { CacheControlSchema } from '../tb-tr/headers_Cache-Control.ts';
+import { Cache_ControlSchema } from '../tb-tr/headers_Cache-Control.ts';
 import { RateLimitSchema } from '../tb-tr/headers_RateLimit.ts';
-import { RetryAfterSchema } from '../tb-tr/headers_Retry-After.ts';
+import { Retry_AfterSchema } from '../tb-tr/headers_Retry-After.ts';
 import { BookingPaymentSchema } from '../tb-tr/schemas_BookingPayment.ts';
-import { LinksBookingSchema } from '../tb-tr/schemas_Links-Booking.ts';
+import { Links_BookingSchema } from '../tb-tr/schemas_Links-Booking.ts';
 import { ProblemSchema } from '../tb-tr/schemas_Problem.ts';
 
 export const create_Booking_PaymentRouteOptions = {
@@ -10,30 +10,20 @@ export const create_Booking_PaymentRouteOptions = {
 	method: 'POST',
 	operationId: 'create-booking-payment',
 	tags: ['Payments'],
-	description:
-		'A payment is an attempt to pay for the booking, which will confirm the booking for the user and enable them to get their tickets.',
-	summary: 'Pay for a Booking',
 	schema: {
 		params: {
 			type: 'object',
-			properties: {
-				bookingId: {
-					description: 'The ID of the booking to pay for.',
-					example: '1725ff48-ab45-4bb5-9d02-88745177dedb',
-					type: 'string',
-					format: 'uuid',
-				},
-			},
+			properties: { bookingId: { type: 'string', format: 'uuid' } },
 			required: ['bookingId'],
 		},
 		querystring: { type: 'object', properties: {} },
 		body: { content: { 'application/json': { schema: BookingPaymentSchema } } },
 		response: {
 			'200': {
-				headers: { 'Cache-Control': CacheControlSchema, RateLimit: RateLimitSchema },
+				headers: { 'Cache-Control': Cache_ControlSchema, RateLimit: RateLimitSchema },
 				content: {
 					'application/json': {
-						schema: { allOf: [BookingPaymentSchema, { properties: { links: LinksBookingSchema } }] },
+						schema: { allOf: [BookingPaymentSchema, { properties: { links: Links_BookingSchema } }] },
 					},
 				},
 			},
@@ -59,7 +49,7 @@ export const create_Booking_PaymentRouteOptions = {
 				},
 			},
 			'429': {
-				headers: { RateLimit: RateLimitSchema, 'Retry-After': RetryAfterSchema },
+				headers: { RateLimit: RateLimitSchema, 'Retry-After': Retry_AfterSchema },
 				content: {
 					'application/problem+json': { schema: ProblemSchema },
 					'application/problem+xml': { schema: ProblemSchema },

@@ -22,6 +22,17 @@ export function getSharedIgnoreKeys({ keepAnnotationsFl, allowUnsafeKeywordsFl }
 	return [...(keepAnnotationsFl ? [] : annotationKeys), ...(allowUnsafeKeywordsFl ? [] : ajvUnsafeKeys)];
 }
 
+export function stringArrayToCode(arr: string[]): string {
+	return `[${arr.map((s) => JSON.stringify(s)).join(',')}]`;
+}
+
+// make OpenAPI path URL Fastify friendly
+export function cleanPathURL(pathURL: string): string {
+	let cleanPath = pathURL.replaceAll('{', ':');
+	cleanPath = cleanPath.replaceAll('}', '');
+	return cleanPath;
+}
+
 /**
  *
  * File and filesystem related utility functions
@@ -178,7 +189,7 @@ export function getRefNames(ref: string, config: StdConfig, prePath: string) {
 	return {
 		refedObjectNm,
 		componentType,
-		refedNm: getNameFor(toCase.pascal(refedObjectNm), nameTypes.schema, config),
+		refedNm: getCasedNameFor(refedObjectNm, nameTypes.schema, config),
 		// refs are always to TypeBox output, so use oas2tb extension here
 		refPathNm: `${prePath}/${getTypeBoxFilenameFor(componentType, refedObjectNm, config)}`,
 	};

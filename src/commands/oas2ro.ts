@@ -15,15 +15,10 @@ import type {
 import path from 'node:path';
 import {
 	cleanPathURL,
-	genAnnotationsForParam,
-	genEntriesCode,
 	genQueryParameterCode,
-	genRefCodeAndImport,
 	genRequestBodyCode,
-	genRequiredParams,
 	genResponsesCode,
-	hoistSchemas,
-	mergeParams,
+	genParameterCode,
 	partialDerefPaths,
 	stringArrayToCode,
 } from '../lib/roCodeGenerators.ts';
@@ -62,8 +57,10 @@ export async function oas2ro(opts: CommandOptions, command: Command) {
 			roCode += `method: '${opMethod.toUpperCase()}',`;
 			roCode += opObj.operationId ? `operationId: '${opObj.operationId}',` : '';
 			roCode += Array.isArray(opObj.tags) && opObj.tags.length > 0 ? `tags: ${stringArrayToCode(opObj.tags)},` : '';
-			roCode += typeof opObj.description === 'string' ? `description: ${JSON.stringify(opObj.description)},` : '';
-			roCode += typeof opObj.summary === 'string' ? `summary: ${JSON.stringify(opObj.summary)},` : '';
+			if (config.keepAnnotationsFl === true) {
+				roCode += typeof opObj.description === 'string' ? `description: ${JSON.stringify(opObj.description)},` : '';
+				roCode += typeof opObj.summary === 'string' ? `summary: ${JSON.stringify(opObj.summary)},` : '';
+			}
 			roCode += opObj.deprecated === true ? 'deprecated: true,' : '';
 			roCode += 'schema: {';
 
@@ -109,54 +106,6 @@ export async function oas2ro(opts: CommandOptions, command: Command) {
 		}
 	}
 	// writeFileSync('/workspace/example/ro-wip.ts', output);
-}
-
-// handles parameters that can be single-value -- in:path, in:header
-function genParameterCode(
-	paramIn: string,
-	parameters: OASParameterObject[],
-	opts: StdConfig,
-	imports: string[],
-): string {
-	const functionNm = 'genParameterCode';
-
-	let params = parameters.filter((s) => s.in === paramIn);
-	params = hoistSchemas(params) as OASParameterObject[];
-	const mergedParams = mergeParams(params);
-
-	if (mergedParams.length === 0) return '';
-	console.log('MERGED', paramIn, JSON.stringify(mergedParams, null, 3));
-
-	let paramCode = '';
-	for (const [paramNm, paramObj] of mergedParams) {
-		if (!paramObj.schema) {
-			console.log(`${functionNm} ERROR: skipping no-schema parameter ${paramNm}`);
-			continue;
-		}
-
-		if (paramIn === 'header' && ['Accept', 'Content-Type', 'Authorization'].includes(paramNm)) {
-			console.log(`${functionNm} ERROR: skipping header named ${paramNm} per OpenAPI standards`);
-			continue;
-		}
-
-		// may be invalid JS identifiers, so '' them.
-		paramCode += `'${paramNm}': `;
-		const schema = paramObj.schema as OASSchemaObject;
-
-		if (isReferenceObject(schema)) {
-			const code = genRefCodeAndImport(schema.$ref, imports, opts);
-			paramCode += `${code},`;
-		} else {
-			paramCode += '{';
-			paramCode += genAnnotationsForParam(paramObj, opts);
-			paramCode += genEntriesCode(Object.entries(schema), imports, opts);
-			paramCode += '},';
-		}
-	}
-	if (paramCode.length > 0) {
-		paramCode = `type: 'object', properties:{${paramCode}}, ${genRequiredParams(mergedParams)}`;
-	}
-	return paramCode;
 }
 
 /**

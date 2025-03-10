@@ -1,5 +1,5 @@
 import { RateLimitSchema } from '../tb-tr/headers_RateLimit.ts';
-import { RetryAfterSchema } from '../tb-tr/headers_Retry-After.ts';
+import { Retry_AfterSchema } from '../tb-tr/headers_Retry-After.ts';
 import { ProblemSchema } from '../tb-tr/schemas_Problem.ts';
 
 export const delete_BookingRouteOptions = {
@@ -7,19 +7,10 @@ export const delete_BookingRouteOptions = {
 	method: 'DELETE',
 	operationId: 'delete-booking',
 	tags: ['Bookings'],
-	description: 'Deletes a booking, cancelling the hold on the trip.',
-	summary: 'Delete a booking',
 	schema: {
 		params: {
 			type: 'object',
-			properties: {
-				bookingId: {
-					description: 'The ID of the booking to retrieve.',
-					example: '1725ff48-ab45-4bb5-9d02-88745177dedb',
-					type: 'string',
-					format: 'uuid',
-				},
-			},
+			properties: { bookingId: { type: 'string', format: 'uuid' } },
 			required: ['bookingId'],
 		},
 		querystring: { type: 'object', properties: {} },
@@ -54,7 +45,7 @@ export const delete_BookingRouteOptions = {
 				},
 			},
 			'429': {
-				headers: { RateLimit: RateLimitSchema, 'Retry-After': RetryAfterSchema },
+				headers: { RateLimit: RateLimitSchema, 'Retry-After': Retry_AfterSchema },
 				content: {
 					'application/problem+json': { schema: ProblemSchema },
 					'application/problem+xml': { schema: ProblemSchema },

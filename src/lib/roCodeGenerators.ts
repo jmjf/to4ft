@@ -89,6 +89,54 @@ export function mergeParams(parameters: OASParameterObject[]) {
 	return entries as [string, OASParameterObject][];
 }
 
+// handles parameters that can be single-value -- in:path, in:header
+export function genParameterCode(
+	paramIn: string,
+	parameters: OASParameterObject[],
+	opts: StdConfig,
+	imports: string[],
+): string {
+	const functionNm = 'genParameterCode';
+
+	let params = parameters.filter((s) => s.in === paramIn);
+	params = hoistSchemas(params) as OASParameterObject[];
+	const mergedParams = mergeParams(params);
+
+	if (mergedParams.length === 0) return '';
+	console.log('MERGED', paramIn, JSON.stringify(mergedParams, null, 3));
+
+	let paramCode = '';
+	for (const [paramNm, paramObj] of mergedParams) {
+		if (!paramObj.schema) {
+			console.log(`${functionNm} ERROR: skipping no-schema parameter ${paramNm}`);
+			continue;
+		}
+
+		if (paramIn === 'header' && ['Accept', 'Content-Type', 'Authorization'].includes(paramNm)) {
+			console.log(`${functionNm} ERROR: skipping header named ${paramNm} per OpenAPI standards`);
+			continue;
+		}
+
+		// may be invalid JS identifiers, so '' them.
+		paramCode += `'${paramNm}': `;
+		const schema = paramObj.schema as OASSchemaObject;
+
+		if (isReferenceObject(schema)) {
+			const code = genRefCodeAndImport(schema.$ref, imports, opts);
+			paramCode += `${code},`;
+		} else {
+			paramCode += '{';
+			paramCode += opts.keepAnnotationsFl ? genAnnotationsForParam(paramObj, opts) : '';
+			paramCode += genEntriesCode(Object.entries(schema), imports, opts);
+			paramCode += '},';
+		}
+	}
+	if (paramCode.length > 0) {
+		paramCode = `type: 'object', properties:{${paramCode}}, ${genRequiredParams(mergedParams)}`;
+	}
+	return paramCode;
+}
+
 // Query parameters are different from other parameters because they accept all properties
 // of any objects.
 // const removeFromQueryParams = [
@@ -113,7 +161,6 @@ export function genQueryParameterCode(parameters: OASParameterObject[], imports:
 
 	// build entries for individual parameters and object properties, flattening objects
 	for (const param of params) {
-		console.log('QPC PARAM', param);
 		if (isSchemaObject(param.schema) && param.schema.type === 'object') {
 			for (const [propNm, prop] of Object.entries(param.schema.properties ?? {})) {
 				entries.push([propNm, removeKeysFromObject(prop, removeFromParameterKeywords)]);
@@ -133,7 +180,7 @@ export function genQueryParameterCode(parameters: OASParameterObject[], imports:
 
 	const props = genEntriesCode(entries, imports, config);
 	const desc = objectDe.length > 0 ? `description: '${objectDe}',` : '';
-	const req = required.length > 0 ? `required: ['${required.join("','")}'],` : '';
+	const req = required.length > 0 ? `required: ${stringArrayToCode(required)},` : '';
 	const code = `type: 'object', properties: {${props}},${desc}${req}`;
 
 	return code;

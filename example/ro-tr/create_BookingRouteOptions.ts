@@ -1,7 +1,7 @@
 import { RateLimitSchema } from '../tb-tr/headers_RateLimit.ts';
-import { RetryAfterSchema } from '../tb-tr/headers_Retry-After.ts';
+import { Retry_AfterSchema } from '../tb-tr/headers_Retry-After.ts';
 import { BookingSchema } from '../tb-tr/schemas_Booking.ts';
-import { LinksSelfSchema } from '../tb-tr/schemas_Links-Self.ts';
+import { Links_SelfSchema } from '../tb-tr/schemas_Links-Self.ts';
 import { ProblemSchema } from '../tb-tr/schemas_Problem.ts';
 
 export const create_BookingRouteOptions = {
@@ -9,8 +9,6 @@ export const create_BookingRouteOptions = {
 	method: 'POST',
 	operationId: 'create-booking',
 	tags: ['Bookings'],
-	description: 'A booking is a temporary hold on a trip. It is not confirmed until the payment is processed.',
-	summary: 'Create a booking',
 	schema: {
 		body: {
 			content: { 'application/json': { schema: BookingSchema }, 'application/xml': { schema: BookingSchema } },
@@ -18,8 +16,8 @@ export const create_BookingRouteOptions = {
 		response: {
 			'201': {
 				content: {
-					'application/json': { schema: { allOf: [BookingSchema, { properties: { links: LinksSelfSchema } }] } },
-					'application/xml': { schema: { allOf: [BookingSchema, { properties: { links: LinksSelfSchema } }] } },
+					'application/json': { schema: { allOf: [BookingSchema, { properties: { links: Links_SelfSchema } }] } },
+					'application/xml': { schema: { allOf: [BookingSchema, { properties: { links: Links_SelfSchema } }] } },
 				},
 			},
 			'400': {
@@ -51,7 +49,7 @@ export const create_BookingRouteOptions = {
 				},
 			},
 			'429': {
-				headers: { RateLimit: RateLimitSchema, 'Retry-After': RetryAfterSchema },
+				headers: { RateLimit: RateLimitSchema, 'Retry-After': Retry_AfterSchema },
 				content: {
 					'application/problem+json': { schema: ProblemSchema },
 					'application/problem+xml': { schema: ProblemSchema },
