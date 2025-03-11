@@ -1,4 +1,3 @@
-
 export const get_BookingRouteOptions = {
 	url: '/bookings/:bookingId',
 	method: 'GET',

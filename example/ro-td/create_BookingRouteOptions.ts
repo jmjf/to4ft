@@ -1,4 +1,3 @@
-
 export const create_BookingRouteOptions = {
 	url: '/bookings',
 	method: 'POST',

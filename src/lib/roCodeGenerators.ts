@@ -20,7 +20,7 @@ export function genRouteOptionsForOperation(
 	config: StdConfig,
 ) {
 	let roCode = '';
-	const imports: string[] = [];
+	const imports = new Set<string>();
 
 	const roNm = toCase.camel(getNameFor(opObj.operationId as string, nameTypes.routeOption, config));
 	roCode += `export const ${roNm} = {`;
@@ -74,7 +74,7 @@ export function genRouteOptionsForOperation(
 	roCode += '}'; // schema
 	roCode += '}'; // RouteOptions
 
-	return { roCode, roNm, imports };
+	return { roCode, roNm, imports: Array.from(imports) };
 }
 
 // for object-type parameters, hoist the schema of the first property of the object
@@ -155,7 +155,7 @@ export function genParameterCode(
 	paramIn: string,
 	parameters: OASParameterObject[],
 	opts: StdConfig,
-	imports: string[],
+	imports: Set<string>,
 ): string {
 	const functionNm = 'genParameterCode';
 
@@ -198,30 +198,24 @@ export function genParameterCode(
 	return paramCode;
 }
 
-// Query parameters are different from other parameters because they accept all properties
-// of any objects.
-// const removeFromQueryParams = [
-// 	'in',
-// 	'name',
-// 	'allowEmptyValue',
-// 	'content',
-// 	'xml',
-// 	'externalDocs',
-// 	'explode',
-// 	'style',
-// 	'allowReserved',
-// 	'schema',
-// ];
-export function genQueryParameterCode(parameters: OASParameterObject[], imports: string[], config: StdConfig) {
+// Query parameters are different from path and header params because they may be objects whose
+// properties get flattened together
+export function genQueryParameterCode(parameters: OASParameterObject[], imports: Set<string>, config: StdConfig) {
 	const functionNm = 'genQueryParameterCode';
 
 	const params = parameters.filter((s) => s.in === 'query');
+	if (params.length === 0) return '';
 	const entries: [string, Partial<OASParameterObject> | OASReferenceObject][] = [];
 	const required: string[] = [];
 	let objectDe = '';
 
 	// build entries for individual parameters and object properties, flattening objects
 	for (const param of params) {
+		if (!param.schema) {
+			console.log(`${functionNm} ERROR: skipping no-schema parameter ${param.name}`);
+			continue;
+		}
+
 		if (isSchemaObject(param.schema) && param.schema.type === 'object') {
 			for (const [propNm, prop] of Object.entries(param.schema.properties ?? {})) {
 				entries.push([propNm, removeKeysFromObject(prop, removeFromParameterKeywords)]);
@@ -229,6 +223,7 @@ export function genQueryParameterCode(parameters: OASParameterObject[], imports:
 			}
 			required.push(...(param.schema.required ?? []));
 		} else {
+			// schema is a $ref
 			const keepObj = removeKeysFromObject(param, removeFromParameterKeywords);
 			// either info from the param (for $ref) or what should be in the property with required from param
 			const paramObj = isReferenceObject(param) ? keepObj : { ...param.schema, required: undefined, ...keepObj };
@@ -247,16 +242,13 @@ export function genQueryParameterCode(parameters: OASParameterObject[], imports:
 	return code;
 }
 
-// generate annotation code for a parameter
-// Filter invalid keywords
-// JSON.stringify what's left
 export function genAnnotationsForParam(parameter: OASParameterObject, config: StdConfig) {
 	const param = structuredClone(parameter);
 	const validEntries = Object.entries(param).filter(([key, value]) => annotationKeys.includes(key));
 	return `${JSON.stringify(Object.fromEntries(validEntries)).slice(1, -1)},`;
 }
 
-export function genRequestBodyCode(requestBody: OASRequestBodyObject, imports: string[], config: StdConfig) {
+export function genRequestBodyCode(requestBody: OASRequestBodyObject, imports: Set<string>, config: StdConfig) {
 	if (!requestBody) return { code: '', isRef: false };
 
 	if (isReferenceObject(requestBody)) {
@@ -266,7 +258,7 @@ export function genRequestBodyCode(requestBody: OASRequestBodyObject, imports: s
 	return { code: genEntriesCode(Object.entries(requestBody), imports, config), isRef: false };
 }
 
-export function genResponsesCode(responses: OASResponsesObject, imports: string[], config: StdConfig) {
+export function genResponsesCode(responses: OASResponsesObject, imports: Set<string>, config: StdConfig) {
 	if (!responses || Object.keys(responses).length === 0) return { code: '', isRef: false };
 
 	if (isReferenceObject(responses)) {
@@ -299,7 +291,7 @@ export function stringArrayToCode(arr: string[]): string {
 	return `[${arr.map((s) => JSON.stringify(s)).join(',')}]`;
 }
 
-export function genValueCode(v: unknown, imports: string[], config: StdConfig): string | unknown {
+export function genValueCode(v: unknown, imports: Set<string>, config: StdConfig): string | unknown {
 	if (typeof v === 'string') {
 		return JSON.stringify(v);
 	}
@@ -333,7 +325,7 @@ export function genValueCode(v: unknown, imports: string[], config: StdConfig): 
 	return v;
 }
 
-export function genEntriesCode(entries: [string, unknown][], imports: string[], config: StdConfig) {
+export function genEntriesCode(entries: [string, unknown][], imports: Set<string>, config: StdConfig) {
 	let entriesCode = '';
 	const ignoreKeys = getSharedIgnoreKeys(config);
 	// console.log('GEN ENTRIES entries', entries);
@@ -350,10 +342,10 @@ export function genEntriesCode(entries: [string, unknown][], imports: string[], 
 	return entriesCode;
 }
 
-export function genRefCodeAndImport(ref: string, imports: string[], config: StdConfig) {
+export function genRefCodeAndImport(ref: string, imports: Set<string>, config: StdConfig) {
 	// console.log('***GRI', ref, config);
 	// importing schemas from TypeBox output files, so nameType is schema
 	const { refedNm, refPathNm } = getRefNames(ref, config, path.relative(config.outPathTx, config.refPathTx));
-	imports.push(`import {${refedNm} } from '${refPathNm}'`);
+	imports.add(`import {${refedNm} } from '${refPathNm}'`);
 	return refedNm;
 }

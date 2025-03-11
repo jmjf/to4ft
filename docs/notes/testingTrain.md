@@ -262,7 +262,7 @@ Before I start working on derefed, I need to clean up the code and organize piec
 
 - [x] Move code that writes the `RouteOptions` object (~L55 - L105) to `genRouteOptionsForOperation`
 
-- [ ] Make imports a `Set`; convert to array on return
+- [x] Make imports a `Set` (because it gets ridiculously long in some cases); convert to array on return
 
 Running deref, the `RouteOptions` look decent except:
 

@@ -1,4 +1,3 @@
-
 export const delete_BookingRouteOptions = {
 	url: '/bookings/:bookingId',
 	method: 'DELETE',

@@ -1,4 +1,3 @@
-
 export const create_Booking_PaymentRouteOptions = {
 	url: '/bookings/:bookingId/payment',
 	method: 'POST',
