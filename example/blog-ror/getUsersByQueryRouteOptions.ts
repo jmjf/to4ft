@@ -13,7 +13,6 @@ export const getUsersByQueryRouteOptions = {
 		querystring: {
 			type: 'object',
 			properties: { userId: UserIdSchema, userNm: UserNmSchema, inline: { type: 'string', minLength: 1 } },
-			description: 'this description can be preserved in querystring',
 			required: ['userId', 'userNm'],
 		},
 		response: {

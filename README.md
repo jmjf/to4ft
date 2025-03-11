@@ -23,7 +23,6 @@ Seems to be working for both ref-maintaining and deref versions. See test output
 
 To do list:
 
-- [ ] fix: output is preserving the query-string level description with `keepAnnotationsFl: false`
 - [ ] test with example schemas and inspect output; fix issues ([x] = ran and LGTM)
   - [x] Simple blog schema (`example/openapi/openapi.yaml`); output in `example/blog-*`
   - [x] Train travel API (`example/otherschemas/train-travel-api.yaml`); output in `example/train-*`

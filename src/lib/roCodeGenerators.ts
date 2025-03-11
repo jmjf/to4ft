@@ -235,7 +235,7 @@ export function genQueryParameterCode(parameters: OASParameterObject[], imports:
 	}
 
 	const props = genEntriesCode(entries, imports, config);
-	const desc = objectDe.length > 0 ? `description: '${objectDe}',` : '';
+	const desc = config.keepAnnotationsFl && objectDe.length > 0 ? `description: '${objectDe}',` : '';
 	const req = required.length > 0 ? `required: ${stringArrayToCode(required)},` : '';
 	const code = `type: 'object', properties: {${props}},${desc}${req}`;
 
@@ -243,6 +243,7 @@ export function genQueryParameterCode(parameters: OASParameterObject[], imports:
 }
 
 export function genAnnotationsForParam(parameter: OASParameterObject, config: StdConfig) {
+	if (!config.keepAnnotationsFl) return '';
 	const param = structuredClone(parameter);
 	const validEntries = Object.entries(param).filter(([key, value]) => annotationKeys.includes(key));
 	return `${JSON.stringify(Object.fromEntries(validEntries)).slice(1, -1)},`;

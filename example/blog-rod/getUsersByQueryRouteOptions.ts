@@ -12,7 +12,6 @@ export const getUsersByQueryRouteOptions = {
 				userNm: { type: 'string', minLength: 3 },
 				inline: { type: 'string', minLength: 1 },
 			},
-			description: 'this description can be preserved in querystring',
 			required: ['userId', 'userNm'],
 		},
 		response: {
