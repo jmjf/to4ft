@@ -21,7 +21,6 @@ echo "train-rod"
 node --experimental-strip-types src/cli.ts oas2ro \
   -i example/otherspecs/train-travel-api.yaml \
   -o example/train-rod \
-  --refDir example/train-tbd \
   -c oas2tb4fastify_deref.json
 
 echo "train-ror"

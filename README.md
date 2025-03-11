@@ -19,12 +19,20 @@ Nothing pending.
 
 ### `oas2ro`
 
-Problems are fixed for ref-maintaining `oas2ro` for the blog-like test schema.
+Seems to be working for both ref-maintaining and deref versions. See test output identified below.
 
-- [ ] test ref-maintaining with other schemas to find remaining issues and edge cases
+To do list:
+
+- [ ] fix: output is preserving the query-string level description with `keepAnnotationsFl: false`
+- [ ] test with example schemas and inspect output; fix issues ([x] = ran and LGTM)
+  - [x] Simple blog schema (`example/openapi/openapi.yaml`); output in `example/blog-*`
+  - [x] Train travel API (`example/otherschemas/train-travel-api.yaml`); output in `example/train-*`
+  - [ ] Museum example (`example/otherschemas/museum-openapi-example.yaml`); output in `example/museum-*`
+  - [ ] Pet store (`example/otherschemas/petstore.yaml`); output in `example/pet-*`
+    - This schema doesn't pass Redocly lint, but the issues shouldn't be a problem.
 - [ ] refactor code; remove all the `console.log`s supporting development
-- [ ] rewrite deref code in light of ref-maintaining work (should have solved most of the issues)
-- [ ] find and flatten overlaps between ref/deref
+- [ ] Examine: Can I lift partial deref into the main loop without making a mess? (Probably not.)
+
 
 ### Demo server
 
@@ -68,7 +76,7 @@ Also see, `docs` for base assumptions and recommendations on how to build specs 
 
 Generate dereferenced TypeBox types
 
-Example: `oas2tb4fastify oas2dtb -i example/openapi/openapi.yaml -o example/dtb --prefix tb`
+Example: `oas2tb4fastify oas2dtb -i example/openapi/openapi.yaml -o example/dtb -c configFile`
 
 `oas2dtb` generates types that dereference any `$ref`ed fields. Each file is self-contained with no imports of other files. This option works best if you maintain an OpenAPI schema and generate TypeBox when it changes.
 
@@ -76,162 +84,218 @@ Example: `oas2tb4fastify oas2dtb -i example/openapi/openapi.yaml -o example/dtb 
 
 `-i` (required) -- path to one of
 
-- a directory containing files to convert
-  - `example/openapi/schemas` generates types defined in `components` in any file in the directory
 - a file to convert
   - `example/openapi/schemas/User.yaml` generates types for items defined in `components` in `User.yaml` and in any file `$ref`ed in `User.yaml` or its `$ref`s (recursive).
   - `example/openapi/openapi.yaml` generates types for items defined in `components` in the `openapi.yaml` and in any file `$ref`ed in the `openapi.yaml` or its `$ref`s (recursive).
+- a directory containing files to convert
+  - `example/openapi/schemas` generates types defined in `components` in any file in the directory
 
 `-o` (required) -- path to receive generated files
 
-`--prefix` (optional; default `tb`) -- characters to prefix on OpenAPI names in generated code
-
-`--keepanno` -- if present, keep description, summary, example, examples, deprecated, $comment, and other annotation keywords. (Default is remove for a smaller schema.)
-
-`--ajvunsafe` -- if present, allow xml, externalDocs, name, in, allowEmptyValue, required, and discriminator keywords, which AJV does not support by default.
-
-`--keeprefs` -- if present, convert `$ref`s into clones of other (assumed to exist) TypeBox schemas -- implies `--extension js`
-
-`--extension` (default `js`) -- filename extension to use for imported TypeBox schemas -- implies `--keeprefs`
-
-Be aware of possible camelcase inconsistencies in output. **Recommendation:** Use leading lowercase for `--prefix`. Name OpenAPI items with leading uppercase.
+`-c` -- JSON configuration file to use. See `oas2tb4fastify_deref.json` and `oas2tb4fastify_ref.json` for examples.
 
 The following examples are generated from `openapi/schema/User.yaml` `components/schemas/User`.
 
 #### Example dereferenced output from `npm run tbd:dev`
 
-By default, `oas2tb` generates types that dereference any `$ref`ed fields. Each file is self-contained with no imports of other files. This option works best if you maintain an OpenAPI schema and generate TypeBox when it changes. Schemas are easier to see because they have full type information in one place.
+With fully dereferenced output, manual maintenance is a pain. Regenerating the generated code is easy.
 
 ```typescript
 import { type Static, Type } from '@sinclair/typebox';
 
-export const tbUser = Type.Object(
-   {
-      userId: Type.Number({ minimum: 1 }),
-      userNm: Type.String({ minLength: 3 }),
-      emailAddrTx: Type.Optional(Type.String({ format: 'emailAddr' })),
-      'x-dashes': Type.Optional(Type.String()),
-      $100ok: Type.Optional(Type.String()),
-      x𒐗: Type.Optional(Type.Number()),
-   },
-   {},
-);
-export type TbUser = Static<typeof tbUser>;
+export const UserSchema = Type.Object({
+   userId: Type.Number({ minimum: 1 }),
+   userNm: Type.String({ minLength: 3 }),
+   emailAddrTx: Type.Optional(Type.String({ format: 'emailAddr' })),
+   'x-dashes': Type.Optional(Type.String()),
+   $100ok: Type.Optional(Type.String()),
+   x𒐗: Type.Optional(Type.Number()),
+});
+export type User = Static<typeof UserSchema>;
 ```
 
-See `example/tb-d` for more examples.
+See `example/blog-tbd` for more examples.
 
 #### Example reference-maintaining output from `npm run tbr:dev`
 
-**WARNING:** If your schema `$ref`s `examples`, `links`, or other OpenAPI fields that do not generate types, `oas2tb4fastify` will not convert them and may produce unpredictable results.
+Reference-maintaining output mirrors the source spec using imports and `Clone`. If you want to  abandon your OpenAPI spec, this option is easier to maintain than fully derefed.
 
-Reference-maintaining output mirrors the source spec using imports and `Clone`. This option works best if you want to convert an OpenAPI spec once and abandon it in favor of TypeBox and generating your API specs from the application (e.g., with `@fastify/swagger` to save JSON output in a file). If you choose to maintain your spec in TypeBox, add at least `--keepanno` to get descriptions, examples, and other annotations. Be aware of the limitations of AJV, Fastify's `RouteOptions`, and how they an affect documentation. See `docs/AssumptionsRecommendations.md` for more details.
+**WARNING:** If your schema `$ref`s `examples`, `links`, or other OpenAPI fields that do not generate types, `oas2tb4fastify` will not convert them and may produce unpredictable results.
 
 ```typescript
 import { Clone, type Static, Type } from '@sinclair/typebox';
-import { tb$100ok } from './schemas$100ok.js';
-import { tbEmailAddrTx } from './schemasEmailAddrTx.js';
-import { tbUserId } from './schemasUserId.js';
-import { tbUserNm } from './schemasUserNm.js';
-import { tbX_dashes } from './schemasx-dashes.js';
-import { tbX𒐗 } from './schemasx𒐗.js';
+import { $100OkSchema } from './schemas_$100ok.ts';
+import { EmailAddrTxSchema } from './schemas_EmailAddrTx.ts';
+import { UserIdSchema } from './schemas_UserId.ts';
+import { UserNmSchema } from './schemas_UserNm.ts';
+import { X_DashesSchema } from './schemas_x-dashes.ts';
+import { X𒐗Schema } from './schemas_x𒐗.ts';
 
-export const tbUser = Type.Object(
-   {
-      userId: Clone(tbUserId),
-      userNm: Clone(tbUserNm),
-      emailAddrTx: Type.Optional(Clone(tbEmailAddrTx)),
-      'x-dashes': Type.Optional(Clone(tbX_dashes)),
-      $100ok: Type.Optional(Clone(tb$100ok)),
-      x𒐗: Type.Optional(Clone(tbX𒐗)),
-   },
-   {},
-);
-export type TbUser = Static<typeof tbUser>;
+export const UserSchema = Type.Object({
+   userId: Clone(UserIdSchema),
+   userNm: Clone(UserNmSchema),
+   emailAddrTx: Type.Optional(Clone(EmailAddrTxSchema)),
+   'x-dashes': Type.Optional(Clone(X_DashesSchema)),
+   $100ok: Type.Optional(Clone($100OkSchema)),
+   x𒐗: Type.Optional(Clone(X𒐗Schema)),
+});
+export type User = Static<typeof UserSchema>;
 ```
 
-See `example/tb-r` for more examples.
-
-#### Example keywords-maintaining output from `npm run tbdkeys:dev`
-
-This example shows that `oas2tb` keeps keywords from the nearest source. `userId` has a definition in `Fields.yaml`, which is `$ref`ed in `User.yaml`. In `User.yaml` we change the definition. The definition in the output is from `User.yaml`. The same holds true for defaults, examples, and other keywords. Choose overrides carefully.
-
-```typescript
-import { type Static, Type } from '@sinclair/typebox';
-
-export const tbUser = Type.Object(
-   {
-      userId: Type.Number({ description: 'A unique identifier for a user (override)', minimum: 1 }),
-      userNm: Type.String({ minLength: 3, description: 'User name must be at least 3 characters', example: 'Joe' }),
-      emailAddrTx: Type.Optional(
-         Type.String({ format: 'emailAddr', description: 'An email address', example: 'joe@mailinator.com' }),
-      ),
-      'x-dashes': Type.Optional(Type.String()),
-      $100ok: Type.Optional(Type.String()),
-      x𒐗: Type.Optional(Type.Number()),
-   },
-   {},
-);
-export type TbUser = Static<typeof tbUser>;
-```
-
-See `example/tb-keys` for more examples.
+See `example/blog-tbr` for more examples.
 
 ### `oas2ro`
 
-**WIP** This section will change when I finish the code.
+Generate partial Fastify `RouteOptions` objects based on OpenAPI `paths`.
 
-Generate partial Fastify `RouteOptions` objects based on `paths`.
+`oas2tb4fastify oas2ro -i input -o outDir -r refDir -c configFile`
 
-`oas2tb4fastify oas2ro -i input -o outDir -r refDir --deref`
+`-i` (required) -- the root file of an OpenAPI spec; `oas2tb4fastify` expects to find an OpenAPI Document Object
 
-- `input` -> the root file of an OpenAPI spec; we expect to find an OpenAPI Document Object
-- `outDir` -> directory to receive TypeScript files with `RouteOptions`
-- `deref` -> dereference references
-- `refDir` -> directory that contains TypeBox types (used to write `import`s)
+`-o` (required) -- directory to receive TypeScript files with `RouteOptions`
 
-Will write TypeScript files corresponding to paths containing `RouteOptions` objects named for `operationId`s.
+`-c` -- JSON configuration file to use. See `oas2tb4fastify_deref.json` and `oas2tb4fastify_ref.json` for examples.
 
-For example:
+`--refDir` (required if `derefFl: false`) -- directory to reference for TypeBox types; `oas2tb4fastify` assumes the directory and files it wants exist and exports the TypeBox schemas it wants to import.
 
-```yaml
-paths:
-  /posts/{postId}:
-    get:
-      operationId: getPostsById
-      # etc
-    delete:
-      operationId: deletePostsById
-      # etc
-```
-
-Will write a file named `posts_postId.ts` containing `getPostsByIdRO` and `deletePostsByIdRO`.
-
-Fastify requires a `handler` member in `RouteOptions`, so the handler will be defaulted to a `not implemented` handler.
-
-Example of applying a handler and an `onRequest` hook for authorization.
+#### Example dereferenced output from `npm run rod:dev`
 
 ```typescript
-const postPostIdRoutes: [
-    {
-        ...getPostsdByIdRO,
-        handler: getPostsByIdHandler,
-        onRequest: [authorizeRequestHook],
-    },
-    {
-        ...deletePostsdByIdRO,
-        handler: deletePostsByIdHandler,
-        onRequest: [authorizeRequestHook],
-    },
-]
+export const getUsersByQueryRouteOptions = {
+   url: '/users',
+   method: 'GET',
+   operationId: 'getUsersByQuery',
+   tags: ['Users', 'Other'],
+   schema: {
+      headers: { type: 'object', properties: { 'x-test-header': { type: 'string' } } },
+      querystring: {
+         type: 'object',
+         properties: {
+            userId: { type: 'number', minimum: 1 },
+            userNm: { type: 'string', minLength: 3 },
+            inline: { type: 'string', minLength: 1 },
+         },
+         description: 'this description can be preserved in querystring',
+         required: ['userId', 'userNm'],
+      },
+      response: {
+         '200': {
+            content: {
+               'application/json': {
+                  schema: {
+                     type: 'array',
+                     items: {
+                        type: 'object',
+                        properties: {
+                           userId: { type: 'number', minimum: 1 },
+                           userNm: { type: 'string', minLength: 3 },
+                           emailAddrTx: { type: 'string', format: 'emailAddr' },
+                           'x-dashes': { type: 'string' },
+                           $100ok: { type: 'string' },
+                           x𒐗: { type: 'number' },
+                        },
+                     },
+                  },
+               },
+            },
+            headers: { 'x-test-header': { schema: { type: 'string' } } },
+         },
+         '4xx': {},
+      },
+   },
+};
 ```
 
-This approach isn't seamless, but the seams are small and confined to details that aren't expressed in an API schema.
+See `example/blog-rod` for more examples.
+
+#### Example ref-maintaining output from `npm run ror:dev`
+
+```typescript
+import { XTestHeaderSchema } from '../blog-tbr/headers_XTestHeader.ts';
+import { UserSchema } from '../blog-tbr/schemas_User.ts';
+import { UserIdSchema } from '../blog-tbr/schemas_UserId.ts';
+import { UserNmSchema } from '../blog-tbr/schemas_UserNm.ts';
+
+export const getUsersByQueryRouteOptions = {
+   url: '/users',
+   method: 'GET',
+   operationId: 'getUsersByQuery',
+   tags: ['Users', 'Other'],
+   schema: {
+      headers: { type: 'object', properties: { 'x-test-header': { type: 'string' } } },
+      querystring: {
+         type: 'object',
+         properties: { userId: UserIdSchema, userNm: UserNmSchema, inline: { type: 'string', minLength: 1 } },
+         description: 'this description can be preserved in querystring',
+         required: ['userId', 'userNm'],
+      },
+      response: {
+         '200': {
+            content: { 'application/json': { schema: { type: 'array', items: UserSchema } } },
+            headers: { 'x-test-header': XTestHeaderSchema },
+         },
+         '4xx': {},
+      },
+   },
+};
+```
+
+## Configuration file
+
+Default configuration values if you provide no configuration file.
+
+```json
+{
+   "keepAnnotationsFl": false,
+   "allowUnsafeKeywordsFl": false,
+   "caseNm": "go",
+   "oas2tb": {
+      "schemaPrefixTx": "",
+      "schemaSuffixTx": "Schema",
+      "typePrefixTx": "",
+      "typeSuffixTx": "",
+      "derefFl": false,
+      "extensionTx": "ts"
+   },
+   "oas2ro": {
+      "derefFl": false,
+      "prefixTx": "",
+      "suffixTx": "RouteOptions",
+      "importExtensionTx": "ts",
+      "extensionTx": "ts"
+   }
+}
+```
+
+- `keepAnnotationsFl` -- If true, keep annotation-type keywords in the output. See `annotationKeys` in `src/lib/consts.ts` for the list of annotation keywords.
+
+- `allowUnsafeKeywordsFl` -- If true, keep keywords AJV may not recognize. See `ajvUnsafeKeys` in `src/lib/consts.ts` for the list of unsafe keywords.
+
+**NOTE:** `oas2tb4fastify` ignores keywords in `stdIgnoreKeys` by default because they're handled by the code.
+
+- `caseNm` -- Identifies the casing style to use.
+  - `go` -- Camel case but preserves strings of consecutive captials, similar to Go names
+  - `camel` -- Lower-first camel case
+  - `pascal` -- Upper-first camel case
+
+- `oas2tb` -- configuration specific to `oas2tb`
+  - `schemaPrefixTx` and `schemaSuffixTx` -- Text to add before and after (respectively) names for TypeBox schemas.
+  - `typePrefixTx` and `TypeSuffixTx` -- Text to add before and after (respectively) names for TypeBox types (`Static<typeof Schema>`).
+  - `derefFl` -- If true, generate dereferenced TypeBox schemas with sub-objects fully exploded in the schema.
+  - `extensionTx` -- The extension to use for import file names for referenced schemas -- NO DOT. If you aren't using TypeScripts `rewriteRelativeImportExtensions` option, you probably want `js`.
+
+**NOTE:** `oas2tb` always writes files with `ts` extensions because it's writing TypeBox, which assumes TypeScript.
+
+- `oas2ro` -- configuration specific to `oas2ro`
+  - `derefFl` -- If true, generate dereferenced `RouteOptions` objects with fully exploded schemas for any referenced objects.
+  - `prefixTx` and `suffixTx` -- Text to add before and after (respectively) names for `RouteOptions` objects.
+  - `importExtensionTx` -- The extension to use for import file names -- NO DOT. If you aren't using TypeScripts `rewriteRelativeImportExtensions` option, you probably want `js`.
+  - `extensionTx` -- The extension to use for output files. `RouteOptions` do not include type annotations, so can be written as `js`, `mjs`, or `cjs` if you wish.
 
 ## Thanks
 
-Without `@apidevtools/json-schema-ref-parser`, this tool would be more work than I'm willing to take on. Thank you Jon, Phil, and the rest of the team behind it.
+Without `@apidevtools/json-schema-ref-parser`, this tool would be more work than I'm willing to take on. Thank you to the team behind it.
 
 `openapi-transformer-toolkit` for inspiring me to explore generating code from OpenAPI specs and getting me on the spec-first bandwagon. Thank you Nearform team.
 
-`oas2tb4fastify` borrows heavily from the core code from `schema2typebox` to do schema translation. Thank you xddq.
+`oas2tb4fastify` borrows heavily from `schema2typebox` to translate to TypeBox. Thank you xddq.

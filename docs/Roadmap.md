@@ -56,7 +56,7 @@ Currently, generates dereferenced `RouteOptions` object. Code is still WIP, but 
 - [x] when generating code descending into objects, generate imports and bubble them up so they can be added
 - [x] redo options to use a config file (dupe of above)
 - [x] write individual files
-- [ ] rewrite deref code in light of ref-maintaining work (should have solved most of the issues)
+- [x] rewrite deref code in light of ref-maintaining work (should have solved most of the issues)
 - [ ] find and flatten overlaps between ref/deref
 - [x] improve unsafe keyword handling
 
