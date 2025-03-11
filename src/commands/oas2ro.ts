@@ -2,115 +2,149 @@ import { writeFileSync } from 'node:fs';
 import { $RefParser } from '@apidevtools/json-schema-ref-parser';
 import type { CommandOptions } from '../cli.ts';
 import { loadConfig, type StdConfig } from '../lib/config.ts';
-import { isReferenceObject, type OASPathsObject, type RouteOptions } from '../lib/typesAndGuards.ts';
+import { isReferenceObject, isSchemaObject, type OASPathsObject, type RouteOptions } from '../lib/typesAndGuards.ts';
 import type {
 	OASDocument,
 	OASSchemaObject,
 	OASParameterObject,
 	OASNonArraySchemaObject,
 	OASOperationObject,
-	OASRequestBodyObject,
 	OASResponsesObject,
+	OASPathItemObject,
+	OASReferenceObject,
 } from '../lib/typesAndGuards.ts';
 import path from 'node:path';
-import {
-	cleanPathURL,
-	genQueryParameterCode,
-	genRequestBodyCode,
-	genResponsesCode,
-	genParameterCode,
-	partialDerefPaths,
-	stringArrayToCode,
-} from '../lib/roCodeGenerators.ts';
+import { cleanPathURL, genRouteOptionsForOperation } from '../lib/roCodeGenerators.ts';
 import { pathItemOperations, removeFromParameterEntries } from '../lib/consts.ts';
 import type { Command } from 'commander';
-import { dedupeArray, fileTypes, getFilenameFor, getNameFor, nameTypes, toCase } from '../lib/util.ts';
+import { dedupeArray } from '../lib/util.ts';
 
 export async function oas2ro(opts: CommandOptions, command: Command) {
 	const config = loadConfig(opts, command.name());
 	const absDir = path.resolve(path.dirname(config.inPathTx));
+	const isDeref = config.oas2ro.derefFl === true;
 
 	const rp = new $RefParser();
-	const oasDoc = (
-		config.oas2ro?.derefFl === true ? await rp.dereference(config.inPathTx) : await rp.parse(config.inPathTx)
-	) as OASDocument;
+	const oasDoc = (isDeref ? await rp.dereference(config.inPathTx) : await rp.parse(config.inPathTx)) as OASDocument;
 	if (oasDoc.paths === undefined) throw new Error('oas2ro ERROR: schema does not include paths.');
 
 	// If we dereferenced, paths are okay as-is. If not, we need to partially dereference to make handling easier.
-	let oasPaths = oasDoc.paths;
-	if (config.oas2ro?.derefFl === false) oasPaths = await partialDerefPaths(config, absDir, oasDoc.paths);
+	const oasPaths = isDeref ? oasDoc.paths : await partialDerefPaths(config, absDir, oasDoc.paths);
 
 	for (const [pathURL, pathItemRaw] of Object.entries(oasPaths)) {
 		if (pathItemRaw === undefined) continue;
+
+		const pathParams: (OASReferenceObject | OASParameterObject)[] = [];
+
 		for (const [opMethod, opObjRaw] of Object.entries(pathItemRaw)) {
+			// add path params for deref because partial deref handles it for non-deref
+			if (isDeref && opMethod === 'parameters') {
+				pathParams.push(...(opObjRaw as OASParameterObject[]));
+			}
 			console.log('******', pathURL, opMethod);
 			if (!pathItemOperations.includes(opMethod)) continue;
 
 			const opObj = opObjRaw as OASOperationObject;
-			let roCode = '';
-			const outFile = `${config.outPathTx}/${getFilenameFor(fileTypes.roOut, opObj.operationId ?? `${opMethod}_${pathItemRaw}`, nameTypes.routeOption, config)}`;
-			const imports = [] as string[];
-
-			const roNm = toCase.camel(getNameFor(opObj.operationId as string, nameTypes.routeOption, config));
-			roCode += `export const ${roNm} = {`;
-			roCode += `url: '${cleanPathURL(pathURL)}',`;
-			roCode += `method: '${opMethod.toUpperCase()}',`;
-			roCode += opObj.operationId ? `operationId: '${opObj.operationId}',` : '';
-			roCode += Array.isArray(opObj.tags) && opObj.tags.length > 0 ? `tags: ${stringArrayToCode(opObj.tags)},` : '';
-			if (config.keepAnnotationsFl === true) {
-				roCode += typeof opObj.description === 'string' ? `description: ${JSON.stringify(opObj.description)},` : '';
-				roCode += typeof opObj.summary === 'string' ? `summary: ${JSON.stringify(opObj.summary)},` : '';
+			if (isDeref && pathParams.length > 0) {
+				opObj.parameters = [...pathParams, ...(opObj.parameters ?? [])];
 			}
-			roCode += opObj.deprecated === true ? 'deprecated: true,' : '';
-			roCode += 'schema: {';
 
-			// parameters
-
-			if (Array.isArray(opObj.parameters) && opObj.parameters.length > 0) {
-				// in: path (params)
-				const paramsCode = genParameterCode('path', opObj.parameters as OASParameterObject[], config, imports);
-				roCode += paramsCode.length > 0 ? `params: {${paramsCode}},` : '';
-
-				// in: header (headers)
-				const headersCode = genParameterCode('header', opObj.parameters as OASParameterObject[], config, imports);
-				roCode += headersCode.length > 0 ? `headers: {${headersCode}},` : '';
-
-				// in: query (querystring)
-				const querystringCode = genQueryParameterCode(opObj.parameters as OASParameterObject[], imports, config);
-				roCode += querystringCode.length > 0 ? `querystring: {${querystringCode}},` : '';
-				const tempImports: string[] = [];
-			}
-			// requestBody (body)
-			const { code: bodyCode, isRef: bodyIsRef } = genRequestBodyCode(
-				opObj.requestBody as OASRequestBodyObject,
-				imports,
-				config,
-			);
-			roCode += bodyCode.length > 0 ? `body: ${!bodyIsRef ? '{' : ''}${bodyCode}${!bodyIsRef ? '}' : ''},` : '';
-
-			// responses (response)
-			const { code: responseCode, isRef: responseIsRef } = genResponsesCode(
-				opObj.responses as OASResponsesObject,
-				imports,
-				config,
-			);
-			console.log('RESPONSE', responseCode, responseIsRef, imports, opObj.responses);
-			roCode +=
-				responseCode.length > 0
-					? `response: ${!responseIsRef ? '{' : ''}${responseCode}${!responseIsRef ? '}' : ''},`
-					: '';
-
-			roCode += '}'; // schema
-			roCode += '}'; // RouteOptions
+			const { roCode, roNm, imports } = genRouteOptionsForOperation(pathURL, opMethod, opObj, config);
 			writeFileSync(`${config.outPathTx}/${roNm}.ts`, `${dedupeArray(imports).join(';\n')};\n\n${roCode};\n`);
 		}
 	}
 	// writeFileSync('/workspace/example/ro-wip.ts', output);
 }
 
+// Dereference a set of PathsObjects enough that a ref-maintaining RouteOptions
+// generation process can use them.
+async function partialDerefPaths(config: StdConfig, absDir: string, schema: OASPathsObject): Promise<OASPathsObject> {
+	// resolved makes it easier to get referenced content
+	const rp = new $RefParser();
+	const resolved = await rp.resolve(config.inPathTx);
+
+	const oasPaths = structuredClone(schema);
+
+	const normPath = (refFilePath: string, refPath: string) =>
+		path.normalize(`${refFilePath.length > 0 ? `${refFilePath}/` : ''}${refPath}`);
+	const addRefedContent = (base: OASReferenceObject, refFilePath: string) => {
+		const refedContent = resolved.get(normPath(refFilePath, base.$ref)) as object;
+		return { $ref: normPath(refFilePath, base.$ref), ...structuredClone(refedContent) };
+	};
+
+	for (const [pathURL, pathItemRaw] of Object.entries(oasPaths)) {
+		// merge the ref into the path
+		let refFilePath = '';
+
+		// get any refed Path Items
+		if (isReferenceObject(pathItemRaw)) {
+			const refFile = path.normalize(`${absDir}/${pathItemRaw.$ref.split('#')[0]}`);
+			refFilePath = path.dirname(refFile); // other refs from this file will be relative to this path
+			const refedContent = resolved.get(refFile);
+			oasPaths[pathURL] = {
+				$ref: normPath(refFilePath, pathItemRaw.$ref),
+				...structuredClone(refedContent as object),
+			};
+		}
+		const oasPath = oasPaths[pathURL] as OASPathItemObject;
+		const pathParams: OASParameterObject[] = [];
+
+		// operations (or possible operations)
+		for (const opMethod of Object.keys(oasPath)) {
+			// path level parameters
+			if (opMethod === 'parameters') {
+				pathParams.push(...(oasPath[opMethod] as OASParameterObject[]));
+			}
+			// skip non-operations
+			if (!pathItemOperations.includes(opMethod)) continue;
+
+			const opObj = oasPath[opMethod] as OASOperationObject;
+
+			// add any path parameters to parameters
+			oasPath[opMethod].parameters = [...pathParams, ...(opObj.parameters ?? [])];
+
+			if (Array.isArray(opObj.parameters) && opObj.parameters.length > 0) {
+				// deref parameter objects into the oasDoc
+				// ['a','b'].entries => [ [0, 'a'], [1, 'b'] ]
+				for (const [idx, param] of opObj.parameters.entries()) {
+					if (isReferenceObject(param)) {
+						oasPath[opMethod].parameters[idx] = addRefedContent(param as OASReferenceObject, refFilePath);
+					}
+				}
+			}
+
+			if (isReferenceObject(opObj.responses)) {
+				// deref response object (only one) into the oasDoc
+				oasPath[opMethod].responses = addRefedContent(opObj.responses, refFilePath);
+			}
+
+			// if refed content doesn't have a schema, hoist it because we can't ref it
+			for (const [responseKey, responseObj] of Object.entries((opObj.responses ?? {}) as OASResponsesObject)) {
+				if (isReferenceObject(responseObj)) {
+					const refedContent = resolved.get(normPath(refFilePath, responseObj.$ref)) as object;
+					if (!isSchemaObject(refedContent)) {
+						oasPath[opMethod].responses[responseKey] = {
+							...structuredClone(refedContent),
+							...responseObj, // keep anything from responseObj that overrides the refed content
+							$ref: undefined,
+						};
+					}
+				}
+			}
+
+			if (opObj.requestBody !== undefined && isReferenceObject(opObj.requestBody)) {
+				// deref requestBody object (only one) into the oasDoc
+				oasPath[opMethod].requestBody = addRefedContent(opObj.requestBody, refFilePath);
+			}
+			// ASSUMPTION: requestBody refs won't be to a no-schema object
+		}
+	}
+	return oasPaths;
+}
+
 /**
  *
- * Code below supports deref and is probably broken for now
+ * Code below supports deref and is broken for now
  *
  */
 

@@ -1,5 +1,4 @@
-import { $RefParser } from '@apidevtools/json-schema-ref-parser';
-import { annotationKeys, pathItemOperations, removeFromParameterKeywords } from './consts.ts';
+import { annotationKeys, removeFromParameterKeywords } from './consts.ts';
 import type { StdConfig } from './config.ts';
 import {
 	isReferenceObject,
@@ -7,14 +6,76 @@ import {
 	type OASReferenceObject,
 	type OASParameterObject,
 	type OASSchemaObject,
-	type OASPathsObject,
-	type OASPathItemObject,
-	type OASOperationObject,
 	type OASRequestBodyObject,
 	type OASResponsesObject,
+	type OASOperationObject,
 } from './typesAndGuards.ts';
 import path from 'node:path';
-import { getRefNames, getSharedIgnoreKeys, removeKeysFromObject } from './util.ts';
+import { getNameFor, getRefNames, getSharedIgnoreKeys, nameTypes, removeKeysFromObject, toCase } from './util.ts';
+
+export function genRouteOptionsForOperation(
+	pathURL: string,
+	opMethod: string,
+	opObj: OASOperationObject,
+	config: StdConfig,
+) {
+	let roCode = '';
+	const imports: string[] = [];
+
+	const roNm = toCase.camel(getNameFor(opObj.operationId as string, nameTypes.routeOption, config));
+	roCode += `export const ${roNm} = {`;
+	roCode += `url: '${cleanPathURL(pathURL)}',`;
+	roCode += `method: '${opMethod.toUpperCase()}',`;
+	roCode += opObj.operationId ? `operationId: '${opObj.operationId}',` : '';
+	roCode += Array.isArray(opObj.tags) && opObj.tags.length > 0 ? `tags: ${stringArrayToCode(opObj.tags)},` : '';
+	if (config.keepAnnotationsFl === true) {
+		roCode += typeof opObj.description === 'string' ? `description: ${JSON.stringify(opObj.description)},` : '';
+		roCode += typeof opObj.summary === 'string' ? `summary: ${JSON.stringify(opObj.summary)},` : '';
+	}
+	roCode += opObj.deprecated === true ? 'deprecated: true,' : '';
+	roCode += 'schema: {';
+
+	// parameters
+
+	if (Array.isArray(opObj.parameters) && opObj.parameters.length > 0) {
+		// in: path (params)
+		const paramsCode = genParameterCode('path', opObj.parameters as OASParameterObject[], config, imports);
+		roCode += paramsCode.length > 0 ? `params: {${paramsCode}},` : '';
+
+		// in: header (headers)
+		const headersCode = genParameterCode('header', opObj.parameters as OASParameterObject[], config, imports);
+		roCode += headersCode.length > 0 ? `headers: {${headersCode}},` : '';
+
+		// in: query (querystring)
+		const querystringCode = genQueryParameterCode(opObj.parameters as OASParameterObject[], imports, config);
+		roCode += querystringCode.length > 0 ? `querystring: {${querystringCode}},` : '';
+		const tempImports: string[] = [];
+	}
+	// requestBody (body)
+	const { code: bodyCode, isRef: bodyIsRef } = genRequestBodyCode(
+		opObj.requestBody as OASRequestBodyObject,
+		imports,
+		config,
+	);
+	roCode += bodyCode.length > 0 ? `body: ${!bodyIsRef ? '{' : ''}${bodyCode}${!bodyIsRef ? '}' : ''},` : '';
+
+	// responses (response)
+	const { code: responseCode, isRef: responseIsRef } = genResponsesCode(
+		opObj.responses as OASResponsesObject,
+		imports,
+		config,
+	);
+	console.log('RESPONSE', responseCode, responseIsRef, imports, opObj.responses);
+	roCode +=
+		responseCode.length > 0
+			? `response: ${!responseIsRef ? '{' : ''}${responseCode}${!responseIsRef ? '}' : ''},`
+			: '';
+
+	roCode += '}'; // schema
+	roCode += '}'; // RouteOptions
+
+	return { roCode, roNm, imports };
+}
 
 // for object-type parameters, hoist the schema of the first property of the object
 // if the object has more than one properties log an error
@@ -225,96 +286,6 @@ export function genRequiredParams(params: [string, OASParameterObject][]) {
 		}
 	}
 	return required.length === 0 ? '' : `required: ${JSON.stringify(required)},`;
-}
-
-// Dereference a set of PathsObjects enough that a ref-maintaining RouteOptions
-// generation process can use them.
-export async function partialDerefPaths(
-	config: StdConfig,
-	absDir: string,
-	schema: OASPathsObject,
-): Promise<OASPathsObject> {
-	// resolved makes it easier to get referenced content
-	const rp = new $RefParser();
-	const resolved = await rp.resolve(config.inPathTx);
-
-	const oasPaths = structuredClone(schema);
-
-	const normPath = (refFilePath: string, refPath: string) =>
-		path.normalize(`${refFilePath.length > 0 ? `${refFilePath}/` : ''}${refPath}`);
-	const addRefedContent = (base: OASReferenceObject, refFilePath: string) => {
-		const refedContent = resolved.get(normPath(refFilePath, base.$ref)) as object;
-		return { $ref: normPath(refFilePath, base.$ref), ...structuredClone(refedContent) };
-	};
-
-	for (const [pathURL, pathItemRaw] of Object.entries(oasPaths)) {
-		// merge the ref into the path
-		let refFilePath = '';
-
-		// get any refed Path Items
-		if (isReferenceObject(pathItemRaw)) {
-			const refFile = path.normalize(`${absDir}/${pathItemRaw.$ref.split('#')[0]}`);
-			refFilePath = path.dirname(refFile); // other refs from this file will be relative to this path
-			const refedContent = resolved.get(refFile);
-			oasPaths[pathURL] = {
-				$ref: normPath(refFilePath, pathItemRaw.$ref),
-				...structuredClone(refedContent as object),
-			};
-		}
-		const oasPath = oasPaths[pathURL] as OASPathItemObject;
-		const pathParams: OASParameterObject[] = [];
-
-		// operations (or possible operations)
-		for (const opNm of Object.keys(oasPath)) {
-			// path level parameters
-			if (opNm === 'parameters') {
-				pathParams.push(...(oasPath[opNm] as OASParameterObject[]));
-			}
-			// skip non-operations
-			if (!pathItemOperations.includes(opNm)) continue;
-
-			const opObj = oasPath[opNm] as OASOperationObject;
-
-			// add any path parameters to parameters
-			oasPath[opNm].parameters = [...pathParams, ...(opObj.parameters ?? [])];
-
-			if (Array.isArray(opObj.parameters) && opObj.parameters.length > 0) {
-				// deref parameter objects into the oasDoc
-				// ['a','b'].entries => [ [0, 'a'], [1, 'b'] ]
-				for (const [idx, param] of opObj.parameters.entries()) {
-					if (isReferenceObject(param)) {
-						oasPath[opNm].parameters[idx] = addRefedContent(param as OASReferenceObject, refFilePath);
-					}
-				}
-			}
-
-			if (isReferenceObject(opObj.responses)) {
-				// deref response object (only one) into the oasDoc
-				oasPath[opNm].responses = addRefedContent(opObj.responses, refFilePath);
-			}
-
-			// if refed content doesn't have a schema, hoist it because we can't ref it
-			for (const [responseKey, responseObj] of Object.entries((opObj.responses ?? {}) as OASResponsesObject)) {
-				if (isReferenceObject(responseObj)) {
-					const refedContent = resolved.get(normPath(refFilePath, responseObj.$ref)) as object;
-					if (!isSchemaObject(refedContent)) {
-						oasPath[opNm].responses[responseKey] = {
-							...structuredClone(refedContent),
-							...responseObj, // keep anything from responseObj that overrides the refed content
-							$ref: undefined,
-						};
-					}
-				}
-			}
-
-			if (opObj.requestBody !== undefined && isReferenceObject(opObj.requestBody)) {
-				// deref requestBody object (only one) into the oasDoc
-				oasPath[opNm].requestBody = addRefedContent(opObj.requestBody, refFilePath);
-			}
-			// ASSUMPTION: requestBody refs won't be to a no-schema object
-		}
-	}
-	return oasPaths;
 }
 
 // make OpenAPI path URL Fastify friendly

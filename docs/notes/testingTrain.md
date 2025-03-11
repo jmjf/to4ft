@@ -259,3 +259,14 @@ That should be everything for ref-maintaining oas2ro.
 ## Dereferenced oas2ro
 
 Before I start working on derefed, I need to clean up the code and organize pieces. Deref is going to reuse parts of the ref-maintaining code.
+
+- [x] Move code that writes the `RouteOptions` object (~L55 - L105) to `genRouteOptionsForOperation`
+
+- [ ] Make imports a `Set`; convert to array on return
+
+Running deref, the `RouteOptions` look decent except:
+
+- [x] path item level parameters (bookingId) are missing for routes that have them.
+  - For ref-maintaining, partial deref ensures path item level parameters because they may be `$ref`s and need to be partial-derefed.
+  - For deref, need to do this in the main code because it doesn't call partial deref. (There will be no `$ref`s.)
+  - So there's a bit of duplication due to differences between deref and ref-maintaining.
