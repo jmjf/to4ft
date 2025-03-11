@@ -270,3 +270,6 @@ Running deref, the `RouteOptions` look decent except:
   - For ref-maintaining, partial deref ensures path item level parameters because they may be `$ref`s and need to be partial-derefed.
   - For deref, need to do this in the main code because it doesn't call partial deref. (There will be no `$ref`s.)
   - So there's a bit of duplication due to differences between deref and ref-maintaining.
+
+- [x] After some other refactoring changes, I'm getting a querystring with no properties on routes that don't have a querystring.
+  - query params should return empty string if there are no query params.
