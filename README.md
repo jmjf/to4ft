@@ -282,7 +282,7 @@ Default configuration values if you provide no configuration file.
   - `schemaPrefixTx` and `schemaSuffixTx` -- Text to add before and after (respectively) names for TypeBox schemas.
   - `typePrefixTx` and `TypeSuffixTx` -- Text to add before and after (respectively) names for TypeBox types (`Static<typeof Schema>`).
   - `derefFl` -- If true, generate dereferenced TypeBox schemas with sub-objects fully exploded in the schema.
-  - `extensionTx` -- The extension to use for import file names for referenced schemas -- NO DOT. If you aren't using TypeScripts `rewriteRelativeImportExtensions` option, you probably want `js`.
+  - `extensionTx` -- The extension to use for import file names for referenced schemas -- NO DOT. If you aren't using TypeScript's `rewriteRelativeImportExtensions` option, you probably want `js`.
 
 **NOTE:** `oas2tb` always writes files with `ts` extensions because it's writing TypeBox, which assumes TypeScript.
 
