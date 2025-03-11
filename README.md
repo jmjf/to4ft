@@ -66,9 +66,11 @@ Also see, `docs` for base assumptions and recommendations on how to build specs 
 ### In `oas2ro`
 
 - Do not generate schemas for `cookie` parameters. Fastify doesn't support them in `RouteOptions` schemas.
-- Exclude keywords AJV doesn't recognize. See `docs/experimentQuerystrings.md` and `experiments/querystrings` for more details.
+- Exclude keywords AJV doesn't recognize (can override with a config file). See `docs/experimentQuerystrings.md` and `experiments/querystrings` for more details.
 
 ## Commands
+
+See `tbd:dev`, `tbr:dev`, `rod:dev`, and `ror:dev` scripts in `package.json` for command line examples. Also see `genAllTests.sh` for more examples.
 
 `oas2tb4fastify` is a `commander` application, so `-h` or `--help` and `-V` or `--version` work as you'd expect, including `oas2tb4fastify <command> -h`.
 
@@ -78,7 +80,7 @@ Generate dereferenced TypeBox types
 
 Example: `oas2tb4fastify oas2dtb -i example/openapi/openapi.yaml -o example/dtb -c configFile`
 
-`oas2dtb` generates types that dereference any `$ref`ed fields. Each file is self-contained with no imports of other files. This option works best if you maintain an OpenAPI schema and generate TypeBox when it changes.
+`oas2dtb` generates types that dereference any `$ref`ed fields. Each file is self-contained with no imports of other files. This option works best if you maintain an OpenAPI spec and generate TypeBox when it changes.
 
 #### Options
 
@@ -98,7 +100,7 @@ The following examples are generated from `openapi/schema/User.yaml` `components
 
 #### Example dereferenced output from `npm run tbd:dev`
 
-With fully dereferenced output, manual maintenance is a pain. Regenerating the generated code is easy.
+With dereferenced output, manual maintenance is a pain. Regenerating the generated code is easy. Compare `schema_Posts.ts` in `example/blog-tbd` and `example/blog-tbr` for differences.
 
 ```typescript
 import { type Static, Type } from '@sinclair/typebox';
@@ -118,7 +120,7 @@ See `example/blog-tbd` for more examples.
 
 #### Example reference-maintaining output from `npm run tbr:dev`
 
-Reference-maintaining output mirrors the source spec using imports and `Clone`. If you want to  abandon your OpenAPI spec, this option is easier to maintain than fully derefed.
+Reference-maintaining output mirrors the source spec using imports and `Clone`. If you want to abandon your OpenAPI spec, this option is easier to maintain than fully dereferenced output.
 
 **WARNING:** If your schema `$ref`s `examples`, `links`, or other OpenAPI fields that do not generate types, `oas2tb4fastify` will not convert them and may produce unpredictable results.
 
@@ -239,6 +241,8 @@ export const getUsersByQueryRouteOptions = {
    },
 };
 ```
+
+See `example/blog-ror` for more examples.
 
 ## Configuration file
 
