@@ -35,44 +35,24 @@ export function genRouteOptionsForOperation(
 	roCode += opObj.deprecated === true ? 'deprecated: true,' : '';
 	roCode += 'schema: {';
 
-	// parameters
-
 	if (Array.isArray(opObj.parameters) && opObj.parameters.length > 0) {
-		// in: path (params)
-		const paramsCode = genParameterCode('path', opObj.parameters as OASParameterObject[], config, imports);
+		const paramsCode = genParametersCode('path', opObj.parameters as OASParameterObject[], config, imports);
 		roCode += paramsCode.length > 0 ? `params: {${paramsCode}},` : '';
 
-		// in: header (headers)
-		const headersCode = genParameterCode('header', opObj.parameters as OASParameterObject[], config, imports);
+		const headersCode = genParametersCode('header', opObj.parameters as OASParameterObject[], config, imports);
 		roCode += headersCode.length > 0 ? `headers: {${headersCode}},` : '';
 
-		// in: query (querystring)
-		const querystringCode = genQueryParameterCode(opObj.parameters as OASParameterObject[], imports, config);
+		const querystringCode = genQueryParametersCode(opObj.parameters as OASParameterObject[], imports, config);
 		roCode += querystringCode.length > 0 ? `querystring: {${querystringCode}},` : '';
-		const tempImports: string[] = [];
 	}
-	// requestBody (body)
-	const { code: bodyCode, isRef: bodyIsRef } = genRequestBodyCode(
-		opObj.requestBody as OASRequestBodyObject,
-		imports,
-		config,
-	);
-	roCode += bodyCode.length > 0 ? `body: ${!bodyIsRef ? '{' : ''}${bodyCode}${!bodyIsRef ? '}' : ''},` : '';
 
-	// responses (response)
-	const { code: responseCode, isRef: responseIsRef } = genResponsesCode(
-		opObj.responses as OASResponsesObject,
-		imports,
-		config,
-	);
-	console.log('RESPONSE', responseCode, responseIsRef, imports, opObj.responses);
-	roCode +=
-		responseCode.length > 0
-			? `response: ${!responseIsRef ? '{' : ''}${responseCode}${!responseIsRef ? '}' : ''},`
-			: '';
+	const bodyCode = genRequestBodyCode(opObj.requestBody as OASRequestBodyObject, imports, config);
+	roCode += bodyCode.length > 0 ? `body: ${bodyCode},` : '';
 
-	roCode += '}'; // schema
-	roCode += '}'; // RouteOptions
+	const responseCode = genResponsesCode(opObj.responses as OASResponsesObject, imports, config);
+	roCode += responseCode.length > 0 ? `response: ${responseCode},` : '';
+
+	roCode += '}}'; // schema + RouteOptions
 
 	return { roCode, roNm, imports: Array.from(imports) };
 }
@@ -97,7 +77,6 @@ export function hoistSchemas(parameters: OASParameterObject[]) {
 				console.log(`${functionNm} ERROR: skipping object type parameter ${param.name} with 0 members`);
 				return {} as OASParameterObject;
 			}
-			// TODO: Allow objects with >1 property if flag passed; for querystring
 			if (props.length > 1) {
 				console.log(
 					`${functionNm} ERROR: keeping first property from object type parameter ${param.name} has ${props.length} members`,
@@ -151,7 +130,7 @@ export function mergeParams(parameters: OASParameterObject[]) {
 }
 
 // handles parameters that can be single-value -- in:path, in:header
-export function genParameterCode(
+export function genParametersCode(
 	paramIn: string,
 	parameters: OASParameterObject[],
 	opts: StdConfig,
@@ -164,7 +143,6 @@ export function genParameterCode(
 	const mergedParams = mergeParams(params);
 
 	if (mergedParams.length === 0) return '';
-	console.log('MERGED', paramIn, JSON.stringify(mergedParams, null, 3));
 
 	let paramCode = '';
 	for (const [paramNm, paramObj] of mergedParams) {
@@ -187,20 +165,20 @@ export function genParameterCode(
 			paramCode += `${code},`;
 		} else {
 			paramCode += '{';
-			paramCode += opts.keepAnnotationsFl ? genAnnotationsForParam(paramObj, opts) : '';
+			paramCode += opts.keepAnnotationsFl ? getParamAnnotationsCode(paramObj, opts) : '';
 			paramCode += genEntriesCode(Object.entries(schema), imports, opts);
 			paramCode += '},';
 		}
 	}
 	if (paramCode.length > 0) {
-		paramCode = `type: 'object', properties:{${paramCode}}, ${genRequiredParams(mergedParams)}`;
+		paramCode = `type: 'object', properties:{${paramCode}}, ${genParmRequiredCode(mergedParams)}`;
 	}
 	return paramCode;
 }
 
 // Query parameters are different from path and header params because they may be objects whose
 // properties get flattened together
-export function genQueryParameterCode(parameters: OASParameterObject[], imports: Set<string>, config: StdConfig) {
+export function genQueryParametersCode(parameters: OASParameterObject[], imports: Set<string>, config: StdConfig) {
 	const functionNm = 'genQueryParameterCode';
 
 	const params = parameters.filter((s) => s.in === 'query');
@@ -242,36 +220,36 @@ export function genQueryParameterCode(parameters: OASParameterObject[], imports:
 	return code;
 }
 
-export function genAnnotationsForParam(parameter: OASParameterObject, config: StdConfig) {
+export function genRequestBodyCode(requestBody: OASRequestBodyObject, imports: Set<string>, config: StdConfig) {
+	if (!requestBody || Object.keys(requestBody).length === 0) return '';
+
+	if (isReferenceObject(requestBody)) {
+		return genRefCodeAndImport(requestBody.$ref, imports, config);
+	}
+
+	return `{ ${genEntriesCode(Object.entries(requestBody), imports, config)} }`;
+}
+
+export function genResponsesCode(responses: OASResponsesObject, imports: Set<string>, config: StdConfig) {
+	if (!responses || Object.keys(responses).length === 0) return '';
+
+	if (isReferenceObject(responses)) {
+		// console.log('GEN RESPONSES REF', responses);
+		return genRefCodeAndImport(responses.$ref, imports, config);
+	}
+	// console.log('GEN RESPONSES NOREF', Object.entries(responses));
+	return `{ ${genEntriesCode(Object.entries(responses), imports, config)} }`;
+}
+
+export function getParamAnnotationsCode(parameter: OASParameterObject, config: StdConfig) {
 	if (!config.keepAnnotationsFl) return '';
 	const param = structuredClone(parameter);
 	const validEntries = Object.entries(param).filter(([key, value]) => annotationKeys.includes(key));
 	return `${JSON.stringify(Object.fromEntries(validEntries)).slice(1, -1)},`;
 }
 
-export function genRequestBodyCode(requestBody: OASRequestBodyObject, imports: Set<string>, config: StdConfig) {
-	if (!requestBody) return { code: '', isRef: false };
-
-	if (isReferenceObject(requestBody)) {
-		return { code: genRefCodeAndImport(requestBody.$ref, imports, config), isRef: true };
-	}
-
-	return { code: genEntriesCode(Object.entries(requestBody), imports, config), isRef: false };
-}
-
-export function genResponsesCode(responses: OASResponsesObject, imports: Set<string>, config: StdConfig) {
-	if (!responses || Object.keys(responses).length === 0) return { code: '', isRef: false };
-
-	if (isReferenceObject(responses)) {
-		// console.log('GEN RESPONSES REF', responses);
-		return { code: genRefCodeAndImport(responses.$ref, imports, config), isRef: true };
-	}
-	// console.log('GEN RESPONSES NOREF', Object.entries(responses));
-	return { code: genEntriesCode(Object.entries(responses), imports, config), isRef: false };
-}
-
 // generated array of required parameter names
-export function genRequiredParams(params: [string, OASParameterObject][]) {
+export function genParmRequiredCode(params: [string, OASParameterObject][]) {
 	const required: string[] = [];
 	for (const [paramNm, paramObj] of params) {
 		if (paramObj.required) {
@@ -292,17 +270,17 @@ export function stringArrayToCode(arr: string[]): string {
 	return `[${arr.map((s) => JSON.stringify(s)).join(',')}]`;
 }
 
-export function genValueCode(v: unknown, imports: Set<string>, config: StdConfig): string | unknown {
-	if (typeof v === 'string') {
-		return JSON.stringify(v);
+export function genValueCode(value: unknown, imports: Set<string>, config: StdConfig): string | unknown {
+	if (typeof value === 'string') {
+		return JSON.stringify(value);
 	}
 
-	if (Array.isArray(v)) {
-		if (typeof v[0] === 'string') {
-			return stringArrayToCode(v);
+	if (Array.isArray(value)) {
+		if (typeof value[0] === 'string') {
+			return stringArrayToCode(value);
 		}
-		if (typeof v[0] === 'object') {
-			const itemsCode = v.map((vItem) => {
+		if (typeof value[0] === 'object') {
+			const itemsCode = value.map((vItem) => {
 				const code = genEntriesCode(Object.entries(vItem as object), imports, config);
 				if (code.length > 0 && code[0] === "'") return `{ ${code} },\n`;
 				return `${code}\n`;
@@ -310,20 +288,20 @@ export function genValueCode(v: unknown, imports: Set<string>, config: StdConfig
 
 			return `[${itemsCode.join('')}]`;
 		}
-		// TODO: array of arrays (recurse)
-		return `[${v}]`;
+		// TODO: array of arrays -- need an example to build
+		return `[${value}]`;
 	}
 
-	if (typeof v === 'object') {
-		if (isReferenceObject(v)) {
+	if (typeof value === 'object') {
+		if (isReferenceObject(value)) {
 			// console.log('GEN VALUE', v, imports);
-			const code = genRefCodeAndImport(v.$ref, imports, config);
+			const code = genRefCodeAndImport(value.$ref, imports, config);
 			return code;
 		}
-		return `{ ${genEntriesCode(Object.entries(v as object), imports, config)} }`;
+		return `{ ${genEntriesCode(Object.entries(value as object), imports, config)} }`;
 	}
 
-	return v;
+	return value;
 }
 
 export function genEntriesCode(entries: [string, unknown][], imports: Set<string>, config: StdConfig) {

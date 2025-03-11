@@ -29,7 +29,8 @@ To do list:
   - [x] Museum example (`example/otherschemas/museum-openapi-example.yaml`); output in `example/museum-*`
   - [ ] Pet store (`example/otherschemas/petstore.yaml`); output in `example/pet-*`
     - This schema doesn't pass Redocly lint, but the issues shouldn't be a problem.
-- [ ] refactor code; remove all the `console.log`s supporting development
+- [x] refactor code; remove all the `console.log`s supporting development
+  - Leave operation `console.log` that is useful for diagnosing problems.
 - [ ] Examine: Can I lift partial deref into the main loop without making a mess? (Probably not.)
 
 
