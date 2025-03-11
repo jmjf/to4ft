@@ -258,7 +258,7 @@ components:
       example: museum-lover@example.com
     BuyMuseumTickets:
       description: Data to purchase a ticket.
-      type: object
+      # type: object
       allOf:
         - type: object
           properties:

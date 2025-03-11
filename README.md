@@ -26,7 +26,7 @@ To do list:
 - [ ] test with example schemas and inspect output; fix issues ([x] = ran and LGTM)
   - [x] Simple blog schema (`example/openapi/openapi.yaml`); output in `example/blog-*`
   - [x] Train travel API (`example/otherschemas/train-travel-api.yaml`); output in `example/train-*`
-  - [ ] Museum example (`example/otherschemas/museum-openapi-example.yaml`); output in `example/museum-*`
+  - [x] Museum example (`example/otherschemas/museum-openapi-example.yaml`); output in `example/museum-*`
   - [ ] Pet store (`example/otherschemas/petstore.yaml`); output in `example/pet-*`
     - This schema doesn't pass Redocly lint, but the issues shouldn't be a problem.
 - [ ] refactor code; remove all the `console.log`s supporting development
