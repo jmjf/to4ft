@@ -1,4 +1,3 @@
-
 export const getSpecialEventRouteOptions = {
 	url: '/special-events/:eventId',
 	method: 'GET',

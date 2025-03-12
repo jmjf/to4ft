@@ -1,4 +1,3 @@
-
 export const buyMuseumTicketsRouteOptions = {
 	url: '/tickets',
 	method: 'POST',
