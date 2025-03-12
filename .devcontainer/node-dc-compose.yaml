@@ -6,6 +6,8 @@ services:
          args:
             VARIANT: 22-bookworm
       image: node-dc
+      ports:
+      - "3080"
       volumes:
          - ..:/workspace:cached
       command: /bin/sh -c "tail -F a-file-that-does-not-exist"
