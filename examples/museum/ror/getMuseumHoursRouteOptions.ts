@@ -1,8 +1,8 @@
-import { PaginationLimitSchema } from '../museum-tbr/parameters_PaginationLimit.ts';
-import { PaginationPageSchema } from '../museum-tbr/parameters_PaginationPage.ts';
-import { StartDateSchema } from '../museum-tbr/parameters_StartDate.ts';
-import { ErrorSchema } from '../museum-tbr/schemas_Error.ts';
-import { MuseumHoursSchema } from '../museum-tbr/schemas_MuseumHours.ts';
+import { PaginationLimitSchema } from '../tbr/parameters_PaginationLimit.ts';
+import { PaginationPageSchema } from '../tbr/parameters_PaginationPage.ts';
+import { StartDateSchema } from '../tbr/parameters_StartDate.ts';
+import { ErrorSchema } from '../tbr/schemas_Error.ts';
+import { MuseumHoursSchema } from '../tbr/schemas_MuseumHours.ts';
 
 export const getMuseumHoursRouteOptions = {
 	url: '/museum-hours',

@@ -1,6 +1,6 @@
-import { BuyMuseumTicketsSchema } from '../museum-tbr/schemas_BuyMuseumTickets.ts';
-import { ErrorSchema } from '../museum-tbr/schemas_Error.ts';
-import { MuseumTicketsConfirmationSchema } from '../museum-tbr/schemas_MuseumTicketsConfirmation.ts';
+import { BuyMuseumTicketsSchema } from '../tbr/schemas_BuyMuseumTickets.ts';
+import { ErrorSchema } from '../tbr/schemas_Error.ts';
+import { MuseumTicketsConfirmationSchema } from '../tbr/schemas_MuseumTicketsConfirmation.ts';
 
 export const buyMuseumTicketsRouteOptions = {
 	url: '/tickets',

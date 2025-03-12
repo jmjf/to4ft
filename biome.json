@@ -1,9 +1,20 @@
 {
 	"$schema": "node_modules/@biomejs/biome/configuration_schema.json",
 	"files": {
-		"ignore": [".devcontainer", "dist", "notes", "coverage", ".private"],
+		"ignore": [
+			".devcontainer",
+			"dist",
+			"notes",
+			"coverage",
+			".private"
+		],
 		"ignoreUnknown": true,
-		"include": ["src", "example", "test", "dist"]
+		"include": [
+			"src",
+			"examples",
+			"test",
+			"dist"
+		]
 	},
 	"linter": {
 		"enabled": true,

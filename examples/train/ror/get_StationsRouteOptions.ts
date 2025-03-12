@@ -1,21 +1,30 @@
-import { Cache_ControlSchema } from '../train-tbr/headers_Cache-Control.ts';
-import { RateLimitSchema } from '../train-tbr/headers_RateLimit.ts';
-import { Retry_AfterSchema } from '../train-tbr/headers_Retry-After.ts';
-import { LimitSchema } from '../train-tbr/parameters_limit.ts';
-import { PageSchema } from '../train-tbr/parameters_page.ts';
-import { BookingSchema } from '../train-tbr/schemas_Booking.ts';
-import { Links_PaginationSchema } from '../train-tbr/schemas_Links-Pagination.ts';
-import { Links_SelfSchema } from '../train-tbr/schemas_Links-Self.ts';
-import { ProblemSchema } from '../train-tbr/schemas_Problem.ts';
-import { Wrapper_CollectionSchema } from '../train-tbr/schemas_Wrapper-Collection.ts';
+import { Cache_ControlSchema } from '../tbr/headers_Cache-Control.ts';
+import { RateLimitSchema } from '../tbr/headers_RateLimit.ts';
+import { Retry_AfterSchema } from '../tbr/headers_Retry-After.ts';
+import { LimitSchema } from '../tbr/parameters_limit.ts';
+import { PageSchema } from '../tbr/parameters_page.ts';
+import { Links_PaginationSchema } from '../tbr/schemas_Links-Pagination.ts';
+import { Links_SelfSchema } from '../tbr/schemas_Links-Self.ts';
+import { ProblemSchema } from '../tbr/schemas_Problem.ts';
+import { StationSchema } from '../tbr/schemas_Station.ts';
+import { Wrapper_CollectionSchema } from '../tbr/schemas_Wrapper-Collection.ts';
 
-export const get_BookingsRouteOptions = {
-	url: '/bookings',
+export const get_StationsRouteOptions = {
+	url: '/stations',
 	method: 'GET',
-	operationId: 'get-bookings',
-	tags: ['Bookings'],
+	operationId: 'get-stations',
+	tags: ['Stations'],
 	schema: {
-		querystring: { type: 'object', properties: { page: PageSchema, limit: LimitSchema } },
+		querystring: {
+			type: 'object',
+			properties: {
+				page: PageSchema,
+				limit: LimitSchema,
+				coordinates: { type: 'string' },
+				search: { type: 'string' },
+				country: { type: 'string', format: 'iso-country-code' },
+			},
+		},
 		response: {
 			'200': {
 				headers: { 'Cache-Control': Cache_ControlSchema, RateLimit: RateLimitSchema },
@@ -24,7 +33,7 @@ export const get_BookingsRouteOptions = {
 						schema: {
 							allOf: [
 								Wrapper_CollectionSchema,
-								{ properties: { data: { type: 'array', items: BookingSchema } } },
+								{ properties: { data: { type: 'array', items: StationSchema } } },
 								{ properties: { links: { allOf: [Links_SelfSchema, Links_PaginationSchema] } } },
 							],
 						},
@@ -33,7 +42,7 @@ export const get_BookingsRouteOptions = {
 						schema: {
 							allOf: [
 								Wrapper_CollectionSchema,
-								{ properties: { data: { type: 'array', items: BookingSchema } } },
+								{ properties: { data: { type: 'array', items: StationSchema } } },
 								{ properties: { links: { allOf: [Links_SelfSchema, Links_PaginationSchema] } } },
 							],
 						},

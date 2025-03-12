@@ -1,5 +1,5 @@
-import { ErrorSchema } from '../museum-tbr/schemas_Error.ts';
-import { TicketCodeImageSchema } from '../museum-tbr/schemas_TicketCodeImage.ts';
+import { ErrorSchema } from '../tbr/schemas_Error.ts';
+import { TicketCodeImageSchema } from '../tbr/schemas_TicketCodeImage.ts';
 
 export const getTicketCodeRouteOptions = {
 	url: '/tickets/:ticketId/qr',

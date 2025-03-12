@@ -1,29 +1,27 @@
-import { Cache_ControlSchema } from '../train-tbr/headers_Cache-Control.ts';
-import { RateLimitSchema } from '../train-tbr/headers_RateLimit.ts';
-import { Retry_AfterSchema } from '../train-tbr/headers_Retry-After.ts';
-import { BookingPaymentSchema } from '../train-tbr/schemas_BookingPayment.ts';
-import { Links_BookingSchema } from '../train-tbr/schemas_Links-Booking.ts';
-import { ProblemSchema } from '../train-tbr/schemas_Problem.ts';
+import { Cache_ControlSchema } from '../tbr/headers_Cache-Control.ts';
+import { RateLimitSchema } from '../tbr/headers_RateLimit.ts';
+import { Retry_AfterSchema } from '../tbr/headers_Retry-After.ts';
+import { BookingSchema } from '../tbr/schemas_Booking.ts';
+import { Links_SelfSchema } from '../tbr/schemas_Links-Self.ts';
+import { ProblemSchema } from '../tbr/schemas_Problem.ts';
 
-export const create_Booking_PaymentRouteOptions = {
-	url: '/bookings/:bookingId/payment',
-	method: 'POST',
-	operationId: 'create-booking-payment',
-	tags: ['Payments'],
+export const get_BookingRouteOptions = {
+	url: '/bookings/:bookingId',
+	method: 'GET',
+	operationId: 'get-booking',
+	tags: ['Bookings'],
 	schema: {
 		params: {
 			type: 'object',
 			properties: { bookingId: { type: 'string', format: 'uuid' } },
 			required: ['bookingId'],
 		},
-		body: { content: { 'application/json': { schema: BookingPaymentSchema } } },
 		response: {
 			'200': {
 				headers: { 'Cache-Control': Cache_ControlSchema, RateLimit: RateLimitSchema },
 				content: {
-					'application/json': {
-						schema: { allOf: [BookingPaymentSchema, { properties: { links: Links_BookingSchema } }] },
-					},
+					'application/json': { schema: { allOf: [BookingSchema, { properties: { links: Links_SelfSchema } }] } },
+					'application/xml': { schema: { allOf: [BookingSchema, { properties: { links: Links_SelfSchema } }] } },
 				},
 			},
 			'400': {
@@ -41,6 +39,13 @@ export const create_Booking_PaymentRouteOptions = {
 				},
 			},
 			'403': {
+				headers: { RateLimit: RateLimitSchema },
+				content: {
+					'application/problem+json': { schema: ProblemSchema },
+					'application/problem+xml': { schema: ProblemSchema },
+				},
+			},
+			'404': {
 				headers: { RateLimit: RateLimitSchema },
 				content: {
 					'application/problem+json': { schema: ProblemSchema },
