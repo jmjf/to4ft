@@ -1,0 +1,20 @@
+{
+	"name": "blog-example",
+	"version": "1.0.0",
+	"main": "server.ts",
+	"type": "module",
+	"scripts": {
+		"test": "echo \"Error: no test specified\" && exit 1",
+		"server": "node --experimental-strip-types server.ts | npx pino-pretty"
+	},
+	"author": "jamee mikell (https://github.com/jmjf)",
+	"license": "MIT",
+	"description": "",
+	"dependencies": {
+		"@sinclair/typebox": "^0.34.30",
+		"fastify": "^5.2.1"
+	},
+	"devDependencies": {
+		"pino-pretty": "^13.0.0"
+	}
+}

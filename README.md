@@ -33,10 +33,13 @@ To do list:
   - Leave operation `console.log` that is useful for diagnosing problems.
 - [ ] Examine: Can I lift partial deref into the main loop without making a mess? (Probably not.)
 
+- [ ] Add config to add `additionalProperties: false` to parameter objects ???
+- [ ] For object type structures, remove `default` (putPost requestBody has a default on author)
 
 ### Demo server
 
 - [ ] Build a simple server that returns route and parameter information using generated `RouteOptions` and TypeBox types.
+  - [x] blog example
 
 ## Motivation
 
