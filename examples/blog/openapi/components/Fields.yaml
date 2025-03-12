@@ -21,7 +21,7 @@ components:
       description: Contents of a comment
    EmailAddrTx:
       type: string
-      format: emailAddr
+      format: email
       description: An email address
       example: joe@mailinator.com
    GenericDt:

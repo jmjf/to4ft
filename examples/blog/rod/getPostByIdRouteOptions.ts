@@ -1,3 +1,4 @@
+
 export const getPostByIdRouteOptions = {
 	url: '/posts/:postId',
 	method: 'GET',
@@ -20,7 +21,7 @@ export const getPostByIdRouteOptions = {
 									properties: {
 										userId: { type: 'number', minimum: 1 },
 										userNm: { type: 'string', minLength: 3 },
-										emailAddrTx: { type: 'string', format: 'emailAddr' },
+										emailAddrTx: { type: 'string', format: 'email' },
 										'x-dashes': { type: 'string' },
 										$100ok: { type: 'string' },
 										x𒐗: { type: 'number' },
@@ -38,7 +39,7 @@ export const getPostByIdRouteOptions = {
 												properties: {
 													userId: { type: 'number', minimum: 1 },
 													userNm: { type: 'string', minLength: 3 },
-													emailAddrTx: { type: 'string', format: 'emailAddr' },
+													emailAddrTx: { type: 'string', format: 'email' },
 													'x-dashes': { type: 'string' },
 													$100ok: { type: 'string' },
 													x𒐗: { type: 'number' },
@@ -50,6 +51,7 @@ export const getPostByIdRouteOptions = {
 								statusCd: { default: 'draft', type: 'string', enum: ['draft', 'published', 'deleted'] },
 								statusTs: { type: 'string', format: 'date-time' },
 							},
+							additionalProperties: false,
 						},
 					},
 				},

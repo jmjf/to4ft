@@ -7,13 +7,16 @@ import { PostTxSchema } from './schemas_PostTx.ts';
 import { TitleTxSchema } from './schemas_TitleTx.ts';
 import { UserSchema } from './schemas_User.ts';
 
-export const PostSchema = Type.Object({
-	postId: Clone(PostIdSchema),
-	titleTx: Clone({ ...TitleTxSchema, ...{ default: 'hello' } }),
-	postTx: Clone(PostTxSchema),
-	author: Type.Optional(Clone(UserSchema)),
-	comments: Type.Optional(Type.Array(Clone(CommentSchema))),
-	statusCd: Type.Optional(Clone({ ...PostStatusSchema, ...{ default: 'draft' } })),
-	statusTs: Type.Optional(Clone(GenericTsSchema)),
-});
+export const PostSchema = Type.Object(
+	{
+		postId: Clone(PostIdSchema),
+		titleTx: Clone({ ...TitleTxSchema, ...{ default: 'hello' } }),
+		postTx: Clone(PostTxSchema),
+		author: Type.Optional(Clone(UserSchema)),
+		comments: Type.Optional(Type.Array(Clone(CommentSchema))),
+		statusCd: Type.Optional(Clone({ ...PostStatusSchema, ...{ default: 'draft' } })),
+		statusTs: Type.Optional(Clone(GenericTsSchema)),
+	},
+	{ additionalProperties: false },
+);
 export type Post = Static<typeof PostSchema>;

@@ -1,3 +1,4 @@
+
 export const getUsersByQueryRouteOptions = {
 	url: '/users',
 	method: 'GET',
@@ -25,7 +26,7 @@ export const getUsersByQueryRouteOptions = {
 								properties: {
 									userId: { type: 'number', minimum: 1 },
 									userNm: { type: 'string', minLength: 3 },
-									emailAddrTx: { type: 'string', format: 'emailAddr' },
+									emailAddrTx: { type: 'string', format: 'email' },
 									'x-dashes': { type: 'string' },
 									$100ok: { type: 'string' },
 									x𒐗: { type: 'number' },
