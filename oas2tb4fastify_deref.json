@@ -15,6 +15,7 @@
       "prefixTx": "",
       "suffixTx": "RouteOptions",
       "importExtensionTx": "ts",
-      "extensionTx": "ts"
+      "extensionTx": "ts",
+      "noAdditionalProperties": true
    }
 }

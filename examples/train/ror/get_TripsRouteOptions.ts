@@ -29,6 +29,7 @@ export const get_TripsRouteOptions = {
 				dogs: { type: 'boolean', default: false },
 			},
 			required: ['origin', 'destination', 'date'],
+			additionalProperties: false,
 		},
 		response: {
 			'200': {

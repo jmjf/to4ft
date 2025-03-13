@@ -15,7 +15,11 @@ export const get_BookingsRouteOptions = {
 	operationId: 'get-bookings',
 	tags: ['Bookings'],
 	schema: {
-		querystring: { type: 'object', properties: { page: PageSchema, limit: LimitSchema } },
+		querystring: {
+			type: 'object',
+			properties: { page: PageSchema, limit: LimitSchema },
+			additionalProperties: false,
+		},
 		response: {
 			'200': {
 				headers: { 'Cache-Control': Cache_ControlSchema, RateLimit: RateLimitSchema },

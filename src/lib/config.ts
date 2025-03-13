@@ -24,6 +24,7 @@ type ConfigFile = {
 		suffixTx?: string;
 		importExtensionTx?: string;
 		extensionTx?: string;
+		noAdditionalProperties: boolean;
 	};
 };
 
@@ -122,6 +123,7 @@ export function loadConfig(opts: CommandOptions, commandNm: string): StdConfig {
 			suffixTx: configObj.oas2ro?.suffixTx ?? 'RouteOptions',
 			importExtensionTx: configObj.oas2ro?.importExtensionTx ?? 'ts',
 			extensionTx: configObj.oas2ro?.extensionTx ?? 'ts',
+			noAdditionalProperties: configObj.oas2ro?.noAdditionalProperties ?? true,
 		},
 		...inputFiles,
 	};

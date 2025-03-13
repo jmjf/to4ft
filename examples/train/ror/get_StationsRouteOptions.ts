@@ -24,6 +24,7 @@ export const get_StationsRouteOptions = {
 				search: { type: 'string' },
 				country: { type: 'string', format: 'iso-country-code' },
 			},
+			additionalProperties: false,
 		},
 		response: {
 			'200': {
