@@ -1,3 +1,4 @@
+
 export const get_BookingsRouteOptions = {
 	url: '/bookings',
 	method: 'GET',

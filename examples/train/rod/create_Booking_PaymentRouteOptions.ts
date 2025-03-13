@@ -1,3 +1,4 @@
+
 export const create_Booking_PaymentRouteOptions = {
 	url: '/bookings/:bookingId/payment',
 	method: 'POST',
@@ -19,7 +20,6 @@ export const create_Booking_PaymentRouteOptions = {
 							amount: { type: 'number', exclusiveMinimum: 0 },
 							currency: { type: 'string', enum: ['bam', 'bgn', 'chf', 'eur', 'gbp', 'nok', 'sek', 'try'] },
 							source: {
-								unevaluatedProperties: false,
 								oneOf: [
 									{
 										type: 'object',
@@ -72,7 +72,6 @@ export const create_Booking_PaymentRouteOptions = {
 											enum: ['bam', 'bgn', 'chf', 'eur', 'gbp', 'nok', 'sek', 'try'],
 										},
 										source: {
-											unevaluatedProperties: false,
 											oneOf: [
 												{
 													type: 'object',
