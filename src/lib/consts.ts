@@ -12,7 +12,16 @@ export const stdIgnoreKeys = [
 	'$ref',
 ];
 export const annotationKeys = ['description', 'summary', 'example', 'examples', '$comment', 'deprecated', 'title'];
-export const ajvUnsafeKeys = ['xml', 'externalDocs', 'name', 'in', 'allowEmptyValue', 'discriminator', 'required'];
+export const ajvUnsafeKeys = [
+	'xml',
+	'externalDocs',
+	'name',
+	'in',
+	'allowEmptyValue',
+	'discriminator',
+	'required',
+	'unevaluatedProperties',
+];
 
 export const removeFromParameterEntries = {
 	in: undefined,
