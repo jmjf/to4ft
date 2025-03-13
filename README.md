@@ -33,7 +33,9 @@ To do list:
   - Leave operation `console.log` that is useful for diagnosing problems.
 - [ ] Examine: Can I lift partial deref into the main loop without making a mess? (Probably not.)
 
-- [ ] Add config to add `additionalProperties: false` to parameter objects ???
+- [x] Add config to add `additionalProperties: false` to querystring
+  - Applying to body or response requires setting in OpenAPI schema so TypeBox schemas pick it up.
+  - Setting removes non-schema properties to keep junk from getting into your API.
 - [ ] For object type structures, remove `default` (putPost requestBody has a default on author)
 
 ### Demo server
@@ -269,7 +271,8 @@ Default configuration values if you provide no configuration file.
       "prefixTx": "",
       "suffixTx": "RouteOptions",
       "importExtensionTx": "ts",
-      "extensionTx": "ts"
+      "extensionTx": "ts",
+      "noAdditionalProperties": true
    }
 }
 ```
@@ -298,6 +301,7 @@ Default configuration values if you provide no configuration file.
   - `prefixTx` and `suffixTx` -- Text to add before and after (respectively) names for `RouteOptions` objects.
   - `importExtensionTx` -- The extension to use for import file names -- NO DOT. If you aren't using TypeScripts `rewriteRelativeImportExtensions` option, you probably want `js`.
   - `extensionTx` -- The extension to use for output files. `RouteOptions` do not include type annotations, so can be written as `js`, `mjs`, or `cjs` if you wish.
+  - `noAdditionalProperties` -- if true, adds `additionalProperties: false` to querystring parameters.
 
 ## Thanks
 

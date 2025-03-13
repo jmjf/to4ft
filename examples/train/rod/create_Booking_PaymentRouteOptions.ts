@@ -15,6 +15,7 @@ export const create_Booking_PaymentRouteOptions = {
 				'application/json': {
 					schema: {
 						type: 'object',
+						additionalProperties: false,
 						properties: {
 							id: { type: 'string', format: 'uuid', readOnly: true },
 							amount: { type: 'number', exclusiveMinimum: 0 },
@@ -64,6 +65,7 @@ export const create_Booking_PaymentRouteOptions = {
 							allOf: [
 								{
 									type: 'object',
+									additionalProperties: false,
 									properties: {
 										id: { type: 'string', format: 'uuid', readOnly: true },
 										amount: { type: 'number', exclusiveMinimum: 0 },
