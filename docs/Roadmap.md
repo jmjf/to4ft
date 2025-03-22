@@ -62,4 +62,17 @@ Currently, generates dereferenced `RouteOptions` object. Code is still WIP, but 
 
 ## Demo server
 
-- [ ] Build a simple server that returns route and parameter information using generated `RouteOptions` and TypeBox types.
+- [x] Build a simple server that returns route and parameter information using generated `RouteOptions` and TypeBox types.
+  - [x] blog example
+  - [x] train example
+  - [x] museum example
+    - This example uses ref-maintaining route options with derefed TypeBox schemas. This approach should allow excluding some TypeBox files because they won't be used unless the application code uses them.
+
+## Other
+
+- [x] Add config to add `additionalProperties: false` to querystring
+  - Applying to body or response requires setting in OpenAPI schema so TypeBox schemas pick it up.
+  - Setting removes non-schema properties to keep junk from getting into your API.
+- [x] For object type structures, remove `default` (putPost requestBody has a default on author)
+- [x] refactor code; remove all the `console.log`s supporting development
+  - Leave operation `console.log` that is useful for diagnosing problems.

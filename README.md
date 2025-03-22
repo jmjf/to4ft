@@ -24,24 +24,20 @@ Seems to be working for both ref-maintaining and deref versions. See test output
 To do list:
 
 - [ ] test with example schemas and inspect output; fix issues ([x] = ran and LGTM)
-  - [x] Simple blog schema (`example/openapi/openapi.yaml`); output in `example/blog-*`
-  - [x] Train travel API (`example/otherschemas/train-travel-api.yaml`); output in `example/train-*`
-  - [x] Museum example (`example/otherschemas/museum-openapi-example.yaml`); output in `example/museum-*`
-  - [ ] Pet store (`example/otherschemas/petstore.yaml`); output in `example/pet-*`
+  - [x] Simple blog schema (`examples/openapi/openapi.yaml`); output in `examples/blog-*`
+  - [x] Train travel API (`examples/otherschemas/train-travel-api.yaml`); output in `examples/train-*`
+  - [x] Museum example (`examples/otherschemas/museum-openapi-example.yaml`); output in `examples/museum-*`
+  - [ ] Pet store (`examples/otherschemas/petstore.yaml`); output in `examples/pet-*`
     - This schema doesn't pass Redocly lint, but the issues shouldn't be a problem.
-- [x] refactor code; remove all the `console.log`s supporting development
-  - Leave operation `console.log` that is useful for diagnosing problems.
 - [ ] Examine: Can I lift partial deref into the main loop without making a mess? (Probably not.)
 
-- [x] Add config to add `additionalProperties: false` to querystring
-  - Applying to body or response requires setting in OpenAPI schema so TypeBox schemas pick it up.
-  - Setting removes non-schema properties to keep junk from getting into your API.
-- [ ] For object type structures, remove `default` (putPost requestBody has a default on author)
+### Demo servers
 
-### Demo server
+See the demo servers in `examples/blog`, `examples/train`, and `examples/museum` for examples of how to use output. These servers validate the request input and log any path parameters, query parameters, body, and headers. They may return validation errors.
 
-- [ ] Build a simple server that returns route and parameter information using generated `RouteOptions` and TypeBox types.
-  - [x] blog example
+The blog and train examples include servers for ref-maintaining `RouteOptions` (`ror`), which use ref-maintaining TypeBox schemas, and dereferenced `RouteOptions` (`rod`).
+
+The museum example server uses ref-maintaining `RouteOptions` (`ror`) that use dereferenced TypeBox schemas (`tbd`). This approach should allow excluding some TypeBox files because they won't be used unless the application code uses them.
 
 ## Motivation
 
@@ -51,7 +47,7 @@ I've seen examples using TypeBox to define the API schema and exporting JSON Sch
 
 ## Limitations and compromises
 
-- Does not format output. You've already configured your preferred style for your preferred code formatter (`@biomejs/biome`, `prettier`, something else). You need to format the code anyway so it matches your style. Why add the overhead of a formatter and format in a style you're going to reformat anyway? Write an npm script to generate and format generated code and lint-fix generated code (next point).
+- Does not format output. You've already configured your preferred style for your preferred code formatter (`@biomejs/biome`, `prettier`, something else). You'll format the code to match your style. Why add the overhead of a formatter and format in a style you're going to reformat anyway? Write an npm script to generate and format generated code and lint-fix generated code (next point).
 
 - Writes a standard set of TypeBox imports to all output files. If your linter warns or errors on unused imports, run lint with fix on the output directory to strip unused imports. If your linter can't fix simple, safe issues like this, consider getting a linter that can.
 
@@ -61,21 +57,19 @@ Also see, `docs` for base assumptions and recommendations on how to build specs 
 
 - Convert items in `components` only. Items in paths/callbacks may be unnamed.
 - Convert `headers`, `parameters`, `requestBodies`, `responses`, and `schemas` only. Other items do not produce types
-  - Currently, `requestBodies` handling is not working. Use `schemas` to define the request body.
-  - Redocly's lint doesn't like my `headers` definitions. To be investigated. Use `parameters` to define whole header parameters for now.
-- For `responses`, generate a type for one `content` option with the following priority: `application/json` before `application/x-www-form-urlencoded` before `application/xml`.
-- Prefix generated file names with the section from which they came. For example, it will write `components.schemas.Users` output to `schemasUsers.ts`
-- Replace invalid identifier characters with `_`. Do not trim leading/trailing `_`. See `docs/ValidIdentifiers.md` for name sanitizer behavior.
-  - This compromise most affects custom headers like `x-my-custom-header`, which will be renamed `tbX_my_custom_header` in output. When I get `--camel` working, that may become `tbXMyCustomHeader`.
+- For `responses` and `requestBodies`, generate a type for one `content` option with the following priority: `application/json` before `application/x-www-form-urlencoded` before `application/xml`.
+- Prefix generated file names with the section from which they came. For example, write `components.schemas.Users` output to `schemas_Users.ts`
+- Convert names to the case specified in the configuration file.
+  - This compromise most affects custom headers like `x-my-custom-header`, which will become `XMyCustomHeaderSchema` and `XMyCustomHeader` (type) or similar, depending on name casing chosen.
 
 ### In `oas2ro`
 
 - Do not generate schemas for `cookie` parameters. Fastify doesn't support them in `RouteOptions` schemas.
-- Exclude keywords AJV doesn't recognize (can override with a config file). See `docs/experimentQuerystrings.md` and `experiments/querystrings` for more details.
+- Exclude keywords AJV doesn't recognize (can override in config file). See `docs/experimentQuerystrings.md` and `experiments/querystrings` for more details.
 
 ## Commands
 
-See `tbd:dev`, `tbr:dev`, `rod:dev`, and `ror:dev` scripts in `package.json` for command line examples. Also see `genAllTests.sh` for more examples.
+See `blog:*`, `train:*`, and `museum:*` scripts in `package.json` for command line examples. In most cases, you won't need more than two scripts. Set up your config file and scripts for your preferred approach.
 
 `oas2tb4fastify` is a `commander` application, so `-h` or `--help` and `-V` or `--version` work as you'd expect, including `oas2tb4fastify <command> -h`.
 
@@ -83,7 +77,7 @@ See `tbd:dev`, `tbr:dev`, `rod:dev`, and `ror:dev` scripts in `package.json` for
 
 Generate dereferenced TypeBox types
 
-Example: `oas2tb4fastify oas2dtb -i example/openapi/openapi.yaml -o example/dtb -c configFile`
+Example: `oas2tb4fastify oas2dtb -i examples/openapi/openapi.yaml -o examples/dtb -c configFile`
 
 `oas2dtb` generates types that dereference any `$ref`ed fields. Each file is self-contained with no imports of other files. This option works best if you maintain an OpenAPI spec and generate TypeBox when it changes.
 
@@ -92,10 +86,10 @@ Example: `oas2tb4fastify oas2dtb -i example/openapi/openapi.yaml -o example/dtb 
 `-i` (required) -- path to one of
 
 - a file to convert
-  - `example/openapi/schemas/User.yaml` generates types for items defined in `components` in `User.yaml` and in any file `$ref`ed in `User.yaml` or its `$ref`s (recursive).
-  - `example/openapi/openapi.yaml` generates types for items defined in `components` in the `openapi.yaml` and in any file `$ref`ed in the `openapi.yaml` or its `$ref`s (recursive).
+  - `examples/openapi/schemas/User.yaml` generates types for items defined in `components` in `User.yaml` and in any file `$ref`ed in `User.yaml` or its `$ref`s (recursive).
+  - `examples/openapi/openapi.yaml` generates types for items defined in `components` in the `openapi.yaml` and in any file `$ref`ed in the `openapi.yaml` or its `$ref`s (recursive).
 - a directory containing files to convert
-  - `example/openapi/schemas` generates types defined in `components` in any file in the directory
+  - `examples/openapi/schemas` generates types defined in `components` in any file in the directory
 
 `-o` (required) -- path to receive generated files
 
@@ -105,7 +99,7 @@ The following examples are generated from `openapi/schema/User.yaml` `components
 
 #### Example dereferenced output from `npm run tbd:dev`
 
-With dereferenced output, manual maintenance is a pain. Regenerating the generated code is easy. Compare `schema_Posts.ts` in `example/blog-tbd` and `example/blog-tbr` for differences.
+With dereferenced output, manual maintenance is a pain. Regenerating the generated code is easy. Compare `schema_Posts.ts` in `examples/blog/tbd` and `examples/blog/tbr` for differences.
 
 ```typescript
 import { type Static, Type } from '@sinclair/typebox';
@@ -121,13 +115,13 @@ export const UserSchema = Type.Object({
 export type User = Static<typeof UserSchema>;
 ```
 
-See `example/blog-tbd` for more examples.
+See `examples/blog/tbd` for more examples.
 
 #### Example reference-maintaining output from `npm run tbr:dev`
 
 Reference-maintaining output mirrors the source spec using imports and `Clone`. If you want to abandon your OpenAPI spec, this option is easier to maintain than fully dereferenced output.
 
-**WARNING:** If your schema `$ref`s `examples`, `links`, or other OpenAPI fields that do not generate types, `oas2tb4fastify` will not convert them and may produce unpredictable results.
+**WARNING:** If your schema `$ref`s `examples`, `links`, or other OpenAPI fields that do not generate types, `oas2tb4fastify` will not convert them and may produce unexpected results.
 
 ```typescript
 import { Clone, type Static, Type } from '@sinclair/typebox';
@@ -149,7 +143,7 @@ export const UserSchema = Type.Object({
 export type User = Static<typeof UserSchema>;
 ```
 
-See `example/blog-tbr` for more examples.
+See `examples/blog/tbr` for more examples.
 
 ### `oas2ro`
 
@@ -213,15 +207,15 @@ export const getUsersByQueryRouteOptions = {
 };
 ```
 
-See `example/blog-rod` for more examples.
+See `examples/blog/rod` for more examples.
 
 #### Example ref-maintaining output from `npm run ror:dev`
 
 ```typescript
-import { XTestHeaderSchema } from '../blog-tbr/headers_XTestHeader.ts';
-import { UserSchema } from '../blog-tbr/schemas_User.ts';
-import { UserIdSchema } from '../blog-tbr/schemas_UserId.ts';
-import { UserNmSchema } from '../blog-tbr/schemas_UserNm.ts';
+import { XTestHeaderSchema } from '../blog/tbr/headers_XTestHeader.ts';
+import { UserSchema } from '../blog/tbr/schemas_User.ts';
+import { UserIdSchema } from '../blog/tbr/schemas_UserId.ts';
+import { UserNmSchema } from '../blog/tbr/schemas_UserNm.ts';
 
 export const getUsersByQueryRouteOptions = {
    url: '/users',
@@ -247,7 +241,7 @@ export const getUsersByQueryRouteOptions = {
 };
 ```
 
-See `example/blog-ror` for more examples.
+See `examples/blog/ror` for more examples.
 
 ## Configuration file
 
@@ -277,14 +271,14 @@ Default configuration values if you provide no configuration file.
 }
 ```
 
-- `keepAnnotationsFl` -- If true, keep annotation-type keywords in the output. See `annotationKeys` in `src/lib/consts.ts` for the list of annotation keywords.
+- `keepAnnotationsFl` -- If true, keep annotation-type keywords in the output. See `annotationKeys` in `src/lib/consts.ts` for the list of annotation keywords. If you aren't generating API documentation from the server code, annotations add little value.
 
-- `allowUnsafeKeywordsFl` -- If true, keep keywords AJV may not recognize. See `ajvUnsafeKeys` in `src/lib/consts.ts` for the list of unsafe keywords.
+- `allowUnsafeKeywordsFl` -- If true, keep keywords AJV may not recognize. See `ajvUnsafeKeys` in `src/lib/consts.ts` for the list of unsafe keywords. If you enable AJV unsafe keywords, output may not be usable with AJV.
 
-**NOTE:** `oas2tb4fastify` ignores keywords in `stdIgnoreKeys` by default because they're handled by the code.
+**NOTE:** `oas2tb4fastify` always ignores keywords in `stdIgnoreKeys` (in `src/lib/consts.ts`) because they're handled by the code.
 
 - `caseNm` -- Identifies the casing style to use.
-  - `go` -- Camel case but preserves strings of consecutive captials, similar to Go names
+  - `go` -- Camel-like; preserves strings of consecutive capital letters, similar to names used in Go
   - `camel` -- Lower-first camel case
   - `pascal` -- Upper-first camel case
 
@@ -309,4 +303,4 @@ Without `@apidevtools/json-schema-ref-parser`, this tool would be more work than
 
 `openapi-transformer-toolkit` for inspiring me to explore generating code from OpenAPI specs and getting me on the spec-first bandwagon. Thank you Nearform team.
 
-`oas2tb4fastify` borrows heavily from `schema2typebox` to translate to TypeBox. Thank you xddq.
+`oas2tb4fastify` borrows heavily from `schema2typebox` to generate TypeBox output. Thank you xddq.
