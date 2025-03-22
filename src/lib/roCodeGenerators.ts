@@ -313,6 +313,10 @@ export function genEntriesCode(entries: [string, unknown][], imports: Set<string
 		// console.log('GEN ENTRIES', key, value);
 		if (value === undefined || ignoreKeys.includes(key)) continue;
 		if (key !== '$ref') {
+			if ((value as OASSchemaObject)?.type === 'object' && (value as OASSchemaObject)?.default) {
+				(value as OASSchemaObject).default = undefined;
+				// console.log('GEN ENTRIES value', value);
+			}
 			entriesCode += `'${key}': ${genValueCode(value, imports, config)},`;
 		} else if (typeof value === 'string') {
 			const code = genRefCodeAndImport(value as string, imports, config);
