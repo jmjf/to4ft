@@ -1,3 +1,4 @@
+
 export const putPostsRouteOptions = {
 	url: '/posts',
 	method: 'POST',
@@ -22,7 +23,6 @@ export const putPostsRouteOptions = {
 									$100ok: { type: 'string' },
 									x𒐗: { type: 'number' },
 								},
-								default: 'joe',
 							},
 							comments: {
 								type: 'array',
@@ -67,7 +67,6 @@ export const putPostsRouteOptions = {
 									$100ok: { type: 'string' },
 									x𒐗: { type: 'number' },
 								},
-								default: 'joe',
 							},
 							comments: {
 								type: 'array',

@@ -1,4 +1,3 @@
-
 export const updateSpecialEventRouteOptions = {
 	url: '/special-events/:eventId',
 	method: 'PATCH',

@@ -1,3 +1,4 @@
+
 export const getPostByIdRouteOptions = {
 	url: '/posts/:postId',
 	method: 'GET',

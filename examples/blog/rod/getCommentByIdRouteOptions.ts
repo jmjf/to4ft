@@ -1,3 +1,4 @@
+
 export const getCommentByIdRouteOptions = {
 	url: '/comments/:commentId/:testParam',
 	method: 'GET',

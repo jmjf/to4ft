@@ -1,3 +1,4 @@
+
 export const getPostsRouteOptions = {
 	url: '/posts',
 	method: 'GET',
@@ -12,6 +13,7 @@ export const getPostsRouteOptions = {
 				tags: { type: 'array', items: { type: 'string' } },
 			},
 			required: ['page', 'tags'],
+			additionalProperties: false,
 		},
 		response: {
 			'200': {

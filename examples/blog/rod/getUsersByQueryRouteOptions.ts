@@ -1,3 +1,4 @@
+
 export const getUsersByQueryRouteOptions = {
 	url: '/users',
 	method: 'GET',
@@ -13,6 +14,7 @@ export const getUsersByQueryRouteOptions = {
 				inline: { type: 'string', minLength: 1 },
 			},
 			required: ['userId', 'userNm'],
+			additionalProperties: false,
 		},
 		response: {
 			'200': {

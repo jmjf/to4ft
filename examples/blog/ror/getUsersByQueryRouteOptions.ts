@@ -14,6 +14,7 @@ export const getUsersByQueryRouteOptions = {
 			type: 'object',
 			properties: { userId: UserIdSchema, userNm: UserNmSchema, inline: { type: 'string', minLength: 1 } },
 			required: ['userId', 'userNm'],
+			additionalProperties: false,
 		},
 		response: {
 			'200': {

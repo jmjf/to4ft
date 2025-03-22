@@ -1,4 +1,3 @@
-
 export const getMuseumHoursRouteOptions = {
 	url: '/museum-hours',
 	method: 'GET',

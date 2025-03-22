@@ -16,6 +16,7 @@ export const getPostsRouteOptions = {
 				tags: { type: 'array', items: { type: 'string' } },
 			},
 			required: ['page', 'tags'],
+			additionalProperties: false,
 		},
 		response: { '200': { content: { 'application/json': { schema: PostsResponseSchema } } }, '4xx': {} },
 	},
