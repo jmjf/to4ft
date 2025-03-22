@@ -1,7 +1,27 @@
 # oas2tb4fastify
 
-- Convert OpenAPI schemas into dereferenced TypeBox types
-- Convert OpenAPI paths into Fastify `RouteOptions` with TypeBox schemas
+A tool to convert OpenAPI schemas into TypeBox types (ref-maintaining or dereferenced) and convert OpenAPI paths into Fastify `RouteOptions` (with or without TypeBox schemas).
+
+- [oas2tb4fastify](#oas2tb4fastify)
+  - [To do](#to-do)
+    - [Core/common](#corecommon)
+    - [`oas2tb`](#oas2tb)
+    - [`oas2ro`](#oas2ro)
+  - [Motivation](#motivation)
+  - [Limitations and compromises](#limitations-and-compromises)
+    - [In `oas2tb`](#in-oas2tb)
+    - [In `oas2ro`](#in-oas2ro)
+  - [Commands](#commands)
+    - [`oas2tb`](#oas2tb-1)
+      - [Options](#options)
+      - [Example dereferenced output from `npm run blog:tbd`](#example-dereferenced-output-from-npm-run-blogtbd)
+      - [Example reference-maintaining output from `npm run blog:tbr`](#example-reference-maintaining-output-from-npm-run-blogtbr)
+    - [`oas2ro`](#oas2ro-1)
+      - [Example dereferenced output from `npm run blog:rod`](#example-dereferenced-output-from-npm-run-blogrod)
+      - [Example ref-maintaining output from `npm run blog:ror`](#example-ref-maintaining-output-from-npm-run-blogror)
+  - [Configuration file](#configuration-file)
+  - [Demo servers](#demo-servers)
+  - [Thanks](#thanks)
 
 ## To do
 
@@ -30,14 +50,6 @@ To do list:
   - [ ] Pet store (`examples/otherschemas/petstore.yaml`); output in `examples/pet-*`
     - This schema doesn't pass Redocly lint, but the issues shouldn't be a problem.
 - [ ] Examine: Can I lift partial deref into the main loop without making a mess? (Probably not.)
-
-### Demo servers
-
-See the demo servers in `examples/blog`, `examples/train`, and `examples/museum` for examples of how to use output. These servers validate the request input and log any path parameters, query parameters, body, and headers. They may return validation errors.
-
-The blog and train examples include servers for ref-maintaining `RouteOptions` (`ror`), which use ref-maintaining TypeBox schemas, and dereferenced `RouteOptions` (`rod`).
-
-The museum example server uses ref-maintaining `RouteOptions` (`ror`) that use dereferenced TypeBox schemas (`tbd`). This approach should allow excluding some TypeBox files because they won't be used unless the application code uses them.
 
 ## Motivation
 
@@ -97,7 +109,7 @@ Example: `oas2tb4fastify oas2dtb -i examples/openapi/openapi.yaml -o examples/dt
 
 The following examples are generated from `openapi/schema/User.yaml` `components/schemas/User`.
 
-#### Example dereferenced output from `npm run tbd:dev`
+#### Example dereferenced output from `npm run blog:tbd`
 
 With dereferenced output, manual maintenance is a pain. Regenerating the generated code is easy. Compare `schema_Posts.ts` in `examples/blog/tbd` and `examples/blog/tbr` for differences.
 
@@ -117,7 +129,7 @@ export type User = Static<typeof UserSchema>;
 
 See `examples/blog/tbd` for more examples.
 
-#### Example reference-maintaining output from `npm run tbr:dev`
+#### Example reference-maintaining output from `npm run blog:tbr`
 
 Reference-maintaining output mirrors the source spec using imports and `Clone`. If you want to abandon your OpenAPI spec, this option is easier to maintain than fully dereferenced output.
 
@@ -159,7 +171,7 @@ Generate partial Fastify `RouteOptions` objects based on OpenAPI `paths`.
 
 `--refDir` (required if `derefFl: false`) -- directory to reference for TypeBox types; `oas2tb4fastify` assumes the directory and files it wants exist and exports the TypeBox schemas it wants to import.
 
-#### Example dereferenced output from `npm run rod:dev`
+#### Example dereferenced output from `npm run blog:rod`
 
 ```typescript
 export const getUsersByQueryRouteOptions = {
@@ -209,7 +221,7 @@ export const getUsersByQueryRouteOptions = {
 
 See `examples/blog/rod` for more examples.
 
-#### Example ref-maintaining output from `npm run ror:dev`
+#### Example ref-maintaining output from `npm run blog:ror`
 
 ```typescript
 import { XTestHeaderSchema } from '../blog/tbr/headers_XTestHeader.ts';
@@ -296,6 +308,14 @@ Default configuration values if you provide no configuration file.
   - `importExtensionTx` -- The extension to use for import file names -- NO DOT. If you aren't using TypeScripts `rewriteRelativeImportExtensions` option, you probably want `js`.
   - `extensionTx` -- The extension to use for output files. `RouteOptions` do not include type annotations, so can be written as `js`, `mjs`, or `cjs` if you wish.
   - `noAdditionalProperties` -- if true, adds `additionalProperties: false` to querystring parameters.
+
+## Demo servers
+
+See the demo servers in `examples/blog`, `examples/train`, and `examples/museum` for examples of how to use output. These servers validate the request input and log any path parameters, query parameters, body, and headers. They may return validation errors.
+
+The blog and train examples include servers for ref-maintaining `RouteOptions` (`ror`), which use ref-maintaining TypeBox schemas, and dereferenced `RouteOptions` (`rod`).
+
+The museum example server uses ref-maintaining `RouteOptions` (`ror`) that use dereferenced TypeBox schemas (`tbd`). This approach should allow excluding some TypeBox files because they won't be used unless the application code uses them.
 
 ## Thanks
 
