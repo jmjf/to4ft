@@ -1,3 +1,4 @@
+
 export const getTicketCodeRouteOptions = {
 	url: '/tickets/:ticketId/qr',
 	method: 'GET',

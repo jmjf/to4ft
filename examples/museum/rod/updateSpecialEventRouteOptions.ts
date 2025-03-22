@@ -1,11 +1,26 @@
 
-export const getSpecialEventRouteOptions = {
+export const updateSpecialEventRouteOptions = {
 	url: '/special-events/:eventId',
-	method: 'GET',
-	operationId: 'getSpecialEvent',
+	method: 'PATCH',
+	operationId: 'updateSpecialEvent',
 	tags: ['Events'],
 	schema: {
 		params: { type: 'object', properties: { eventId: { type: 'string', format: 'uuid' } }, required: ['eventId'] },
+		body: {
+			content: {
+				'application/json': {
+					schema: {
+						type: 'object',
+						properties: {
+							location: { type: 'string' },
+							eventDescription: { type: 'string' },
+							dates: { type: 'array', items: { type: 'string', format: 'date' } },
+							price: { type: 'number', format: 'float' },
+						},
+					},
+				},
+			},
+		},
 		response: {
 			'200': {
 				content: {

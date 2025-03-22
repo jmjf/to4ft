@@ -1,3 +1,4 @@
+
 export const deleteSpecialEventRouteOptions = {
 	url: '/special-events/:eventId',
 	method: 'DELETE',

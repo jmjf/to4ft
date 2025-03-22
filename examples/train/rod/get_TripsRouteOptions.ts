@@ -1,4 +1,3 @@
-
 export const get_TripsRouteOptions = {
 	url: '/trips',
 	method: 'GET',

@@ -1,4 +1,3 @@
-
 export const get_StationsRouteOptions = {
 	url: '/stations',
 	method: 'GET',

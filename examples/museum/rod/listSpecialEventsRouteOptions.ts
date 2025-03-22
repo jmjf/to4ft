@@ -1,3 +1,4 @@
+
 export const listSpecialEventsRouteOptions = {
 	url: '/special-events',
 	method: 'GET',
@@ -12,6 +13,7 @@ export const listSpecialEventsRouteOptions = {
 				page: { type: 'integer', default: 1 },
 				limit: { type: 'integer', default: 10, maximum: 30 },
 			},
+			additionalProperties: false,
 		},
 		response: {
 			'200': {

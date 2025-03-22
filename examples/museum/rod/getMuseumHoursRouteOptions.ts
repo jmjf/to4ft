@@ -1,3 +1,4 @@
+
 export const getMuseumHoursRouteOptions = {
 	url: '/museum-hours',
 	method: 'GET',
@@ -11,6 +12,7 @@ export const getMuseumHoursRouteOptions = {
 				page: { type: 'integer', default: 1 },
 				limit: { type: 'integer', default: 10, maximum: 30 },
 			},
+			additionalProperties: false,
 		},
 		response: {
 			'200': {

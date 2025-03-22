@@ -1,3 +1,4 @@
+
 export const createSpecialEventRouteOptions = {
 	url: '/special-events',
 	method: 'POST',
