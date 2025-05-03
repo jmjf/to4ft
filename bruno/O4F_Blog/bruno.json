@@ -1,0 +1,9 @@
+{
+  "version": "1",
+  "name": "O4F_Blog",
+  "type": "collection",
+  "ignore": [
+    "node_modules",
+    ".git"
+  ]
+}
