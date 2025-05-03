@@ -184,8 +184,6 @@ export function parseTypeName(
 	}
 	if (typeNm === 'object') {
 		return parseObject(opts, schema as ObjectSchema);
-		// We don't want to trust on build time checking here, json can contain anything
-		// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
 	}
 	if (typeNm === 'array') {
 		return parseArray(opts, schema as ArraySchema);
