@@ -41,7 +41,6 @@ export async function oas2ro(opts: CommandOptions, command: Command) {
 			if (isDeref && opMethod === 'parameters') {
 				pathParams.push(...(opObjRaw as OASParameterObject[]));
 			}
-			console.log('***** OPERATION', pathURL, opMethod);
 			if (!pathItemOperations.includes(opMethod)) continue;
 
 			const opObj = opObjRaw as OASOperationObject;
@@ -50,10 +49,11 @@ export async function oas2ro(opts: CommandOptions, command: Command) {
 			}
 
 			const { roCode, roNm, imports } = genRouteOptionsForOperation(pathURL, opMethod, opObj, config);
-			writeFileSync(`${config.outPathTx}/${roNm}.ts`, `${dedupeArray(imports).join(';\n')};\n\n${roCode};\n`);
+			writeFileSync(`${config.outPathTx}/${roNm}.ts`, `${dedupeArray(imports).join(';\n')};\n\n${roCode};\n`, {
+				flush: true,
+			});
 		}
 	}
-	// writeFileSync('/workspace/example/ro-wip.ts', output);
 }
 
 // Dereference a set of PathsObjects enough that a ref-maintaining RouteOptions
