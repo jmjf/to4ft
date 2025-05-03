@@ -1,0 +1,53 @@
+get:
+  operationId: getPosts
+  tags: 
+    -  Posts
+  security: []
+  summary: GET all posts
+  parameters:
+    - $ref: ../components/Post.yaml#/components/parameters/PaginationPage
+    - $ref: ../components/Post.yaml#/components/parameters/PaginationLimit    
+    - name: tags
+      in: query
+      description: Tags to filter by
+      required: true
+      explode: true
+      schema:
+        type: array
+        items:
+          type: string
+  responses:
+    '200':
+      description: result
+      content:
+        application/json:
+          schema:
+            $ref: ../components/Post.yaml#/components/schemas/PostsResponse
+    '4xx':
+        description: error
+post:
+  operationId: putPosts
+  tags:
+    - Posts
+  security: []
+  summary: POST a post
+  requestBody:
+    $ref: ../components/Post.yaml#/components/requestBodies/PostRequestBody
+    # description: post to add to the blog
+    # content:
+    #   'application/json':
+    #     schema:
+    #       $ref: ../components/Post.yaml#/components/schemas/PostBody
+    #   'application/xml':
+    #     schema:
+    #       $ref: ../components/Post.yaml#/components/schemas/PostBody
+      
+  responses:
+    '200':
+      description: result
+      content:
+        application/json:
+          schema:
+            $ref: ../components/Post.yaml#/components/schemas/PostsResponse
+    '4xx':
+        description: error    

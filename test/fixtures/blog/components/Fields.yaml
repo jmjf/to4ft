@@ -1,0 +1,70 @@
+openapi: 3.1.0
+servers:
+  - url: http://127.0.0.0:3000
+info: 
+   title: Test API
+   version: 1.0.0
+   license:
+      name: MIT
+      identifier: MIT
+
+components: 
+  schemas:
+   CommentId:
+      type: number
+      description: uniquely identifes a comment
+      minimum: 1
+   CommentTx:
+      type: string
+      minLength: 1
+      maxLength: 256
+      description: Contents of a comment
+   EmailAddrTx:
+      type: string
+      format: email
+      description: An email address
+      example: joe@mailinator.com
+   GenericDt:
+      type: string
+      format: date
+      example: '2024-03-05'
+   GenericTs:
+      type: string
+      description: Description not provided
+      format: date-time
+      example: 2024-01-02:03:04:05Z
+   PostId:
+      type: number
+      description: uniquely identifes a post
+      minimum: 1
+   PostTx:
+      type: string
+      minLength: 1
+      maxLength: 1024
+      description: Contents of a post
+   TitleTx:
+      type: string
+      description: The title of a blog post
+      default: none
+      minLength: 3
+      maxLength: 100
+   UserId:
+      type: number
+      description: uniquely identifes a user
+      minimum: 1
+   UserNm:
+      type: string
+      minLength: 3
+      description: User name must be at least 3 characters
+      example: Joe
+   # Enums
+   PostStatus:
+      type: string
+      enum: [draft, published, deleted]
+      description: >
+        Post status:
+         - draft - work in progress
+         - published - for the world to see
+         - deleted - don't show this to anyone
+    
+  

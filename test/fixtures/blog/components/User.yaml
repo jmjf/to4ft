@@ -1,0 +1,107 @@
+openapi: 3.1.0
+servers:
+  - url: http://127.0.0.0:3000
+info: 
+   title: Test API
+   version: 1.0.0
+   license:
+      name: MIT
+      identifier: MIT
+
+components:
+  # components.headers can only be used in responses
+  headers:
+    XTestHeader:           # this is the object name
+      description: test header in response
+      schema:
+        type: string
+  parameters:
+    # use components.parameters for request headers
+    XTestHeaderParam:      # this is the object name
+      in: header
+      name: x-test-header  # this is the name to use when sending the request
+      description: test header in request
+      schema:
+        type: string
+    UserIdParam:
+      in: path
+      name: userId
+      schema:
+        title: UserIdParam
+        type: object
+        properties:
+          userId:
+            $ref: Fields.yaml#/components/schemas/UserId
+            description: A unique identifier for a user
+        required: 
+          -  userId
+    UserQuery:
+      in: query
+      name: userQuery
+      description: this description can be preserved in querystring
+      style: simple # will not be preserved in querystring
+      allowReserved: true # will not be preserved in querystring
+      schema:
+        title: UserQuery
+        type: object
+        description: this description will not be preserved
+        required:
+          - userId
+          - userNm
+        properties:
+          userId:
+            $ref: Fields.yaml#/components/schemas/UserId
+          userNm:
+            $ref: Fields.yaml#/components/schemas/UserNm
+          inline:
+            type: string
+            minLength: 1
+            description: an inline property
+  schemas:
+    User:
+      title: User
+      type: object
+      properties:
+        userId:
+          $ref: Fields.yaml#/components/schemas/UserId
+          description: A unique identifier for a user (override)
+        userNm:
+          $ref: Fields.yaml#/components/schemas/UserNm
+        emailAddrTx:
+          $ref: Fields.yaml#/components/schemas/EmailAddrTx
+        x-dashes:
+          $ref: '#/components/schemas/x-dashes'
+        $100ok:
+          $ref: '#/components/schemas/$100ok'
+        x𒐗:
+          $ref: '#/components/schemas/x𒐗'
+      required:
+        - userId
+        - userNm
+    Users:
+      title: Users
+      type: array
+      items:
+        $ref: '#/components/schemas/User'
+    x-dashes:
+      title: x_dashes
+      type: string
+    $100ok:
+      title: $100ok
+      type: string
+    x𒐗:
+      title: cuneiform
+      type: number
+  responses:
+    UsersResponse:
+      description: An array of users
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Users'
+        application/xml:
+          schema:
+            title: Usersxml
+            type: array
+            items:
+              $ref: '#/components/schemas/User'

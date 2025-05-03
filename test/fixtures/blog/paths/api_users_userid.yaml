@@ -1,0 +1,17 @@
+get:
+  operationId: getUserById
+  tags: 
+    -  Users
+  security: []
+  summary: GET user endpoint for tson issue
+  parameters:
+    - $ref: ../components/User.yaml#/components/parameters/UserIdParam
+  responses:
+    '200':
+      description: result
+      content:
+        application/json:
+          schema:
+            $ref: ../components/User.yaml#/components/schemas/User
+    '4xx':
+        description: error

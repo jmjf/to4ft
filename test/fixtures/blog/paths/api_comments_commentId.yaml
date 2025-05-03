@@ -1,0 +1,34 @@
+get:
+  operationId: getCommentById
+  tags: 
+    -  Other
+  security: []
+  summary: GET comment endpoint for tson issue
+  parameters:
+    - $ref: ../components/Comment.yaml#/components/parameters/CommentIdParam
+    - name: testParam
+      in: path
+      description: 'test parameter'
+      schema:
+        type: object
+        properties:
+          prop1:
+            type: string
+          prop2:
+            type: number
+  responses:
+    '200':
+      description: result
+      content:
+        application/json:
+          schema:
+            $ref: ../components/Comment.yaml#/components/schemas/Comment
+        application/xml:
+          schema:
+            $ref: ../components/Comment.yaml#/components/schemas/Comment
+    '404':
+      $ref: ../components/Responses.yaml#/components/responses/HTTP404NotFound
+    '4xx':
+        description: error
+    '500':
+      $ref: ../components/Responses.yaml#/components/responses/HTTP500InternalServerError
