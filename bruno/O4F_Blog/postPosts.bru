@@ -4,8 +4,16 @@ meta {
   seq: 5
 }
 
-get {
+post {
   url: http://localhost:3080/posts
-  body: none
+  body: json
   auth: inherit
+}
+
+body:json {
+  {
+    "titleTx": "Test post",
+    "postTx": "This is a test post.",
+    "statusCd": "draft"
+  }
 }
