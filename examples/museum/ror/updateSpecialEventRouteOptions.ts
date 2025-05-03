@@ -1,6 +1,6 @@
-import { ErrorSchema } from '../tbd/schemas_Error.ts';
-import { SpecialEventSchema } from '../tbd/schemas_SpecialEvent.ts';
-import { SpecialEventFieldsSchema } from '../tbd/schemas_SpecialEventFields.ts';
+import { ErrorSchema } from '../tbr/schemas_Error.ts';
+import { SpecialEventSchema } from '../tbr/schemas_SpecialEvent.ts';
+import { SpecialEventFieldsSchema } from '../tbr/schemas_SpecialEventFields.ts';
 
 export const updateSpecialEventRouteOptions = {
 	url: '/special-events/:eventId',

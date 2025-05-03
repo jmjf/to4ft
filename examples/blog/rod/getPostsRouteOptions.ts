@@ -1,4 +1,3 @@
-
 export const getPostsRouteOptions = {
 	url: '/posts',
 	method: 'GET',

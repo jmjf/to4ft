@@ -1,4 +1,3 @@
-
 export const getUsersByQueryRouteOptions = {
 	url: '/users',
 	method: 'GET',

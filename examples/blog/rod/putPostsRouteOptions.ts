@@ -1,4 +1,3 @@
-
 export const putPostsRouteOptions = {
 	url: '/posts',
 	method: 'POST',

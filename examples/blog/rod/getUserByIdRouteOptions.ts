@@ -1,4 +1,3 @@
-
 export const getUserByIdRouteOptions = {
 	url: '/users/:userId',
 	method: 'GET',
