@@ -1,5 +1,5 @@
 {
-  "name": "oas2tb4fastify",
+  "name": "foast",
   "type": "module",
   "version": "1.0.0",
   "description": "",
@@ -7,7 +7,7 @@
   "author": "jmjf (https://github.com/jmjf)",
   "license": "MIT",
   "bin": {
-    "oas2tb4fastify": "./dist/src/cli.ts"
+    "foast": "./dist/src/cli.ts"
   },
   "scripts": {
     "test": "",
