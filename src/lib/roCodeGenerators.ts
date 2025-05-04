@@ -66,7 +66,7 @@ export function hoistSchemas(parameters: OASParameterObject[]) {
 
 	return params.map((param) => {
 		const schema = param.schema as OASSchemaObject;
-		// console.log('#####', schema, isSchemaObject(schema), schema.type);
+		// console.log('hoistSchemas', schema, isSchemaObject(schema), schema.type);
 		if (isSchemaObject(schema) && schema.type === 'array') {
 			console.log(`${functionNm} ERROR: skipping array type parameter ${param.name}`);
 			return {} as OASParameterObject;
@@ -85,9 +85,10 @@ export function hoistSchemas(parameters: OASParameterObject[]) {
 			}
 
 			const firstProp = props[0] as OASSchemaObject;
-			if (firstProp.type === 'object' || firstProp.type === 'array') {
+			// console.log('hoistSchemas firstProp', firstProp, schema, props);
+			if (firstProp[1].type === 'object' || firstProp[1].type === 'array') {
 				console.log(
-					`${functionNm} ERROR: skipping object type parameter ${param.name} with first property type ${firstProp.type}`,
+					`${functionNm} ERROR: skipping object type parameter ${param.name} with first property type ${firstProp[1].type}`,
 				);
 				return {} as OASParameterObject;
 			}
@@ -106,6 +107,8 @@ export function mergeParams(parameters: OASParameterObject[]) {
 
 	const entries: [string, OASParameterObject | OASReferenceObject][] = [];
 	for (const param of params) {
+		// console.log('mergeParams param loop', param.schema?.type, param, params);
+		// error conditions are usually caught before this, these are a safety net, just in case
 		if (!param.schema) {
 			console.log(`${functionNm} ERROR: skipping no-schema parameter ${param.name}`);
 			continue;
@@ -148,6 +151,7 @@ export function genParametersCode(
 	let paramCode = '';
 	for (const [paramNm, paramObj] of mergedParams) {
 		if (!paramObj.schema) {
+			// need an example to figure out how to cover this case; I think it breaks the spec
 			console.log(`${functionNm} ERROR: skipping no-schema parameter ${paramNm}`);
 			continue;
 		}
@@ -254,7 +258,7 @@ export function getParamAnnotationsCode(parameter: OASParameterObject, config: S
 export function genParmRequiredCode(params: [string, OASParameterObject][]) {
 	const required: string[] = [];
 	for (const [paramNm, paramObj] of params) {
-		// console.log('PARAMOBJ', paramNm, paramObj);
+		// console.log('genParamRequiredCode param', paramNm, paramObj, params);
 		if (paramObj.required) {
 			required.push(paramNm);
 		}
@@ -279,6 +283,7 @@ export function genValueCode(value: unknown, imports: Set<string>, config: StdCo
 	}
 
 	if (Array.isArray(value)) {
+		// console.log('GEN VALUE CODE isArray', typeof value[0], value[0], value);
 		if (typeof value[0] === 'string') {
 			return stringArrayToCode(value);
 		}
@@ -321,6 +326,7 @@ export function genEntriesCode(entries: [string, unknown][], imports: Set<string
 			}
 			entriesCode += `'${key}': ${genValueCode(value, imports, config)},`;
 		} else if (typeof value === 'string') {
+			// console.log('GEN ENTRIES ELSE', key, value);
 			const code = genRefCodeAndImport(value as string, imports, config);
 			entriesCode += `${code},`;
 		}

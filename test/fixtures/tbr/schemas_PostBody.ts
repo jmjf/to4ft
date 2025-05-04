@@ -12,5 +12,5 @@ export const PostBodySchema = Type.Object({"titleTx": Clone({...TitleTxSchema, .
 "postTx": Clone(PostTxSchema),
 "author": Type.Optional(Clone({...UserSchema, ...{"default":"joe"}})),
 "statusCd": Type.Optional(Clone({...PostStatusSchema, ...{"default":"draft"}})),
-"statusTs": Type.Optional(Clone({...GenericTsSchema, ...{"description":"The date and time when the post was put in the current status","example":"2025-11-12T13:14:15Z"}}))}, {"title":"PostRequestBody","additionalProperties":false})
+"statusTs": Type.Optional(Clone({...GenericTsSchema, ...{"description":"The date and time when the post was put in the current status","example":"2025-11-12T13:14:15Z"}}))}, {"title":"PostBody","additionalProperties":false})
 export type PostBody = Static<typeof PostBodySchema>

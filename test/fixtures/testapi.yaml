@@ -72,7 +72,7 @@ paths:
       tags:
         - Users
       security: []
-      summary: GET user endpoint for tson issue
+      summary: GET user by id
       parameters:
         - $ref: '#/components/parameters/UserIdParam'
       responses:
@@ -91,7 +91,7 @@ paths:
         - Users
         - Other
       security: []
-      summary: GET user endpoint for tson issue
+      summary: GET user endpoint
       parameters:
         - $ref: '#/components/parameters/UserQuery'
         - $ref: '#/components/parameters/XTestHeaderParam'
@@ -100,7 +100,51 @@ paths:
           $ref: '#/components/responses/GetUsersByQuery200Response'
         4xx:
           description: error
-  /testParamErrors/{authorization}:
+    post:
+      operationId: postUser
+      security: []
+      summary: POST user endpoint
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              description: allOf covers genEntriesCode else branch and genValuesCode isArray object branch
+              allOf:
+                - $ref: '#/components/schemas/PostBody'
+          application/xml:
+            schema:
+              description: allOf covers genValuesCode isArray string branch
+              allOf:
+                - 'genValuesCode isArray string'
+      responses:
+        '200':
+          $ref: '#/components/responses/GetUsersByQuery200Response'
+        4xx:
+          description: error
+    put:
+      operationId: putUser
+      security: []
+      summary: PUT user endpoint
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              description: allOf covers genEntriesCode tests genEntriesCode type object default branch
+              type: object
+              properties:
+                prop1:
+                  type: string
+              default:
+                prop1: 'test genEntriesCode type object default branch'
+      responses:
+        '200':
+          $ref: '#/components/responses/GetUsersByQuery200Response'
+        4xx:
+          description: error
+
+  /testParamCode/{authorization}:
     get:
       operationId: testParamErrors
       security: []
@@ -110,6 +154,10 @@ paths:
         - $ref: '#/components/parameters/TestInvalidAcceptParam'
         - $ref: '#/components/parameters/TestInvalidContentTypeParam'
         - $ref: '#/components/parameters/TestInvalidAuthorizationParam'
+        - $ref: '#/components/parameters/TestArrayPathParam'
+        - $ref: '#/components/parameters/TestObjectPathParam'
+        - $ref: '#/components/parameters/TestNoPropsObjectPathParam'
+        - $ref: '#/components/parameters/TestObjPropObjectPathParam'
       responses:
         '200':
           $ref: '#/components/responses/GetUsersByQuery200Response'
@@ -263,7 +311,7 @@ components:
         - postTx
         - postStatus
     PostBody:
-      title: PostRequestBody
+      title: PostBody
       type: object
       properties:
         titleTx:
@@ -290,6 +338,8 @@ components:
     PostIdParam:
       in: path
       name: postId
+      # required: true covers genParamRequiredCode if required branch
+      required: true
       schema:
         type: object
         properties:
@@ -356,6 +406,42 @@ components:
       description: test header in request
       schema:
         type: string
+    TestArrayPathParam:
+      in: path
+      description: covers hoistSchemas type array branch
+      name: arrayParam
+      schema:
+        type: array
+        items: 
+          type: string
+    TestObjectPathParam:
+      in: path
+      description: covers hoistSchemas type object branch props.length > 1
+      name: objectParam
+      schema:
+        type: object
+        properties:
+          prop1:
+            type: string
+          prop2:
+            type: number
+    TestNoPropsObjectPathParam:
+      in: path
+      description: covers hoistSchemas type object branch props.length === 0
+      name: noPropsObjectParam
+      schema:
+        type: object
+    TestObjPropObjectPathParam:
+      in: path
+      description: covers hoistSchemas type object branch object prop case
+      name: objectParam
+      schema:
+        type: object
+        properties:
+          prop1:
+            type: array
+            items: 
+              type: string
     TestNoSchemaQuery:
       in: query
       name: noSchemaQuery
