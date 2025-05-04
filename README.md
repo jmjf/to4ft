@@ -42,12 +42,12 @@ Seems to be working for both ref-maintaining and deref versions. See test output
 
 To do list:
 
-- [ ] test with example schemas and inspect output; fix issues ([x] = ran and LGTM)
-  - [x] Simple blog schema (`examples/openapi/openapi.yaml`); output in `examples/blog-*`
-  - [x] Train travel API (`examples/otherschemas/train-travel-api.yaml`); output in `examples/train-*`
-  - [x] Museum example (`examples/otherschemas/museum-openapi-example.yaml`); output in `examples/museum-*`
-  - [ ] Pet store (`examples/otherschemas/petstore.yaml`); output in `examples/pet-*`
-    - This schema doesn't pass Redocly lint, but the issues shouldn't be a problem.
+- [x] test with example schemas and inspect output; fix issues ([x] = ran and LGTM)
+  - [x] Simple blog schema (`examples/openapi/openapi.yaml`); output in `examples/blog`
+  - [x] Train travel API (`examples/otherschemas/train-travel-api.yaml`); output in `examples/train`
+  - [x] Museum example (`examples/otherschemas/museum-openapi-example.yaml`); output in `examples/museum`
+  - [-] Pet store (`examples/otherschemas/petstore.yaml`); output in `examples/petstore`
+    - Given the rest are working, I'm not going to build servers for this case
 - [ ] Examine: Can I lift partial deref into the main loop without making a mess? (Probably not.)
 
 ## Motivation
