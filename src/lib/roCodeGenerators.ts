@@ -66,6 +66,7 @@ export function hoistSchemas(parameters: OASParameterObject[]) {
 
 	return params.map((param) => {
 		const schema = param.schema as OASSchemaObject;
+		// console.log('#####', schema, isSchemaObject(schema), schema.type);
 		if (isSchemaObject(schema) && schema.type === 'array') {
 			console.log(`${functionNm} ERROR: skipping array type parameter ${param.name}`);
 			return {} as OASParameterObject;
@@ -253,6 +254,7 @@ export function getParamAnnotationsCode(parameter: OASParameterObject, config: S
 export function genParmRequiredCode(params: [string, OASParameterObject][]) {
 	const required: string[] = [];
 	for (const [paramNm, paramObj] of params) {
+		// console.log('PARAMOBJ', paramNm, paramObj);
 		if (paramObj.required) {
 			required.push(paramNm);
 		}

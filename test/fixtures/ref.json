@@ -1,5 +1,5 @@
 {
-	"keepAnnotationsFl": false,
+	"keepAnnotationsFl": true,
 	"allowUnsafeKeywordsFl": false,
 	"caseNm": "go",
 	"oas2tb": {

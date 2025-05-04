@@ -5,9 +5,7 @@ import { loadConfig, type StdConfig } from '../lib/config.ts';
 import { isReferenceObject, isSchemaObject, type OASPathsObject } from '../lib/typesAndGuards.ts';
 import type {
 	OASDocument,
-	OASSchemaObject,
 	OASParameterObject,
-	OASNonArraySchemaObject,
 	OASOperationObject,
 	OASResponsesObject,
 	OASPathItemObject,
@@ -15,7 +13,7 @@ import type {
 } from '../lib/typesAndGuards.ts';
 import path from 'node:path';
 import { genRouteOptionsForOperation } from '../lib/roCodeGenerators.ts';
-import { pathItemOperations, removeFromParameterEntries } from '../lib/consts.ts';
+import { pathItemOperations } from '../lib/consts.ts';
 import type { Command } from 'commander';
 import { dedupeArray } from '../lib/util.ts';
 
@@ -141,70 +139,4 @@ async function partialDerefPaths(config: StdConfig, absDir: string, schema: OASP
 		}
 	}
 	return oasPaths;
-}
-
-/**
- *
- * Code below supports deref and is broken for now
- *
- */
-
-// I think I can handle query (yes), path (yes), and header (yes) in one function. TBD.
-function getParameterSchema(paramType: string, parameters: OASParameterObject[]) {
-	if (!Array.isArray(parameters)) return undefined;
-	// parameters for paramType only
-	const params = parameters.filter((s) => s.in === paramType);
-
-	const paramEntries: [string, Partial<OASParameterObject>][] = [];
-	const required: string[] = [];
-	for (const param of params) {
-		if (!param.schema) {
-			console.log(`getParameterSchema WARN: param has no schema ${param.name}`);
-			continue;
-		}
-
-		console.log('paramSchema', paramType, param.schema);
-		// OpenAPI says to ignore these header parameters
-		if (paramType === 'header' && ['Accept', 'Content-Type', 'Authorization'].includes(param.name)) {
-			console.log(`getParameterSchema WARN: skipping header named ${param.name}`);
-			continue;
-		}
-
-		// TODO: Support $ref
-		// Dereferenced schemas should have none
-		// For parsed schemas, by the time we get here, we should just need to convert $ref paths to output paths.
-		if (isReferenceObject(param.schema)) {
-			console.log(`getParameterSchema WARN: query is $ref, ${param.schema}`);
-			continue;
-		}
-
-		// merge all parameter properties into a single object schema
-		const paramSchema = param.schema as OASSchemaObject;
-		if (paramSchema.type === 'object') {
-			if (Array.isArray(paramSchema.required) && paramSchema.required.length > 0) {
-				required.push(...(paramSchema.required as string[]));
-			}
-			const objectSchema = paramSchema as OASNonArraySchemaObject;
-			for (const [name, propertySchema] of Object.entries(objectSchema.properties ?? {})) {
-				paramEntries.push([name, propertySchema]);
-			}
-		} else {
-			if (param.required && param.name) {
-				required.push(param.name);
-			}
-			paramEntries.push([param.name, { ...param, ...(param.schema as object), ...removeFromParameterEntries }]);
-		}
-	}
-	console.log('PARAMS', paramType, params, required);
-
-	const requiredObj = required.length === 0 ? {} : { required };
-	return paramEntries.length === 0
-		? undefined
-		: {
-				...(params.length === 1 ? params[0] : []), // if only one, try to preserve as much as possible
-				...removeFromParameterEntries,
-				type: 'object',
-				properties: Object.fromEntries(paramEntries),
-				...requiredObj,
-			};
 }

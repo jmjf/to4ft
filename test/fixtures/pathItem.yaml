@@ -1,0 +1,13 @@
+parameters:
+  - $ref: './testapi.yaml#/components/parameters/XTestHeaderParam'
+get:
+  operationId: testPathLevelParams
+  security: []
+  summary: test parameters defined above operations
+  parameters:
+    - $ref: './testapi.yaml#/components/parameters/UserQuery'
+  responses:
+    '200':
+      $ref: './testapi.yaml#/components/responses/GetUsersByQuery200Response'
+    4xx:
+      description: error

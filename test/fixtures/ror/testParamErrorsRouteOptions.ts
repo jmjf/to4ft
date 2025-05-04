@@ -1,0 +1,4 @@
+import {UserSchema } from '../fixtures/tbr/schemas_User.ts';
+import {XTestHeaderSchema } from '../fixtures/tbr/headers_XTestHeader.ts';
+
+export const testParamErrorsRouteOptions = {url: '/testParamErrors/:authorization',method: 'GET',operationId: 'testParamErrors',summary: "test parameter error cases",schema: {params: {type: 'object', properties:{'Authorization': {"description":"invalid param authorization",'type': "number",},}, },querystring: {type: 'object', properties: {},additionalProperties: false,},response: { '200': { 'description': "result",'content': { 'application/json': { 'schema': { 'type': "array",'items': UserSchema, }, }, },'headers': { 'x-test-header': XTestHeaderSchema, }, },'4xx': { 'description': "error", }, },}};
