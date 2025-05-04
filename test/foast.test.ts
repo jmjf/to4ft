@@ -13,6 +13,12 @@ const CURRENT_DIR = import.meta.dirname;
 const fixturesPathNm = `${CURRENT_DIR}/fixtures`;
 const openapiPathNm = `${fixturesPathNm}/testapi.yaml`;
 
+// Basic test strategy:
+// - run the command with the desired configuration
+// - ensure expected files are created
+// - ensure generated content matches expected content
+// TODO: is snapshot testing a good strategy here?
+
 suite('oas2tb', () => {
 	for (const testConfig of [
 		{
@@ -33,7 +39,7 @@ suite('oas2tb', () => {
 			mkdirSync(outputPathNm);
 
 			const commandOptions = {
-				input: `${fixturesPathNm}/testapi.yaml`,
+				input: openapiPathNm,
 				outDir: outputPathNm,
 				config: testConfig.configFileNm,
 			};
@@ -82,7 +88,7 @@ suite('oas2ro', () => {
 			mkdirSync(outputPathNm);
 
 			const commandOptions = {
-				input: `${fixturesPathNm}/testapi.yaml`,
+				input: openapiPathNm,
 				outDir: outputPathNm,
 				config: testConfig.configFileNm,
 				refDir: `${fixturesPathNm}/tbr`,
