@@ -29,7 +29,6 @@ See `docs/Roadmap.md` for details of what's done
 
 ### Core/common
 
-- [ ] tests
 - [ ] documentation (work in progress)
 - [ ] better error logging
 
