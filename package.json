@@ -5,6 +5,17 @@
   "description": "",
   "author": "jmjf (https://github.com/jmjf)",
   "license": "MIT",
+  "repository": "https://github.com/jmjf/foast",
+  "homepage": "https://github.com/jmjf/foast#readme",
+  "keywords": [
+    "cli",
+    "openapi",
+    "oas",
+    "fastify",
+    "typebox",
+    "code generator",
+    "typescript"
+  ],
   "main": "dist/src/cli.js",
   "bin": {
     "foast": "./dist/src/cli.js"

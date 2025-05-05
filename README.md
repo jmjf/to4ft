@@ -313,8 +313,9 @@ See `docs/Roadmap.md` for details of what's done
 
 ### Core/common
 
-- [ ] better error logging
 - [ ] publish to `npm`
+- [ ] better error (and other) logging
+- [ ] Write files to a temp directory, then delete target and rename temp to avoid deletes on failure. Build a graceful shutdown function that takes an error and call it instead of directly throwing errors.
 
 ### `oas2tb` command
 
