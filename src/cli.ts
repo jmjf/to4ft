@@ -24,8 +24,10 @@ const configOption = new Option(
 
 function runProgram() {
 	program
-		.name('oas2tb4fastify')
-		.description('Convert OpenAPI specs to TypeBox and Fastify RouteOptions')
+		.name('foast')
+		.description(
+			'Fastify OAS TypeBox - like toast, but Fastify-er.\nConvert OpenAPI specs to TypeBox and Fastify RouteOptions.\nSee https://github.com/jmjf/foast for configuration options.',
+		)
 		.version(packageJSON.version);
 
 	program

@@ -1,13 +1,13 @@
 {
-  "name": "foast",
+  "name": "@jmjf/foast",
   "type": "module",
   "version": "1.0.0",
   "description": "",
-  "main": "dist/src/cli.js",
   "author": "jmjf (https://github.com/jmjf)",
   "license": "MIT",
+  "main": "dist/src/cli.js",
   "bin": {
-    "foast": "./dist/src/cli.ts"
+    "foast": "./dist/src/cli.js"
   },
   "scripts": {
     "test": "c8 node --import ./tsnode-esm.mjs --test test/**/*.test.ts",

@@ -21,13 +21,12 @@ export async function oas2tb(opts: CommandOptions, command: Command) {
 	} else {
 		genTypeBoxForPaths(refPathNms, 'parse', genRefTypeBox, config);
 	}
-
 }
 
 function genDerefTypeBox(schema: JSONSchema7, objNm: string, componentType: string, config: StdConfig) {
 	const tb = genTypeBoxForSchema(objNm, schema, config);
 	const outFileNm = getTypeBoxFilenameFor(componentType, objNm, config);
-	writeFileSync(`${config.outPathTx}/${outFileNm}`, `${genDerefImportStatements()}\n\n${tb}`, {flush: true});
+	writeFileSync(`${config.outPathTx}/${outFileNm}`, `${genDerefImportStatements()}\n\n${tb}`, { flush: true });
 }
 
 function genRefTypeBox(schema: JSONSchema7, objNm: string, componentType: string, config: StdConfig) {
