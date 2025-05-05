@@ -8,5 +8,7 @@ const pj = JSON.parse(packageJson);
 if (pj.scripts !== undefined) delete pj.scripts;
 if (pj.devDependencies !== undefined) delete pj.devDependencies;
 if (pj['lint-staged'] !== undefined) delete pj['lint-staged'];
+if (pj.release !== undefined) delete pj.release;
+if (pj.publishConfig !== undefined) delete pj.publishConfig;
 
 writeFileSync(`dist/package.json`, JSON.stringify(pj, null, 3));
