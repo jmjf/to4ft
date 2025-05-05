@@ -50,8 +50,8 @@
     "lint": "npm run lint:only && npm run lint:typecheck",
     "lint:only": "npx @biomejs/biome lint",
     "lint:typecheck": "npx tsc -p tsconfig.json --noemit",
-    "build": "npx tsc -p tsconfig-build.json",
-    "postbuild": "cp ./package.json ./dist && chmod a+x ./dist/src/cli.js",
+    "build": "rm -rf dist && npx tsc -p tsconfig-build.json",
+    "postbuild": "node buildPublishPJ.mjs && chmod a+x ./dist/src/cli.js",
     "prepare": "husky"
   },
   "dependencies": {
