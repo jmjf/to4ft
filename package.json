@@ -20,6 +20,7 @@
   "bin": {
     "foast": "./dist/src/cli.js"
   },
+  "files": [ "dist/**/*" ],
   "scripts": {
     "test": "c8 node --import ./tsnode-esm.mjs --test test/**/*.test.ts",
     "oas:lint": "npx @redocly/cli lint examples/blog/openapi/openapi.yaml",
@@ -51,8 +52,11 @@
     "lint:only": "npx @biomejs/biome lint",
     "lint:typecheck": "npx tsc -p tsconfig.json --noemit",
     "build": "rm -rf dist && npx tsc -p tsconfig-build.json",
-    "postbuild": "node buildPublishPJ.mjs && chmod a+x ./dist/src/cli.js",
-    "prepare": "husky"
+    "postbuild": "node pjClean.mjs -d dist && chmod a+x ./dist/src/cli.js",
+    "prepublish": "node pjClean.mjs -d .",
+    "postpublish": "node pjRestore.mjs",
+    "prepare": "husky",
+    "test1": "node test.mjs"
   },
   "dependencies": {
     "@apidevtools/json-schema-ref-parser": "^12.0.1",
