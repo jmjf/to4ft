@@ -1,0 +1,38 @@
+
+# Basic `dependabot.yml` file with
+# minimum configuration for two package managers
+
+version: 2
+updates:
+
+  # update github actions
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "cron"
+      # first and third friday at 2am
+      cronjob: "0 2 1-7,15-21 * 5"
+    groups:
+      action-deps:
+        patterns:
+          - "*"    
+
+  # Enable version updates for npm
+  - package-ecosystem: "npm"
+    # Look for `package.json` and `lock` files in the `root` directory
+    directory: "/"
+    # Check the npm registry for updates weekly
+    schedule:
+      interval: "cron"
+      # first and third friday at 2am
+      cronjob: "0 2 1-7,15-21 * 5"
+    commit-message:
+      prefix: chore(deps)
+      prefix-development: chore(deps-dev)
+      include: scope
+    groups:
+      dev-deps:
+        dependency-type: "development"
+      prod-deps:
+        dependency-type: "production"
+      
