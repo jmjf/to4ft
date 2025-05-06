@@ -20,6 +20,9 @@
   "bin": {
     "foast": "./dist/src/cli.js"
   },
+  "files": [
+    "dist/**/*"
+  ],
   "scripts": {
     "test": "c8 node --import ./tsnode-esm.mjs --test test/**/*.test.ts",
     "oas:lint": "npx @redocly/cli lint examples/blog/openapi/openapi.yaml",
@@ -51,8 +54,11 @@
     "lint:only": "npx @biomejs/biome lint",
     "lint:typecheck": "npx tsc -p tsconfig.json --noemit",
     "build": "rm -rf dist && npx tsc -p tsconfig-build.json",
-    "postbuild": "node buildPublishPJ.mjs && chmod a+x ./dist/src/cli.js",
-    "prepare": "husky"
+    "postbuild": "node pjClean.mjs -d dist && chmod a+x ./dist/src/cli.js",
+    "prepublishOnly": "node pjClean.mjs -d .",
+    "postpublish": "node pjRestore.mjs",
+    "prepare": "husky",
+    "commitlint": "commitlint --edit"
   },
   "dependencies": {
     "@apidevtools/json-schema-ref-parser": "^12.0.1",
@@ -61,6 +67,8 @@
   },
   "devDependencies": {
     "@biomejs/biome": "^1.9.4",
+    "@commitlint/cli": "^19.8.0",
+    "@commitlint/config-conventional": "^19.8.0",
     "@sinclair/typebox": "^0.34.24",
     "@types/node": "^22.13.4",
     "c8": "^10.1.3",
@@ -71,5 +79,10 @@
   },
   "lint-staged": {
     "*.{js,ts,mjs,mts}": "npm run format && npm run lint"
+  },
+  "commitlint": {
+    "extends": [
+      "@commitlint/config-conventional"
+    ]
   }
 }
