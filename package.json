@@ -55,7 +55,7 @@
     "lint:typecheck": "npx tsc -p tsconfig.json --noemit",
     "build": "rm -rf dist && npx tsc -p tsconfig-build.json",
     "postbuild": "node pjClean.mjs -d dist && chmod a+x ./dist/src/cli.js",
-    "prepublish": "node pjClean.mjs -d .",
+    "prepublishOnly": "node pjClean.mjs -d .",
     "postpublish": "node pjRestore.mjs",
     "prepare": "husky",
     "commitlint": "commitlint --edit"
