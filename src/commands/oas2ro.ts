@@ -1,20 +1,20 @@
 import { writeFileSync } from 'node:fs';
+import path from 'node:path';
 import { $RefParser } from '@apidevtools/json-schema-ref-parser';
+import type { Command } from 'commander';
 import type { CommandOptions } from '../cli.ts';
-import { loadConfig, type StdConfig } from '../lib/config.ts';
-import { isReferenceObject, isSchemaObject, type OASPathsObject } from '../lib/typesAndGuards.ts';
+import { type StdConfig, loadConfig } from '../lib/config.ts';
+import { pathItemOperations } from '../lib/consts.ts';
+import { genRouteOptionsForOperation } from '../lib/roCodeGenerators.ts';
+import { type OASPathsObject, isReferenceObject, isSchemaObject } from '../lib/typesAndGuards.ts';
 import type {
 	OASDocument,
-	OASParameterObject,
 	OASOperationObject,
-	OASResponsesObject,
+	OASParameterObject,
 	OASPathItemObject,
 	OASReferenceObject,
+	OASResponsesObject,
 } from '../lib/typesAndGuards.ts';
-import path from 'node:path';
-import { genRouteOptionsForOperation } from '../lib/roCodeGenerators.ts';
-import { pathItemOperations } from '../lib/consts.ts';
-import type { Command } from 'commander';
 import { dedupeArray } from '../lib/util.ts';
 
 export async function oas2ro(opts: CommandOptions, command: Command) {

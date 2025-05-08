@@ -1,6 +1,6 @@
 import fs from 'node:fs';
-import { parseArgs } from 'node:util';
 import path from 'node:path';
+import { parseArgs } from 'node:util';
 
 const args = parseArgs({
 	options: {

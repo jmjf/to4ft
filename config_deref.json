@@ -1,21 +1,21 @@
 {
-   "keepAnnotationsFl": false,
-   "allowUnsafeKeywordsFl": false,
-   "caseNm": "go",
-   "oas2tb": {
-      "schemaPrefixTx": "",
-      "schemaSuffixTx": "Schema",
-      "typePrefixTx": "",
-      "typeSuffixTx": "",
-      "derefFl": true,
-      "extensionTx": "ts"
-   },
-   "oas2ro": {
-      "derefFl": true,
-      "prefixTx": "",
-      "suffixTx": "RouteOptions",
-      "importExtensionTx": "ts",
-      "extensionTx": "ts",
-      "noAdditionalProperties": true
-   }
+	"keepAnnotationsFl": false,
+	"allowUnsafeKeywordsFl": false,
+	"caseNm": "go",
+	"oas2tb": {
+		"schemaPrefixTx": "",
+		"schemaSuffixTx": "Schema",
+		"typePrefixTx": "",
+		"typeSuffixTx": "",
+		"derefFl": true,
+		"extensionTx": "ts"
+	},
+	"oas2ro": {
+		"derefFl": true,
+		"prefixTx": "",
+		"suffixTx": "RouteOptions",
+		"importExtensionTx": "ts",
+		"extensionTx": "ts",
+		"noAdditionalProperties": true
+	}
 }
