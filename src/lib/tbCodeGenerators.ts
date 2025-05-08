@@ -1,27 +1,6 @@
-import type { JSONSchema7, JSONSchema7Definition } from 'json-schema';
 import { $RefParser } from '@apidevtools/json-schema-ref-parser';
+import type { JSONSchema7, JSONSchema7Definition } from 'json-schema';
 import type { StdConfig } from './config.ts';
-import { dedupeArray, getCasedNameFor, nameTypes } from './util.ts';
-import {
-	isAllOfSchema,
-	isAnyOfSchema,
-	isArraySchema,
-	isBoolean,
-	isConstSchema,
-	isEnumSchema,
-	isNotSchema,
-	isObjectSchema,
-	isOneOfSchema,
-	isOASDocument,
-	isSchemaWithMultipleTypes,
-	isUnknownSchema,
-	type OASDocument,
-	type OASHeaderObject,
-	type OASParameterObject,
-	type OASRequestBodyObject,
-	type OASResponseObject,
-	type OASSchemaObject,
-} from './typesAndGuards.ts';
 import {
 	parseAllOf,
 	parseAnyOf,
@@ -36,6 +15,27 @@ import {
 	parseUnknown,
 	parseWithMultipleTypes,
 } from './tbCodeParsers.ts';
+import {
+	type OASDocument,
+	type OASHeaderObject,
+	type OASParameterObject,
+	type OASRequestBodyObject,
+	type OASResponseObject,
+	type OASSchemaObject,
+	isAllOfSchema,
+	isAnyOfSchema,
+	isArraySchema,
+	isBoolean,
+	isConstSchema,
+	isEnumSchema,
+	isNotSchema,
+	isOASDocument,
+	isObjectSchema,
+	isOneOfSchema,
+	isSchemaWithMultipleTypes,
+	isUnknownSchema,
+} from './typesAndGuards.ts';
+import { dedupeArray, getCasedNameFor, nameTypes } from './util.ts';
 
 export type CodeGenOpts = StdConfig & { refImports?: string[] };
 

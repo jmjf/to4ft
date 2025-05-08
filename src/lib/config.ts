@@ -1,7 +1,7 @@
-import { existsSync, lstatSync, readdirSync, readFileSync } from 'node:fs';
+import { existsSync, lstatSync, readFileSync, readdirSync } from 'node:fs';
 import path from 'node:path';
-import type { CommandOptions } from '../cli.ts';
 import { $RefParser } from '@apidevtools/json-schema-ref-parser';
+import type { CommandOptions } from '../cli.ts';
 import { dedupeArray, ensureCleanDirectoryExists } from './util.ts';
 
 const defaultConfigFileNm = 'oas2tb4fastify.json';

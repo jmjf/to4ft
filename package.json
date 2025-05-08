@@ -1,88 +1,73 @@
 {
-  "name": "@jmjf/foast",
-  "type": "module",
-  "version": "1.0.0",
-  "description": "",
-  "author": "jmjf (https://github.com/jmjf)",
-  "license": "MIT",
-  "repository": "https://github.com/jmjf/foast",
-  "homepage": "https://github.com/jmjf/foast#readme",
-  "keywords": [
-    "cli",
-    "openapi",
-    "oas",
-    "fastify",
-    "typebox",
-    "code generator",
-    "typescript"
-  ],
-  "main": "dist/src/cli.js",
-  "bin": {
-    "foast": "./dist/src/cli.js"
-  },
-  "files": [
-    "dist/**/*"
-  ],
-  "scripts": {
-    "test": "c8 node --import ./tsnode-esm.mjs --test test/**/*.test.ts",
-    "oas:lint": "npx @redocly/cli lint examples/blog/openapi/openapi.yaml",
-    "oas:doc": "npx @redocly/cli build-docs examples/blog/openapi/openapi.yaml -o=examples/blog/openapi/api-docs.html",
-    "blog:tbd": "node --experimental-strip-types src/cli.ts oas2tb -i examples/blog/openapi/openapi.yaml -o examples/blog/tbd -c config_deref.json",
-    "blog:tbr": "node --experimental-strip-types src/cli.ts oas2tb -i examples/blog/openapi/openapi.yaml -o examples/blog/tbr -c config_ref.json",
-    "blog:rod": "node --experimental-strip-types src/cli.ts oas2ro -i examples/blog/openapi/openapi.yaml -o examples/blog/rod --refDir examples/blog/tbd -c config_deref.json",
-    "blog:ror": "node --experimental-strip-types src/cli.ts oas2ro -i examples/blog/openapi/openapi.yaml -o examples/blog/ror --refDir examples/blog/tbr -c config_ref.json",
-    "blog:all": "npm run blog:tbd && npm run blog:tbr && npm run blog:rod && npm run blog:ror && npm run check:ex",
-    "train:tbd": "node --experimental-strip-types src/cli.ts oas2tb -i examples/train/openapi/openapi.yaml -o examples/train/tbd -c config_deref.json",
-    "train:tbr": "node --experimental-strip-types src/cli.ts oas2tb -i examples/train/openapi/openapi.yaml -o examples/train/tbr -c config_ref.json",
-    "train:rod": "node --experimental-strip-types src/cli.ts oas2ro -i examples/train/openapi/openapi.yaml -o examples/train/rod --refDir examples/train/tbd -c config_deref.json",
-    "train:ror": "node --experimental-strip-types src/cli.ts oas2ro -i examples/train/openapi/openapi.yaml -o examples/train/ror --refDir examples/train/tbr -c config_ref.json",
-    "train:all": "npm run train:tbd && npm run train:tbr && npm run train:rod && npm run train:ror && npm run check:ex",
-    "museum:tbd": "node --experimental-strip-types src/cli.ts oas2tb -i examples/museum/openapi/openapi.yaml -o examples/museum/tbd -c config_deref.json && npm run check:ex",
-    "museum:tbr": "node --experimental-strip-types src/cli.ts oas2tb -i examples/museum/openapi/openapi.yaml -o examples/museum/tbr -c config_ref.json && npm run check:ex",
-    "museum:rod": "node --experimental-strip-types src/cli.ts oas2ro -i examples/museum/openapi/openapi.yaml -o examples/museum/rod --refDir examples/museum/tbd -c config_deref.json && npm run check:ex",
-    "museum:ror": "node --experimental-strip-types src/cli.ts oas2ro -i examples/museum/openapi/openapi.yaml -o examples/museum/ror --refDir examples/museum/tbr -c config_ref.json && npm run check:ex",
-    "museum:all": "npm run museum:tbd && npm run museum:tbr && npm run museum:rod && npm run museum:ror && npm run check:ex",
-    "petstore:tbd": "node --experimental-strip-types src/cli.ts oas2tb -i examples/petstore/openapi/openapi.yaml -o examples/petstore/tbd -c config_deref.json && npm run check:ex",
-    "petstore:tbr": "node --experimental-strip-types src/cli.ts oas2tb -i examples/petstore/openapi/openapi.yaml -o examples/petstore/tbr -c config_ref.json && npm run check:ex",
-    "petstore:rod": "node --experimental-strip-types src/cli.ts oas2ro -i examples/petstore/openapi/openapi.yaml -o examples/petstore/rod --refDir examples/petstore/tbd -c config_deref.json && npm run check:ex",
-    "petstore:ror": "node --experimental-strip-types src/cli.ts oas2ro -i examples/petstore/openapi/openapi.yaml -o examples/petstore/ror --refDir examples/petstore/tbr -c config_ref.json && npm run check:ex",
-    "petstore:all": "npm run petstore:tbd && npm run petstore:tbr && npm run petstore:rod && npm run petstore:ror && npm run check:ex",
-    "all:all": "npm run blog:all && npm run train:all && npm run museum:all && npm run petstore:all",
-    "check:ex": "npx @biomejs/biome check --write examples",
-    "format": "npx @biomejs/biome format --write",
-    "lint": "npm run lint:only && npm run lint:typecheck",
-    "lint:only": "npx @biomejs/biome lint",
-    "lint:typecheck": "npx tsc -p tsconfig.json --noemit",
-    "build": "rm -rf dist && npx tsc -p tsconfig-build.json",
-    "postbuild": "node pjClean.mjs -d dist && chmod a+x ./dist/src/cli.js",
-    "prepublishOnly": "node pjClean.mjs -d .",
-    "postpublish": "node pjRestore.mjs",
-    "prepare": "husky",
-    "commitlint": "commitlint --edit"
-  },
-  "dependencies": {
-    "@apidevtools/json-schema-ref-parser": "^12.0.1",
-    "commander": "^13.1.0",
-    "openapi-types": "^12.1.3"
-  },
-  "devDependencies": {
-    "@biomejs/biome": "^1.9.4",
-    "@commitlint/cli": "^19.8.0",
-    "@commitlint/config-conventional": "^19.8.0",
-    "@sinclair/typebox": "^0.34.24",
-    "@types/node": "^22.13.4",
-    "c8": "^10.1.3",
-    "husky": "^9.1.7",
-    "lint-staged": "^15.4.3",
-    "ts-node-maintained": "^10.9.5",
-    "typescript": "^5.7.3"
-  },
-  "lint-staged": {
-    "*.{js,ts,mjs,mts}": "npm run format && npm run lint"
-  },
-  "commitlint": {
-    "extends": [
-      "@commitlint/config-conventional"
-    ]
-  }
+	"name": "@jmjf/foast",
+	"type": "module",
+	"version": "1.0.0",
+	"description": "",
+	"author": "jmjf (https://github.com/jmjf)",
+	"license": "MIT",
+	"repository": "https://github.com/jmjf/foast",
+	"homepage": "https://github.com/jmjf/foast#readme",
+	"keywords": ["cli", "openapi", "oas", "fastify", "typebox", "code generator", "typescript"],
+	"main": "dist/src/cli.js",
+	"bin": {
+		"foast": "./dist/src/cli.js"
+	},
+	"files": ["dist/**/*"],
+	"scripts": {
+		"test": "c8 node --import ./tsnode-esm.mjs --test test/**/*.test.ts",
+		"oas:lint": "npx @redocly/cli lint examples/blog/openapi/openapi.yaml",
+		"oas:doc": "npx @redocly/cli build-docs examples/blog/openapi/openapi.yaml -o=examples/blog/openapi/api-docs.html",
+		"blog:tbd": "node --experimental-strip-types src/cli.ts oas2tb -i examples/blog/openapi/openapi.yaml -o examples/blog/tbd -c config_deref.json",
+		"blog:tbr": "node --experimental-strip-types src/cli.ts oas2tb -i examples/blog/openapi/openapi.yaml -o examples/blog/tbr -c config_ref.json",
+		"blog:rod": "node --experimental-strip-types src/cli.ts oas2ro -i examples/blog/openapi/openapi.yaml -o examples/blog/rod --refDir examples/blog/tbd -c config_deref.json",
+		"blog:ror": "node --experimental-strip-types src/cli.ts oas2ro -i examples/blog/openapi/openapi.yaml -o examples/blog/ror --refDir examples/blog/tbr -c config_ref.json",
+		"blog:all": "npm run blog:tbd && npm run blog:tbr && npm run blog:rod && npm run blog:ror && npm run check:ex",
+		"train:tbd": "node --experimental-strip-types src/cli.ts oas2tb -i examples/train/openapi/openapi.yaml -o examples/train/tbd -c config_deref.json",
+		"train:tbr": "node --experimental-strip-types src/cli.ts oas2tb -i examples/train/openapi/openapi.yaml -o examples/train/tbr -c config_ref.json",
+		"train:rod": "node --experimental-strip-types src/cli.ts oas2ro -i examples/train/openapi/openapi.yaml -o examples/train/rod --refDir examples/train/tbd -c config_deref.json",
+		"train:ror": "node --experimental-strip-types src/cli.ts oas2ro -i examples/train/openapi/openapi.yaml -o examples/train/ror --refDir examples/train/tbr -c config_ref.json",
+		"train:all": "npm run train:tbd && npm run train:tbr && npm run train:rod && npm run train:ror && npm run check:ex",
+		"museum:tbd": "node --experimental-strip-types src/cli.ts oas2tb -i examples/museum/openapi/openapi.yaml -o examples/museum/tbd -c config_deref.json && npm run check:ex",
+		"museum:tbr": "node --experimental-strip-types src/cli.ts oas2tb -i examples/museum/openapi/openapi.yaml -o examples/museum/tbr -c config_ref.json && npm run check:ex",
+		"museum:rod": "node --experimental-strip-types src/cli.ts oas2ro -i examples/museum/openapi/openapi.yaml -o examples/museum/rod --refDir examples/museum/tbd -c config_deref.json && npm run check:ex",
+		"museum:ror": "node --experimental-strip-types src/cli.ts oas2ro -i examples/museum/openapi/openapi.yaml -o examples/museum/ror --refDir examples/museum/tbr -c config_ref.json && npm run check:ex",
+		"museum:all": "npm run museum:tbd && npm run museum:tbr && npm run museum:rod && npm run museum:ror && npm run check:ex",
+		"petstore:tbd": "node --experimental-strip-types src/cli.ts oas2tb -i examples/petstore/openapi/openapi.yaml -o examples/petstore/tbd -c config_deref.json && npm run check:ex",
+		"petstore:tbr": "node --experimental-strip-types src/cli.ts oas2tb -i examples/petstore/openapi/openapi.yaml -o examples/petstore/tbr -c config_ref.json && npm run check:ex",
+		"petstore:rod": "node --experimental-strip-types src/cli.ts oas2ro -i examples/petstore/openapi/openapi.yaml -o examples/petstore/rod --refDir examples/petstore/tbd -c config_deref.json && npm run check:ex",
+		"petstore:ror": "node --experimental-strip-types src/cli.ts oas2ro -i examples/petstore/openapi/openapi.yaml -o examples/petstore/ror --refDir examples/petstore/tbr -c config_ref.json && npm run check:ex",
+		"petstore:all": "npm run petstore:tbd && npm run petstore:tbr && npm run petstore:rod && npm run petstore:ror && npm run check:ex",
+		"all:all": "npm run blog:all && npm run train:all && npm run museum:all && npm run petstore:all",
+		"check:ex": "npx @biomejs/biome check --write examples",
+		"format": "npx @biomejs/biome check --write --linter-enabled=false",
+		"lint": "npm run lint:only && npm run lint:typecheck",
+		"lint:only": "npx @biomejs/biome lint",
+		"lint:typecheck": "npx tsc -p tsconfig.json --noemit",
+		"lint:staged": "npx @biomejs/biome check --no-errors-on-unmatched --staged",
+		"build": "rm -rf dist && npx tsc -p tsconfig-build.json",
+		"postbuild": "node pjClean.mjs -d dist && chmod a+x ./dist/src/cli.js",
+		"prepublishOnly": "node pjClean.mjs -d .",
+		"postpublish": "node pjRestore.mjs",
+		"prepare": "husky",
+		"commitlint": "commitlint --edit"
+	},
+	"dependencies": {
+		"@apidevtools/json-schema-ref-parser": "^12.0.1",
+		"commander": "^13.1.0",
+		"openapi-types": "^12.1.3"
+	},
+	"devDependencies": {
+		"@biomejs/biome": "^1.9.4",
+		"@commitlint/cli": "^19.8.0",
+		"@commitlint/config-conventional": "^19.8.0",
+		"@sinclair/typebox": "^0.34.24",
+		"@types/node": "^22.13.4",
+		"c8": "^10.1.3",
+		"husky": "^9.1.7",
+		"ts-node-maintained": "^10.9.5",
+		"typescript": "^5.7.3"
+	},
+	"commitlint": {
+		"extends": ["@commitlint/config-conventional"]
+	}
 }

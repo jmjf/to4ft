@@ -1,14 +1,14 @@
 import { writeFileSync } from 'node:fs';
+import type { Command } from 'commander';
 import type { JSONSchema7 } from 'json-schema';
 import type { CommandOptions } from '../cli.ts';
+import { type StdConfig, getRefPathNms, loadConfig } from '../lib/config.ts';
 import {
 	genDerefImportStatements,
 	genRefImportStatements,
 	genTypeBoxForPaths,
 	genTypeBoxForSchema,
 } from '../lib/tbCodeGenerators.ts';
-import { loadConfig, getRefPathNms, type StdConfig } from '../lib/config.ts';
-import type { Command } from 'commander';
 import { getTypeBoxFilenameFor } from '../lib/util.ts';
 
 export async function oas2tb(opts: CommandOptions, command: Command) {

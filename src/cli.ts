@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 
 import { Option, program } from 'commander';
+import packageJSON from '../package.json' with { type: 'json' };
 import { oas2ro } from './commands/oas2ro.ts';
 import { oas2tb } from './commands/oas2tb.ts';
-import packageJSON from '../package.json' with { type: 'json' };
 
 export type CommandOptions = {
 	input: string;

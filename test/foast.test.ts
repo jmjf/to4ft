@@ -1,12 +1,12 @@
-import { suite, test, type TestContext } from 'node:test';
-import { mkdirSync, readdirSync, readFileSync, rmSync } from 'node:fs';
+import { mkdirSync, readFileSync, readdirSync, rmSync } from 'node:fs';
+import { type TestContext, suite, test } from 'node:test';
 import { setTimeout } from 'node:timers/promises';
 
 import type { Command } from 'commander';
 
-import { oas2tb } from '../src/commands/oas2tb.js';
 import { oas2ro } from '../src/commands/oas2ro.js';
-import { tbFiles, roFiles } from './fixtures/fileNames.js';
+import { oas2tb } from '../src/commands/oas2tb.js';
+import { roFiles, tbFiles } from './fixtures/fileNames.js';
 
 const CURRENT_DIR = import.meta.dirname;
 

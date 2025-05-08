@@ -1,22 +1,22 @@
 import type { JSONSchema7, JSONSchema7Type, JSONSchema7TypeName } from 'json-schema';
+import { stdIgnoreKeys } from './consts.ts';
 import { type CodeGenOpts, recurseSchema } from './tbCodeGenerators.ts';
 import {
-	type AnyOfSchema,
 	type AllOfSchema,
-	type OneOfSchema,
-	type NotSchema,
+	type AnyOfSchema,
 	type ArraySchema,
-	type MultipleTypesSchema,
-	type ObjectSchema,
-	type EnumSchema,
 	type ConstSchema,
+	type EnumSchema,
+	type MultipleTypesSchema,
+	type NotSchema,
+	type ObjectSchema,
+	type OneOfSchema,
 	type UnknownSchema,
 	isBoolean,
 	isNullType,
-	isString,
 	isNumber,
+	isString,
 } from './typesAndGuards.ts';
-import { stdIgnoreKeys } from './consts.ts';
 import { getRefNames, getSharedIgnoreKeys, removeKeysFromObject } from './util.ts';
 
 export function parseObject(opts: CodeGenOpts, schema: ObjectSchema) {

@@ -1,16 +1,16 @@
-import { annotationKeys, removeFromParameterKeywords } from './consts.ts';
+import path from 'node:path';
 import type { StdConfig } from './config.ts';
+import { annotationKeys, removeFromParameterKeywords } from './consts.ts';
 import {
-	isReferenceObject,
-	isSchemaObject,
-	type OASReferenceObject,
+	type OASOperationObject,
 	type OASParameterObject,
-	type OASSchemaObject,
+	type OASReferenceObject,
 	type OASRequestBodyObject,
 	type OASResponsesObject,
-	type OASOperationObject,
+	type OASSchemaObject,
+	isReferenceObject,
+	isSchemaObject,
 } from './typesAndGuards.ts';
-import path from 'node:path';
 import { getNameFor, getRefNames, getSharedIgnoreKeys, nameTypes, removeKeysFromObject, toCase } from './util.ts';
 
 export function genRouteOptionsForOperation(
