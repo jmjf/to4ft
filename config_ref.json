@@ -8,6 +8,7 @@
 		"typePrefixTx": "",
 		"typeSuffixTx": "",
 		"derefFl": false,
+		"importExtensionTx": "js",
 		"extensionTx": "ts"
 	},
 	"oas2ro": {
