@@ -14,7 +14,7 @@
 		"derefFl": false,
 		"prefixTx": "",
 		"suffixTx": "RouteOptions",
-		"importExtensionTx": "ts",
+		"importExtensionTx": "js",
 		"extensionTx": "ts",
 		"noAdditionalProperties": true
 	}
