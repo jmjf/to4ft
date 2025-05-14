@@ -49,6 +49,8 @@
 		"prepublishOnly": "node pjClean.mjs -d .",
 		"postpublish": "node pjRestore.mjs",
 		"prepare": "husky",
+		"version": "npm run format",
+		"postversion": "git push && git push --tags",
 		"commitlint": "commitlint --edit"
 	},
 	"dependencies": {
