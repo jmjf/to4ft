@@ -1,8 +1,8 @@
-import { RateLimitSchema } from '../tbr/headers_RateLimit.ts';
-import { Retry_AfterSchema } from '../tbr/headers_Retry-After.ts';
-import { BookingSchema } from '../tbr/schemas_Booking.ts';
-import { Links_SelfSchema } from '../tbr/schemas_Links-Self.ts';
-import { ProblemSchema } from '../tbr/schemas_Problem.ts';
+import { RateLimitSchema } from '../tbr/headers_RateLimit.js';
+import { Retry_AfterSchema } from '../tbr/headers_Retry-After.js';
+import { BookingSchema } from '../tbr/schemas_Booking.js';
+import { Links_SelfSchema } from '../tbr/schemas_Links-Self.js';
+import { ProblemSchema } from '../tbr/schemas_Problem.js';
 
 export const create_BookingRouteOptions = {
 	url: '/bookings',

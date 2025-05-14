@@ -1,5 +1,5 @@
-import { PostSchema } from '../tbr/schemas_Post.ts';
-import { PostIdSchema } from '../tbr/schemas_PostId.ts';
+import { PostSchema } from '../tbr/schemas_Post.js';
+import { PostIdSchema } from '../tbr/schemas_PostId.js';
 
 export const getPostByIdRouteOptions = {
 	url: '/posts/:postId',

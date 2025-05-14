@@ -1,5 +1,5 @@
 import { Clone, type Static, Type } from '@sinclair/typebox';
-import { AddressSchema } from './schemas_Address.ts';
+import { AddressSchema } from './schemas_Address.js';
 
 export const CustomerSchema = Type.Object({
 	id: Type.Optional(Type.Number({ format: 'int64' })),

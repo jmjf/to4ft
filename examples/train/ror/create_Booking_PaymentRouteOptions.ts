@@ -1,9 +1,9 @@
-import { Cache_ControlSchema } from '../tbr/headers_Cache-Control.ts';
-import { RateLimitSchema } from '../tbr/headers_RateLimit.ts';
-import { Retry_AfterSchema } from '../tbr/headers_Retry-After.ts';
-import { BookingPaymentSchema } from '../tbr/schemas_BookingPayment.ts';
-import { Links_BookingSchema } from '../tbr/schemas_Links-Booking.ts';
-import { ProblemSchema } from '../tbr/schemas_Problem.ts';
+import { Cache_ControlSchema } from '../tbr/headers_Cache-Control.js';
+import { RateLimitSchema } from '../tbr/headers_RateLimit.js';
+import { Retry_AfterSchema } from '../tbr/headers_Retry-After.js';
+import { BookingPaymentSchema } from '../tbr/schemas_BookingPayment.js';
+import { Links_BookingSchema } from '../tbr/schemas_Links-Booking.js';
+import { ProblemSchema } from '../tbr/schemas_Problem.js';
 
 export const create_Booking_PaymentRouteOptions = {
 	url: '/bookings/:bookingId/payment',

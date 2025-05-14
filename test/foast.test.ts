@@ -61,8 +61,8 @@ suite('oas2tb', () => {
 
 			for (const filename of generatedFiles) {
 				await t.test(`${filename} has expected content`, async (t: TestContext) => {
-					const generated = readFileSync(`${outputPathNm}/${filename}`);
-					const expected = readFileSync(`${testConfig.expectedPathNm}/${filename}`);
+					const generated = readFileSync(`${outputPathNm}/${filename}`).toString();
+					const expected = readFileSync(`${testConfig.expectedPathNm}/${filename}`).toString();
 					t.assert.deepStrictEqual(generated, expected, 'file matches');
 				});
 			}

@@ -11,7 +11,15 @@ import {
 	isReferenceObject,
 	isSchemaObject,
 } from './typesAndGuards.ts';
-import { getNameFor, getRefNames, getSharedIgnoreKeys, nameTypes, removeKeysFromObject, toCase } from './util.ts';
+import {
+	getNameFor,
+	getRefNames,
+	getSharedIgnoreKeys,
+	nameTypes,
+	removeKeysFromObject,
+	subConfigs,
+	toCase,
+} from './util.ts';
 
 export function genRouteOptionsForOperation(
 	pathURL: string,
@@ -335,9 +343,14 @@ export function genEntriesCode(entries: [string, unknown][], imports: Set<string
 }
 
 export function genRefCodeAndImport(ref: string, imports: Set<string>, config: StdConfig) {
-	// console.log('***GRI', ref, config);
+	// console.log('genRefCodeAndImport 1', ref, config);
 	// importing schemas from TypeBox output files, so nameType is schema
-	const { refedNm, refPathNm } = getRefNames(ref, config, path.relative(config.outPathTx, config.refPathTx));
+	const { refedNm, refPathNm } = getRefNames(
+		ref,
+		config,
+		path.relative(config.outPathTx, config.refPathTx),
+		subConfigs.oas2ro,
+	);
 	imports.add(`import {${refedNm} } from '${refPathNm}'`);
 	return refedNm;
 }

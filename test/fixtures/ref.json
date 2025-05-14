@@ -8,6 +8,7 @@
 		"typePrefixTx": "",
 		"typeSuffixTx": "",
 		"derefFl": false,
+		"importExtensionTx": "ts",
 		"extensionTx": "ts"
 	},
 	"oas2ro": {

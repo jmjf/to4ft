@@ -1,10 +1,10 @@
 import { Clone, type Static, Type } from '@sinclair/typebox';
-import { $100OkSchema } from './schemas_$100ok.ts';
-import { EmailAddrTxSchema } from './schemas_EmailAddrTx.ts';
-import { UserIdSchema } from './schemas_UserId.ts';
-import { UserNmSchema } from './schemas_UserNm.ts';
-import { X_DashesSchema } from './schemas_x-dashes.ts';
-import { X𒐗Schema } from './schemas_x𒐗.ts';
+import { $100OkSchema } from './schemas_$100ok.js';
+import { EmailAddrTxSchema } from './schemas_EmailAddrTx.js';
+import { UserIdSchema } from './schemas_UserId.js';
+import { UserNmSchema } from './schemas_UserNm.js';
+import { X_DashesSchema } from './schemas_x-dashes.js';
+import { X𒐗Schema } from './schemas_x𒐗.js';
 
 export const UserSchema = Type.Object({
 	userId: Clone(UserIdSchema),

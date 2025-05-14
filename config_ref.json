@@ -8,13 +8,14 @@
 		"typePrefixTx": "",
 		"typeSuffixTx": "",
 		"derefFl": false,
+		"importExtensionTx": "js",
 		"extensionTx": "ts"
 	},
 	"oas2ro": {
 		"derefFl": false,
 		"prefixTx": "",
 		"suffixTx": "RouteOptions",
-		"importExtensionTx": "ts",
+		"importExtensionTx": "js",
 		"extensionTx": "ts",
 		"noAdditionalProperties": true
 	}

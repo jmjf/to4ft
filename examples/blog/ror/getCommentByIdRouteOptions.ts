@@ -1,5 +1,5 @@
-import { CommentSchema } from '../tbr/schemas_Comment.ts';
-import { CommentIdSchema } from '../tbr/schemas_CommentId.ts';
+import { CommentSchema } from '../tbr/schemas_Comment.js';
+import { CommentIdSchema } from '../tbr/schemas_CommentId.js';
 
 export const getCommentByIdRouteOptions = {
 	url: '/comments/:commentId/:testParam',

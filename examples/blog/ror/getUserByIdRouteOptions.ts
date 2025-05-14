@@ -1,5 +1,5 @@
-import { UserSchema } from '../tbr/schemas_User.ts';
-import { UserIdSchema } from '../tbr/schemas_UserId.ts';
+import { UserSchema } from '../tbr/schemas_User.js';
+import { UserIdSchema } from '../tbr/schemas_UserId.js';
 
 export const getUserByIdRouteOptions = {
 	url: '/users/:userId',

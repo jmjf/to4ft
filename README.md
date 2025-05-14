@@ -41,13 +41,14 @@ A tool to convert OpenAPI schemas into TypeBox types (ref-maintaining or derefer
       "typePrefixTx": "",
       "typeSuffixTx": "",
       "derefFl": false,
+      "importExtensionTx": "js",
       "extensionTx": "ts"
    },
    "oas2ro": {
       "derefFl": false,
       "prefixTx": "",
       "suffixTx": "RouteOptions",
-      "importExtensionTx": "ts",
+      "importExtensionTx": "js",
       "extensionTx": "ts",
       "noAdditionalProperties": true
    }
@@ -71,17 +72,18 @@ A tool to convert OpenAPI schemas into TypeBox types (ref-maintaining or derefer
   - `schemaPrefixTx` and `schemaSuffixTx` -- Text to add before and after (respectively) names for TypeBox schemas.
   - `typePrefixTx` and `TypeSuffixTx` -- Text to add before and after (respectively) names for TypeBox types (`Static<typeof Schema>`).
   - `derefFl` -- If true, generate dereferenced TypeBox schemas with sub-objects fully exploded in the schema.
-  - `extensionTx` -- The extension to use for import file names for referenced schemas -- NO DOT.
+  - `importExtensionTx` -- The extension to use for import file names for referenced schemas -- NO DOT.
     - If you aren't using TypeScript's `rewriteRelativeImportExtensions` option, you probably want `js`.
-
-**NOTE:** `oas2tb` always writes files with `ts` extensions because it's writing TypeBox, which assumes TypeScript.
+  - `extensionTx` -- The extension to use for output file names -- NO DOT.
+    - **NOTE:** `oas2tb` is writing TypeBox, which assumes TypeScript, so extension should be `ts`, `mts`, or `cts`.
 
 - `oas2ro` -- configuration specific to `oas2ro`
   - `derefFl` -- If true, generate dereferenced `RouteOptions` objects with fully exploded schemas for any referenced objects.
   - `prefixTx` and `suffixTx` -- Text to add before and after (respectively) names for `RouteOptions` objects.
   - `importExtensionTx` -- The extension to use for import file names -- NO DOT.
-    - If you aren't using TypeScripts `rewriteRelativeImportExtensions` option, you probably want `js`.
-  - `extensionTx` -- The extension to use for output files. `RouteOptions` do not include type annotations, so can be written as `js`, `mjs`, or `cjs` if you wish.
+    - If you aren't using TypeScript's `rewriteRelativeImportExtensions` option, you probably want `js`.
+  - `extensionTx` -- The extension to use for output file names -- NO DOT.
+    - `RouteOptions` do not include type annotations, so can be written as `ts`, `mts`, `cts`, `js`, `mjs`, or `cjs`.
   - `noAdditionalProperties` -- if true, adds `additionalProperties: false` to querystring parameters.
 
 ## Motivation

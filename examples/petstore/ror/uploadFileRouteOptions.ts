@@ -1,4 +1,4 @@
-import { ApiResponseSchema } from '../tbr/schemas_ApiResponse.ts';
+import { ApiResponseSchema } from '../tbr/schemas_ApiResponse.js';
 
 export const uploadFileRouteOptions = {
 	url: '/pet/:petId/uploadImage',

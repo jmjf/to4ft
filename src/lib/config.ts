@@ -16,6 +16,7 @@ type ConfigFile = {
 		typePrefixTx?: string;
 		typeSuffixTx?: string;
 		derefFl?: boolean;
+		importExtensionTx?: string;
 		extensionTx?: string;
 	};
 	oas2ro?: {
@@ -115,13 +116,14 @@ export function loadConfig(opts: CommandOptions, commandNm: string): StdConfig {
 			typePrefixTx: configObj.oas2tb?.typePrefixTx ?? '',
 			typeSuffixTx: configObj.oas2tb?.typeSuffixTx ?? '',
 			derefFl: configObj.oas2tb?.derefFl ?? false,
+			importExtensionTx: configObj.oas2tb?.importExtensionTx ?? 'js',
 			extensionTx: configObj.oas2tb?.extensionTx ?? 'ts',
 		},
 		oas2ro: {
 			derefFl: configObj.oas2ro?.derefFl ?? false,
 			prefixTx: configObj.oas2ro?.prefixTx ?? '',
 			suffixTx: configObj.oas2ro?.suffixTx ?? 'RouteOptions',
-			importExtensionTx: configObj.oas2ro?.importExtensionTx ?? 'ts',
+			importExtensionTx: configObj.oas2ro?.importExtensionTx ?? 'js',
 			extensionTx: configObj.oas2ro?.extensionTx ?? 'ts',
 			noAdditionalProperties: configObj.oas2ro?.noAdditionalProperties ?? true,
 		},
