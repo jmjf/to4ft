@@ -17,7 +17,7 @@ import {
 	isNumber,
 	isString,
 } from './typesAndGuards.ts';
-import { getRefNames, getSharedIgnoreKeys, removeKeysFromObject } from './util.ts';
+import { getRefNames, getSharedIgnoreKeys, removeKeysFromObject, subConfigs } from './util.ts';
 
 export function parseObject(opts: CodeGenOpts, schema: ObjectSchema) {
 	// schema is ObjectSchema
@@ -154,10 +154,9 @@ export function parseWithMultipleTypes(opts: CodeGenOpts, schema: MultipleTypesS
 
 export function parseRefName(opts: CodeGenOpts, schema: JSONSchema7 = {}): string {
 	const refImports = opts.refImports;
-	const extTx = opts.oas2tb.extensionTx;
 	if (!schema.$ref || schema.$ref.length === 0 || !Array.isArray(refImports)) return '';
 
-	const { refedNm, refPathNm } = getRefNames(schema.$ref, opts, '.');
+	const { refedNm, refPathNm } = getRefNames(schema.$ref, opts, '.', subConfigs.oas2tb);
 	refImports.push(`import { ${refedNm} } from '${refPathNm}';`);
 
 	const schemaOptionsTx = parseSchemaOptions(schema, opts);

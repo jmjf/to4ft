@@ -158,14 +158,22 @@ export function getCasedNameFor(name: string, nameType: NameType, config: StdCon
 }
 
 export const fileTypes = {
-	tbOut: 'extensionTx',
-	roImport: 'importExtensionTx',
-	roOut: 'extensionTx',
+	import: 'importExtensionTx',
+	output: 'extensionTx',
 } as const;
-type FileType = (typeof fileTypes)[keyof typeof fileTypes];
+export const subConfigs = {
+	oas2tb: 'oas2tb',
+	oas2ro: 'oas2ro',
+} as const;
 
-export function getFilenameFor(fileType: string, name: string, nameType: NameType, config: StdConfig): string {
-	const configToUse = config[fileType === fileTypes.tbOut ? 'oas2tb' : 'oas2ro'];
+export function getFilenameFor(
+	fileType: string,
+	subConfig: string,
+	name: string,
+	nameType: NameType,
+	config: StdConfig,
+): string {
+	const configToUse = config[subConfig];
 	if (!configToUse) throw new Error(`getFilenameFor ERROR cannot get config to use for ${fileType}`);
 
 	const fileNm = nameType === nameTypes.none ? name : getNameFor(name, nameType, config);
@@ -174,23 +182,38 @@ export function getFilenameFor(fileType: string, name: string, nameType: NameTyp
 }
 
 export function getTypeBoxFilenameFor(componentType: string, objNm: string, config: StdConfig) {
-	return getFilenameFor(fileTypes.tbOut, `${componentType}_${objNm}`, nameTypes.none, config);
+	return getFilenameFor(fileTypes.output, subConfigs.oas2tb, `${componentType}_${objNm}`, nameTypes.none, config);
 }
 
-export function getRefNames(ref: string, config: StdConfig, prePath: string) {
+export function getRefNames(ref: string, config: StdConfig, prePath: string, subConfig: string) {
 	// get the refed object and path names for imports
 	// ex: #/components/schemas/User -> import { <name for User> } from './schemas_User.ext'
 	// ex: ../User.yaml#/components/responses/UserResponse -> import { <name for UserResponse>} from './responses_UserResponse.ext'
+
+	// console.log('getRefNames 1', ref, config, prePath);
 
 	const splitRef = ref.split('#'); // [0] = left of #, [1] = right of #
 	const splitRefPath = splitRef[1].split('/'); // [0] = empty, [1] = components, [2] = responses, [3] = UserResponse
 	const refedObjectNm = splitRefPath.slice(-1)[0]; // UserResponse
 	const componentType = splitRefPath.slice(-2, -1)[0]; // responses
+	const fileNm = getFilenameFor(
+		fileTypes.import,
+		subConfig,
+		`${componentType}_${refedObjectNm}`,
+		nameTypes.none,
+		config,
+	);
+	// console.log(
+	// 	'getRefNames 2',
+	// 	refedObjectNm,
+	// 	componentType,
+	// 	getCasedNameFor(refedObjectNm, nameTypes.schema, config),
+	// 	fileNm,
+	// );
 	return {
 		refedObjectNm,
 		componentType,
 		refedNm: getCasedNameFor(refedObjectNm, nameTypes.schema, config),
-		// refs are always to TypeBox output, so use oas2tb extension here
-		refPathNm: `${prePath}/${getTypeBoxFilenameFor(componentType, refedObjectNm, config)}`,
+		refPathNm: `${prePath}/${fileNm}`,
 	};
 }
