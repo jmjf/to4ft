@@ -1,4 +1,4 @@
-import { UserSchema } from '../tbr/schemas_User.ts';
+import { UserSchema } from '../tbr/schemas_User.js';
 
 export const createUsersWithListInputRouteOptions = {
 	url: '/user/createWithList',

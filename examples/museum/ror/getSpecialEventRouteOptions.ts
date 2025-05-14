@@ -1,5 +1,5 @@
-import { ErrorSchema } from '../tbr/schemas_Error.ts';
-import { SpecialEventSchema } from '../tbr/schemas_SpecialEvent.ts';
+import { ErrorSchema } from '../tbr/schemas_Error.js';
+import { SpecialEventSchema } from '../tbr/schemas_SpecialEvent.js';
 
 export const getSpecialEventRouteOptions = {
 	url: '/special-events/:eventId',

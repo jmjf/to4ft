@@ -1,5 +1,5 @@
-import { PetBodySchema } from '../tbr/requestBodies_PetBody.ts';
-import { PetSchema } from '../tbr/schemas_Pet.ts';
+import { PetBodySchema } from '../tbr/requestBodies_PetBody.js';
+import { PetSchema } from '../tbr/schemas_Pet.js';
 
 export const addPetRouteOptions = {
 	url: '/pet',

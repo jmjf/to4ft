@@ -1,6 +1,6 @@
 import { Clone, type Static, Type } from '@sinclair/typebox';
-import { CategorySchema } from './schemas_Category.ts';
-import { TagSchema } from './schemas_Tag.ts';
+import { CategorySchema } from './schemas_Category.js';
+import { TagSchema } from './schemas_Tag.js';
 
 export const PetSchema = Type.Object({
 	id: Type.Optional(Type.Number({ format: 'int64' })),

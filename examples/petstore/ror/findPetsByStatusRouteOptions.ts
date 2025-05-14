@@ -1,4 +1,4 @@
-import { PetSchema } from '../tbr/schemas_Pet.ts';
+import { PetSchema } from '../tbr/schemas_Pet.js';
 
 export const findPetsByStatusRouteOptions = {
 	url: '/pet/findByStatus',

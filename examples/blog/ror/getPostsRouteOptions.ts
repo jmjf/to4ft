@@ -1,6 +1,6 @@
-import { PaginationLimitSchema } from '../tbr/parameters_PaginationLimit.ts';
-import { PaginationPageSchema } from '../tbr/parameters_PaginationPage.ts';
-import { PostsResponseSchema } from '../tbr/schemas_PostsResponse.ts';
+import { PaginationLimitSchema } from '../tbr/parameters_PaginationLimit.js';
+import { PaginationPageSchema } from '../tbr/parameters_PaginationPage.js';
+import { PostsResponseSchema } from '../tbr/schemas_PostsResponse.js';
 
 export const getPostsRouteOptions = {
 	url: '/posts',
