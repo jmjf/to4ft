@@ -117,6 +117,7 @@ export function loadConfig(opts: CommandOptions, commandNm: string): StdConfig {
 			typeSuffixTx: configObj.oas2tb?.typeSuffixTx ?? '',
 			derefFl: configObj.oas2tb?.derefFl ?? false,
 			importExtensionTx: configObj.oas2tb?.importExtensionTx ?? 'js',
+			extensionTx: configObj.oas2tb?.extensionTx ?? 'ts',
 		},
 		oas2ro: {
 			derefFl: configObj.oas2ro?.derefFl ?? false,
