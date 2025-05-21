@@ -1,10 +1,12 @@
-# Fastify OAS TypeBox
+# to4ft
 
-`foast`, like toast, but Fastify-er.
+**Transform OpenAPI for Fastify and TypeBox**
+
+`to4ft` (toast) your OpenAPI specs into usable code for Fastify and TypeBox.
 
 A tool to convert OpenAPI schemas into TypeBox types (ref-maintaining or dereferenced) and convert OpenAPI paths into Fastify `RouteOptions` (with or without TypeBox schemas).
 
-- [foast](#foast)
+- [to4ft](#to4ft)
   - [Motivation](#motivation)
   - [Limitations and compromises](#limitations-and-compromises)
     - [In `oas2tb`](#in-oas2tb)
@@ -28,7 +30,7 @@ A tool to convert OpenAPI schemas into TypeBox types (ref-maintaining or derefer
 
 ## Configuration file
 
-`foast` uses the following default configuration if you do not provide a configuration file.
+`to4ft` uses the following default configuration if you do not provide a configuration file.
 
 ```json
 {
@@ -61,7 +63,7 @@ A tool to convert OpenAPI schemas into TypeBox types (ref-maintaining or derefer
 
 - `allowUnsafeKeywordsFl` -- If true, keep keywords AJV may not recognize. See `ajvUnsafeKeys` in `src/lib/consts.ts` for the list of unsafe keywords. If you enable AJV unsafe keywords, output may not be usable with AJV.
 
-**NOTE:** `foast` always ignores keywords in `stdIgnoreKeys` (in `src/lib/consts.ts`) because they're handled by the code.
+**NOTE:** `to4ft` always ignores keywords in `stdIgnoreKeys` (in `src/lib/consts.ts`) because they're handled by the code.
 
 - `caseNm` -- Identifies the casing style to use. Examples for each style are for the name `OpenAPIFieldNm`.
   - `go` -- Camel-like; preserves strings of consecutive capital letters, similar to names used in Go - `OpenAPIFieldNm`
@@ -119,13 +121,13 @@ Also see, `docs` for base assumptions and recommendations on how to build specs 
 
 See `blog:*`, `train:*`, `museum:*`, and `petstore:*` scripts in `package.json` for command line examples. Set up your config file and scripts for your preferred approach (ref, deref). In most cases, you only need two scripts.
 
-`foast` is a `commander` application, so `-h` or `--help` and `-V` or `--version` work as you'd expect, including `foast <command> -h`.
+`to4ft` is a `commander` application, so `-h` or `--help` and `-V` or `--version` work as you'd expect, including `to4ft <command> -h`.
 
 ### `oas2tb`
 
 Generate dereferenced TypeBox types
 
-Example: `foast oas2dtb -i examples/openapi/openapi.yaml -o examples/dtb -c configFile`
+Example: `to4ft oas2dtb -i examples/openapi/openapi.yaml -o examples/dtb -c configFile`
 
 `oas2dtb` generates types that dereference any `$ref`ed fields. Each file is self-contained with no imports of other files. This option works best if you maintain an OpenAPI spec and generate TypeBox when it changes.
 
@@ -171,7 +173,7 @@ See `examples/blog/tbd` for more examples.
 
 Reference-maintaining output mirrors the source spec using imports and `Clone`. If you want to abandon your OpenAPI spec, this option is easier to maintain than fully dereferenced output.
 
-**WARNING:** If your schema `$ref`s `examples`, `links`, or other OpenAPI fields that do not generate types, `foast` will not convert them and may produce unexpected results.
+**WARNING:** If your schema `$ref`s `examples`, `links`, or other OpenAPI fields that do not generate types, `to4ft` will not convert them and may produce unexpected results.
 
 ```typescript
 import { Clone, type Static, Type } from '@sinclair/typebox';
@@ -199,15 +201,15 @@ See `examples/blog/tbr` for more examples.
 
 Generate partial Fastify `RouteOptions` objects based on OpenAPI `paths`.
 
-`foast oas2ro -i input -o outDir -r refDir -c configFile`
+`to4ft oas2ro -i input -o outDir -r refDir -c configFile`
 
-`-i` (required) -- the root file of an OpenAPI spec; `foast` expects to find an OpenAPI Document Object
+`-i` (required) -- the root file of an OpenAPI spec; `to4ft` expects to find an OpenAPI Document Object
 
 `-o` (required) -- directory to receive TypeScript files with `RouteOptions`
 
 `-c` -- JSON configuration file to use. See `config_deref.json` and `config_ref.json` for examples.
 
-`--refDir` (required if `derefFl: false`) -- directory to reference for TypeBox types; `foast` assumes the directory and files it wants exist and exports the TypeBox schemas it wants to import.
+`--refDir` (required if `derefFl: false`) -- directory to reference for TypeBox types; `to4ft` assumes the directory and files it wants exist and exports the TypeBox schemas it wants to import.
 
 #### Example dereferenced output from `npm run blog:rod`
 
@@ -307,23 +309,10 @@ Without `@apidevtools/json-schema-ref-parser`, this tool would be more work than
 
 `openapi-transformer-toolkit` for inspiring me to explore generating code from OpenAPI specs and getting me on the spec-first bandwagon. Thank you Nearform team.
 
-`foast` borrows heavily from `schema2typebox` to generate TypeBox output. Thank you xddq.
+`to4ft` borrows heavily from `schema2typebox` to generate TypeBox output. Thank you xddq.
 
-## To do
+## The name
 
-See `docs/Roadmap.md` for details of what's done
+There are two hard problems in computer science, cache invalidation, naming, and off by one errors.
 
-### Core/common
-
-- [ ] publish to `npm`
-- [ ] better error (and other) logging
-- [ ] Write files to a temp directory, then delete target and rename temp to avoid deletes on failure. Build a graceful shutdown function that takes an error and call it instead of directly throwing errors.
-
-### `oas2tb` command
-
-Nothing pending.
-
-### `oas2ro` command
-
-Nothing pending.
-
+This tool started out as `oas2tb4fastify`, which was cumbersome. Then it became `foast`, which didn't sit right with me. Finally, I've settled on `to4ft` or "**T**ransform **O**penAPI **for** **F**astify and **T**ypeBox", which uses [leetspeak](https://interestingengineering.com/culture/leetspeak-101-what-exactly-is-it) and [ancient writing conventions](https://english.stackexchange.com/questions/37982/use-of-f-instead-of-s-in-historic-printed-english-documents) to get "toast."
