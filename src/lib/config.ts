@@ -1,5 +1,5 @@
 import { existsSync, lstatSync, readFileSync, readdirSync } from 'node:fs';
-import path from 'node:path';
+import path from 'node:path/posix';
 import { $RefParser } from '@apidevtools/json-schema-ref-parser';
 import type { CommandOptions } from '../cli.ts';
 import { dedupeArray, ensureCleanDirectoryExists } from './util.ts';

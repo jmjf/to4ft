@@ -1,4 +1,4 @@
-import path from 'node:path';
+import path from 'node:path/posix';
 import type { StdConfig } from './config.ts';
 import { annotationKeys, removeFromParameterKeywords } from './consts.ts';
 import {
