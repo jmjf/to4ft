@@ -1,5 +1,5 @@
 import { writeFileSync } from 'node:fs';
-import path from 'node:path';
+import path from 'node:path/posix';
 import { $RefParser } from '@apidevtools/json-schema-ref-parser';
 import type { Command } from 'commander';
 import type { CommandOptions } from '../cli.ts';
