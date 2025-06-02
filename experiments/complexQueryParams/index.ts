@@ -15,13 +15,10 @@ export const tbUserQuery = Type.Object({
 });
 export type TbUserQuery = Static<typeof tbUserQuery>;
 
-export const AllOfQuerySchema = Type.Intersect(
-	[
-		Type.Object({ s1Prop1: Type.Optional(Type.String()), s1Prop2: Type.Optional(Type.Number()) }),
-		Type.Object({ s2Prop1: Type.Optional(Type.Boolean()), s2Prop2: Type.Optional(Type.String({ format: 'date' })) }),
-	],
-	// { additionalProperties: false },
-);
+export const AllOfQuerySchema = Type.Composite([
+	Type.Object({ s1Prop1: Type.String(), s1Prop2: Type.Optional(Type.Number()) }),
+	Type.Object({ s2Prop1: Type.Optional(Type.Boolean()), s2Prop2: Type.Optional(Type.String({ format: 'date' })) }),
+]);
 console.log('TYPE', AllOfQuerySchema.type);
 console.log('SCHEMA', JSON.stringify(AllOfQuerySchema, null, 3));
 
@@ -63,7 +60,7 @@ fastify.route({
 	url: '/tbAllOf',
 	method: 'GET',
 	schema: {
-		querystring: AllOfQuerySchema,
+		querystring: { ...AllOfQuerySchema, additionalProperties: false },
 	},
 	handler: async (request, reply) => {
 		request.log.info({ url: request.url, query: request.query }, 'tbAllOf');
