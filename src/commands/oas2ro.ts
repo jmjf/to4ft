@@ -14,6 +14,7 @@ import type {
 	OASPathItemObject,
 	OASReferenceObject,
 	OASResponsesObject,
+	OASSchemaObject,
 } from '../lib/typesAndGuards.ts';
 import { dedupeArray } from '../lib/util.ts';
 
@@ -63,25 +64,29 @@ async function partialDerefPaths(config: StdConfig, absDir: string, schema: OASP
 
 	const oasPaths = structuredClone(schema);
 
-	const normPath = (refFilePath: string, refPath: string) =>
-		path.normalize(`${refFilePath.length > 0 ? `${refFilePath}/` : ''}${refPath}`);
+	// ${refPath[0] !== '#' ? '/' : ''} --> Add / to path only if refPath[0] is not # (is a relative path)
+	const normPath = (refFromPath: string, refPath: string) =>
+		path.normalize(`${refFromPath.length > 0 ? `${refFromPath}${refPath[0] !== '#' ? '/' : ''}` : ''}${refPath}`);
 
-	const addRefedContent = (base: OASReferenceObject, refFilePath: string) => {
-		const refedContent = resolved.get(normPath(refFilePath, base.$ref)) as object;
-		return { $ref: normPath(refFilePath, base.$ref), ...structuredClone(refedContent) };
+	const getRefedContent = (base: OASReferenceObject, refFromPath: string) => {
+		const refPath = normPath(refFromPath, base.$ref);
+		const refedContent = resolved.get(refPath) as object;
+		// console.log('**GETREFED 1', refFilePath, base.$ref);
+		// console.log('**GETREFED 2', refPath, refedContent);
+		return { $ref: normPath(refFromPath, base.$ref), ...structuredClone(refedContent) };
 	};
 
 	for (const [pathURL, pathItemRaw] of Object.entries(oasPaths)) {
 		// merge the ref into the path
-		let refFilePath = '';
+		let pathItemRefDirname = '';
 
 		// get refed Path Item
 		if (isReferenceObject(pathItemRaw)) {
-			const refFile = path.normalize(`${absDir}/${pathItemRaw.$ref.split('#')[0]}`);
-			refFilePath = path.dirname(refFile); // other refs from this file will be relative to this path
-			const refedContent = resolved.get(refFile);
+			const pathItemRefFilename = path.normalize(`${absDir}/${pathItemRaw.$ref.split('#')[0]}`);
+			pathItemRefDirname = path.dirname(pathItemRefFilename); // other refs from this file will be relative to this path
+			const refedContent = resolved.get(pathItemRefFilename);
 			oasPaths[pathURL] = {
-				$ref: normPath(refFilePath, pathItemRaw.$ref),
+				$ref: normPath(pathItemRefDirname, pathItemRaw.$ref),
 				...structuredClone(refedContent as object),
 			};
 		}
@@ -89,40 +94,74 @@ async function partialDerefPaths(config: StdConfig, absDir: string, schema: OASP
 		const pathParams: OASParameterObject[] = [];
 
 		// operations (or possible operations)
-		for (const opMethod of Object.keys(oasPathItem)) {
-			// save level parameters
-			if (opMethod === 'parameters') {
-				pathParams.push(...(oasPathItem[opMethod] as OASParameterObject[]));
+		for (const operationMethod of Object.keys(oasPathItem)) {
+			// save path level parameters that apply to all operations
+			if (operationMethod === 'parameters') {
+				pathParams.push(...(oasPathItem[operationMethod] as OASParameterObject[]));
 			}
 			// skip non-operations
-			if (!pathItemOperations.includes(opMethod)) continue;
+			if (!pathItemOperations.includes(operationMethod)) continue;
 
-			const opObj = oasPathItem[opMethod] as OASOperationObject;
+			const operationObject = oasPathItem[operationMethod] as OASOperationObject;
 
-			// add any path parameters to parameters
-			opObj.parameters = [...pathParams, ...(opObj.parameters ?? [])];
+			// add any path  level parameters to parameters for all operations
+			operationObject.parameters = [...pathParams, ...(operationObject.parameters ?? [])];
 
-			if (Array.isArray(opObj.parameters) && opObj.parameters.length > 0) {
-				// deref parameter objects into the oasDoc
-				// ['a','b'].entries => [ [0, 'a'], [1, 'b'] ]
-				for (const [idx, param] of opObj.parameters.entries()) {
-					if (isReferenceObject(param)) {
-						opObj.parameters[idx] = addRefedContent(param as OASReferenceObject, refFilePath);
+			if (Array.isArray(operationObject.parameters) && operationObject.parameters.length > 0) {
+				// deref parameter objects into the oasDoc -- ['a','b'].entries => [ [0, 'a'], [1, 'b'] ]
+				for (const [idx, parameter] of operationObject.parameters.entries()) {
+					// console.log('**PARTIALDEREF 1', pathURL, opMethod, param);
+					if (isReferenceObject(parameter)) {
+						const ref = getRefedContent(parameter as OASReferenceObject, pathItemRefDirname);
+						// the refed content should be a parameter
+						operationObject.parameters[idx] = ref as unknown as OASParameterObject;
+
+						// for query parameters only
+						if (operationObject.parameters[idx].in === 'query') {
+							// console.log('**PARTIALDEREF 2', opObj.parameters[idx]);
+							// console.log('**PARTIALDEREF 4', isSchemaObject(opObj.parameters[idx]), isReferenceObject(opObj.parameters[idx]));
+
+							// if the $ref pointed to a parameter whose schema is a $ref, we need to know if it refs an object
+							// so we can pull the object up so we can flatten it into the query parameters
+							if (
+								isReferenceObject(operationObject.parameters[idx].schema) &&
+								!isSchemaObject(operationObject.parameters[idx].schema)
+							) {
+								// if the schema ref begins with #, it's an internal path and we need to keep the file name, otherwise we need the directory of the file
+								const schemaRefFromPath =
+									operationObject.parameters[idx].schema.$ref[0] === '#'
+										? ref.$ref.split('#')[0]
+										: path.dirname(ref.$ref.split('#')[0]);
+
+								// console.log('**PARTIALDEREF 5', refedRefPath);
+
+								// If the parameter's schema refs an object, deref it into the parameter's schema
+								const schemaRef = getRefedContent(operationObject.parameters[idx].schema, schemaRefFromPath);
+								if ((schemaRef as OASSchemaObject).type === 'object') {
+									// remove $ref from the schema to avoid confusion
+									const { $ref, ...newSchema } = schemaRef;
+									operationObject.parameters[idx].schema = newSchema;
+								}
+							}
+						}
+						// console.log('**PARTIALDEREF 7', opObj.parameters[idx]);
 					}
 				}
 			}
 
 			// deref response object (only one) into the oasDoc
-			if (isReferenceObject(opObj.responses)) {
-				oasPathItem[opMethod].responses = addRefedContent(opObj.responses, refFilePath);
+			if (isReferenceObject(operationObject.responses)) {
+				oasPathItem[operationMethod].responses = getRefedContent(operationObject.responses, pathItemRefDirname);
 			}
 
 			// if refed content doesn't have a schema, hoist it because we can't ref it
-			for (const [responseKey, responseObj] of Object.entries((opObj.responses ?? {}) as OASResponsesObject)) {
+			for (const [responseKey, responseObj] of Object.entries(
+				(operationObject.responses ?? {}) as OASResponsesObject,
+			)) {
 				if (isReferenceObject(responseObj)) {
-					const refedContent = resolved.get(normPath(refFilePath, responseObj.$ref)) as object;
+					const refedContent = resolved.get(normPath(pathItemRefDirname, responseObj.$ref)) as object;
 					if (!isSchemaObject(refedContent)) {
-						oasPathItem[opMethod].responses[responseKey] = {
+						oasPathItem[operationMethod].responses[responseKey] = {
 							...structuredClone(refedContent),
 							...responseObj, // keep anything from responseObj that overrides the refed content
 							$ref: undefined,
@@ -131,9 +170,9 @@ async function partialDerefPaths(config: StdConfig, absDir: string, schema: OASP
 				}
 			}
 
-			if (opObj.requestBody !== undefined && isReferenceObject(opObj.requestBody)) {
+			if (operationObject.requestBody !== undefined && isReferenceObject(operationObject.requestBody)) {
 				// deref requestBody object (only one) into the oasDoc
-				opObj.requestBody = addRefedContent(opObj.requestBody, refFilePath);
+				operationObject.requestBody = getRefedContent(operationObject.requestBody, pathItemRefDirname);
 			}
 			// ASSUMPTION: requestBody refs won't be to a no-schema object
 		}
