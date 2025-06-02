@@ -71,9 +71,7 @@ async function partialDerefPaths(config: StdConfig, absDir: string, schema: OASP
 	const getRefedContent = (base: OASReferenceObject, refFromPath: string) => {
 		const refPath = normPath(refFromPath, base.$ref);
 		const refedContent = resolved.get(refPath) as object;
-		// console.log('**GETREFED 1', refFilePath, base.$ref);
-		// console.log('**GETREFED 2', refPath, refedContent);
-		return { $ref: normPath(refFromPath, base.$ref), ...structuredClone(refedContent) };
+		return { $ref: refPath, ...structuredClone(refedContent) };
 	};
 
 	for (const [pathURL, pathItemRaw] of Object.entries(oasPaths)) {
@@ -110,7 +108,6 @@ async function partialDerefPaths(config: StdConfig, absDir: string, schema: OASP
 			if (Array.isArray(operationObject.parameters) && operationObject.parameters.length > 0) {
 				// deref parameter objects into the oasDoc -- ['a','b'].entries => [ [0, 'a'], [1, 'b'] ]
 				for (const [idx, parameter] of operationObject.parameters.entries()) {
-					// console.log('**PARTIALDEREF 1', pathURL, opMethod, param);
 					if (isReferenceObject(parameter)) {
 						const ref = getRefedContent(parameter as OASReferenceObject, pathItemRefDirname);
 						// the refed content should be a parameter
@@ -118,11 +115,8 @@ async function partialDerefPaths(config: StdConfig, absDir: string, schema: OASP
 
 						// for query parameters only
 						if (operationObject.parameters[idx].in === 'query') {
-							// console.log('**PARTIALDEREF 2', opObj.parameters[idx]);
-							// console.log('**PARTIALDEREF 4', isSchemaObject(opObj.parameters[idx]), isReferenceObject(opObj.parameters[idx]));
-
-							// if the $ref pointed to a parameter whose schema is a $ref, we need to know if it refs an object
-							// so we can pull the object up so we can flatten it into the query parameters
+							// if the $ref pointed to a parameter whose schema is definitely a $ref,
+							// we need to know if it refs an object so we can pull the object up so we can flatten it into the query parameters
 							if (
 								isReferenceObject(operationObject.parameters[idx].schema) &&
 								!isSchemaObject(operationObject.parameters[idx].schema)
@@ -133,8 +127,6 @@ async function partialDerefPaths(config: StdConfig, absDir: string, schema: OASP
 										? ref.$ref.split('#')[0]
 										: path.dirname(ref.$ref.split('#')[0]);
 
-								// console.log('**PARTIALDEREF 5', refedRefPath);
-
 								// If the parameter's schema refs an object, deref it into the parameter's schema
 								const schemaRef = getRefedContent(operationObject.parameters[idx].schema, schemaRefFromPath);
 								if ((schemaRef as OASSchemaObject).type === 'object') {
@@ -144,7 +136,6 @@ async function partialDerefPaths(config: StdConfig, absDir: string, schema: OASP
 								}
 							}
 						}
-						// console.log('**PARTIALDEREF 7', opObj.parameters[idx]);
 					}
 				}
 			}
