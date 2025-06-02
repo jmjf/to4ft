@@ -165,6 +165,28 @@ paths:
           description: error
   /testPathLevelParams:
     $ref: 'pathItem.yaml'
+  /testQueryParameterRefSchemas:
+    get:
+      operationId: testComboQueryParamsWithObject
+      description: >
+        This route exists to test a case where a query parameter is from an `allOf`
+      tags:
+        - Test
+      security: []
+      parameters:
+        - $ref: '#/components/parameters/UserQuery'
+        - $ref: '#/components/parameters/TestObjectRefQuery'
+      responses:
+        '200':
+          description: result
+          content:
+            application/json:
+              schema:
+                type: array
+                items: 
+                  $ref: '#/components/responses/GetUsersByQuery200Response'
+        '4xx':
+            description: error
 components:
   pathItems:
     testPathItem:
@@ -334,6 +356,13 @@ components:
         - titleTx
         - postTx
         - postStatus
+    ObjectSchemaForRef:
+      type: object
+      properties:
+        postId:
+          $ref: '#/components/schemas/PostId'
+        postedTs:
+          $ref: '#/components/schemas/GenericTs'
   parameters:
     PostIdParam:
       in: path
@@ -464,6 +493,12 @@ components:
       description: invalid param authorization
       schema:
         type: number
+    TestObjectRefQuery:
+      in: query
+      name: objectRefTest
+      description: schema refs an object
+      schema:
+        $ref: '#/components/schemas/ObjectSchemaForRef'
   responses:
     HTTP404NotFound:
       description: The specified resource was not found
