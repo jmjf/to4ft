@@ -27,4 +27,5 @@ paths:
     $ref: paths/api_users_userid.yaml
   /users:
     $ref: paths/api_users.yaml
-
+  /test:
+    $ref: paths/api_test_combiners.yaml

@@ -1,5 +1,4 @@
 import {
-	Clone,
 	Kind,
 	type SchemaOptions,
 	type Static,
@@ -9,8 +8,6 @@ import {
 	TypeRegistry,
 } from '@sinclair/typebox';
 import { Value } from '@sinclair/typebox/value';
-import { ObjectForQuerySchema } from './schemas_ObjectForQuery.js';
-import { ObjectForQuery3Schema } from './schemas_ObjectForQuery3.js';
 
 TypeRegistry.Set(
 	'ExtendedOneOf',
@@ -24,12 +21,9 @@ TypeRegistry.Set(
 const OneOf = <T extends TSchema[]>(oneOf: [...T], options: SchemaOptions = {}) =>
 	Type.Unsafe<Static<TUnion<T>>>({ ...options, [Kind]: 'ExtendedOneOf', oneOf });
 
-export const AllOfOneOfQuerySchema = Type.Intersect([
-	Type.Object({ s2Prop1: Type.Optional(Type.Boolean()), s2Prop2: Type.Optional(Type.String({ format: 'date' })) }),
-	OneOf([
-		Clone(ObjectForQuerySchema),
-		Clone(ObjectForQuery3Schema),
-		Type.Object({ oneOfProp1: Type.String(), oneOfProp2: Type.Optional(Type.Number()) }),
-	]),
+export const OneOfQuerySchema = OneOf([
+	Type.Object({ s1Prop1: Type.String(), s1Prop2: Type.Optional(Type.String({ format: 'date' })) }),
+	Type.Object({ s3Prop1: Type.String(), s3Prop2: Type.Optional(Type.String({ format: 'date' })) }),
+	Type.Object({ s2Prop1: Type.Boolean(), s2Prop2: Type.Optional(Type.String({ format: 'date' })) }),
 ]);
-export type AllOfOneOfQuery = Static<typeof AllOfOneOfQuerySchema>;
+export type OneOfQuery = Static<typeof OneOfQuerySchema>;

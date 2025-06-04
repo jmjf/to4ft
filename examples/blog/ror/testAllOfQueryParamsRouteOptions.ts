@@ -1,18 +1,26 @@
-import { XTestHeaderSchema } from '../tbr/headers_XTestHeader.js';
 import { AllOfQuerySchema } from '../tbr/parameters_AllOfQuery.js';
-import { UserSchema } from '../tbr/schemas_User.js';
+import { UserIdSchema } from '../tbr/schemas_UserId.js';
+import { UserNmSchema } from '../tbr/schemas_UserNm.js';
 
 export const testAllOfQueryParamsRouteOptions = {
-	url: '/users',
-	method: 'PUT',
+	url: '/test',
+	method: 'GET',
 	operationId: 'testAllOfQueryParams',
 	tags: ['Test'],
 	schema: {
 		querystring: { type: 'object', properties: { allOfQuery: AllOfQuerySchema }, additionalProperties: false },
 		response: {
 			'200': {
-				content: { 'application/json': { schema: { type: 'array', items: UserSchema } } },
-				headers: { 'x-test-header': XTestHeaderSchema },
+				content: {
+					'application/json': {
+						schema: {
+							type: 'object',
+							properties: {
+								res: { type: 'object', properties: { userId: UserIdSchema, userNm: UserNmSchema } },
+							},
+						},
+					},
+				},
 			},
 			'4xx': {},
 		},

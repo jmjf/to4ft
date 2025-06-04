@@ -1,0 +1,119 @@
+openapi: 3.1.0
+servers:
+  - url: http://127.0.0.0:3000
+info: 
+   title: Test API
+   version: 1.0.0
+   license:
+      name: MIT
+      identifier: MIT
+
+components:
+  parameters:
+    AllOfQuery:
+      in: query
+      name: allOfQuery
+      description: >
+        a query using `allOf`
+      schema:
+        allOf:
+          - $ref: '#/components/schemas/ObjectForQuery'
+          - type: object
+            properties:
+              s2Prop1:
+                type: boolean
+              s2Prop2:
+                type: string
+                format: date
+    AnyOfQuery:
+      in: query
+      name: anyOfQuery
+      description: >
+        a query using `anyOf`
+      schema:
+        anyOf:
+          - $ref: '#/components/schemas/ObjectForQuery'
+          - $ref: '#/components/schemas/ObjectForQuery3'
+          - type: object
+            properties:
+              s2Prop1:
+                type: boolean
+              s2Prop2:
+                type: string
+                format: date
+    OneOfQuery:
+      in: query
+      name: oneOfQuery
+      description: >
+        a query using `anyOf`
+      schema:
+        oneOf:
+          - $ref: '#/components/schemas/ObjectForQuery'
+          - $ref: '#/components/schemas/ObjectForQuery3'
+          - type: object
+            required:
+              - s2Prop1
+            properties:
+              s2Prop1:
+                type: boolean
+              s2Prop2:
+                type: string
+                format: date
+    AllOfOneOfQuery:
+      in: query
+      name: allOfOneOfQuery
+      description: >
+        a query using all of with a nested oneOf
+      schema:
+        allOf:
+          - type: object
+            properties:
+              s2Prop1:
+                type: boolean
+              s2Prop2:
+                type: string
+                format: date                
+          - oneOf:
+            - $ref: '#/components/schemas/ObjectForQuery'
+            - $ref: '#/components/schemas/ObjectForQuery3'
+            - type: object
+              required:
+                - oneOfProp1
+              properties:
+                oneOfProp1:
+                  type: string
+                oneOfProp2:
+                  type: number
+  schemas:
+    ObjectForQuery:
+      type: object
+      required:
+        - s1Prop1
+      properties:
+        s1Prop1:
+          type: string
+        s1Prop2:
+          $ref: Fields.yaml#/components/schemas/GenericDt
+    ObjectForQuery3:
+      type: object
+      required:
+        - s3Prop1
+      properties:
+        s3Prop1:
+          type: string
+        s3Prop2:
+          $ref: Fields.yaml#/components/schemas/GenericDt          
+  responses:
+    TestResponse:
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              res:
+                type: object
+                properties:
+                  userId:
+                    $ref: Fields.yaml#/components/schemas/UserId
+                  userNm:
+                    $ref: Fields.yaml#/components/schemas/UserNm          

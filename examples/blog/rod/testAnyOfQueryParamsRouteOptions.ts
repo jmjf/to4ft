@@ -1,17 +1,21 @@
-export const testAllOfQueryParamsRouteOptions = {
+export const testAnyOfQueryParamsRouteOptions = {
 	url: '/test',
-	method: 'GET',
-	operationId: 'testAllOfQueryParams',
+	method: 'PATCH',
+	operationId: 'testAnyOfQueryParams',
 	tags: ['Test'],
 	schema: {
 		querystring: {
 			type: 'object',
 			properties: {
-				allOfQuery: {
-					allOf: [
+				anyOfQuery: {
+					anyOf: [
 						{
 							type: 'object',
 							properties: { s1Prop1: { type: 'string' }, s1Prop2: { type: 'string', format: 'date' } },
+						},
+						{
+							type: 'object',
+							properties: { s3Prop1: { type: 'string' }, s3Prop2: { type: 'string', format: 'date' } },
 						},
 						{
 							type: 'object',
