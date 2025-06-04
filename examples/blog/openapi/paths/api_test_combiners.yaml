@@ -1,0 +1,61 @@
+get:
+  operationId: testAllOfQueryParams
+  description: >
+    This route exists to test a case where a query parameter is from an `allOf`
+  tags:
+    - Test
+  security: []
+  parameters:
+    - $ref: ../components/TestCombiners.yaml#/components/parameters/AllOfQuery
+  responses:
+    '200':
+      description: result
+      $ref: ../components/TestCombiners.yaml#/components/responses/TestResponse
+    '4xx':
+        description: error
+patch:
+  operationId: testAnyOfQueryParams
+  description: >
+    This route exists to test a case where a query parameter is from an `anyOf`
+  tags:
+    - Test
+  security: []
+  parameters:
+    - $ref: ../components/TestCombiners.yaml#/components/parameters/AnyOfQuery
+  responses:
+    '200':
+      description: result
+      $ref: ../components/TestCombiners.yaml#/components/responses/TestResponse
+    '4xx':
+        description: error
+post:
+  operationId: testOneOfQueryParams
+  description: >
+    This route exists to test a case where a query parameter is from a 'oneOf`
+  tags:
+    - Test
+  security: []
+  parameters:
+    - $ref: ../components/TestCombiners.yaml#/components/parameters/OneOfQuery
+  responses:
+    '200':
+      description: result
+      $ref: ../components/TestCombiners.yaml#/components/responses/TestResponse
+    '4xx':
+        description: error     
+put:
+  operationId: testAllOfOneOfQueryParams
+  description: >
+    This route exists to test a case where a query parameter is from an `allOf`
+  tags:
+    - Test
+  security: []
+  parameters:
+    - $ref: ../components/TestCombiners.yaml#/components/parameters/AllOfOneOfQuery
+  responses:
+    '200':
+      description: result
+      $ref: ../components/TestCombiners.yaml#/components/responses/TestResponse
+    '4xx':
+        description: error
+       

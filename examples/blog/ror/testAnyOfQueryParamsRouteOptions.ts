@@ -1,18 +1,14 @@
-import { AllOfOneOfQuerySchema } from '../tbr/parameters_AllOfOneOfQuery.js';
+import { AnyOfQuerySchema } from '../tbr/parameters_AnyOfQuery.js';
 import { UserIdSchema } from '../tbr/schemas_UserId.js';
 import { UserNmSchema } from '../tbr/schemas_UserNm.js';
 
-export const testAllOfOneOfQueryParamsRouteOptions = {
+export const testAnyOfQueryParamsRouteOptions = {
 	url: '/test',
-	method: 'PUT',
-	operationId: 'testAllOfOneOfQueryParams',
+	method: 'PATCH',
+	operationId: 'testAnyOfQueryParams',
 	tags: ['Test'],
 	schema: {
-		querystring: {
-			type: 'object',
-			properties: { allOfOneOfQuery: AllOfOneOfQuerySchema },
-			additionalProperties: false,
-		},
+		querystring: { type: 'object', properties: { anyOfQuery: AnyOfQuerySchema }, additionalProperties: false },
 		response: {
 			'200': {
 				content: {

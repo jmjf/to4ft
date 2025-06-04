@@ -22,29 +22,6 @@ get:
           $ref: ../components/User.yaml#/components/headers/XTestHeader
     '4xx':
         description: error
-put:
-  operationId: testAllOfQueryParams
-  description: >
-    This route exists to test a case where a query parameter is from an `allOf`
-  tags:
-    - Test
-  security: []
-  parameters:
-    - $ref: ../components/User.yaml#/components/parameters/AllOfQuery
-  responses:
-    '200':
-      description: result
-      content:
-        application/json:
-          schema:
-            type: array
-            items: 
-              $ref: ../components/User.yaml#/components/schemas/User
-      headers:
-        x-test-header:     # this is the name used in the response
-          $ref: ../components/User.yaml#/components/headers/XTestHeader
-    '4xx':
-        description: error
 patch:
   operationId: testComboQueryParamsWithObject
   description: >
@@ -69,26 +46,4 @@ patch:
           $ref: ../components/User.yaml#/components/headers/XTestHeader
     '4xx':
         description: error
-post:
-  operationId: testAllOfOneOfQueryParams
-  description: >
-    This route exists to test a case where a query parameter is from an `allOf`
-  tags:
-    - Test
-  security: []
-  parameters:
-    - $ref: ../components/User.yaml#/components/parameters/AllOfOneOfQuery
-  responses:
-    '200':
-      description: result
-      content:
-        application/json:
-          schema:
-            type: array
-            items: 
-              $ref: ../components/User.yaml#/components/schemas/User
-      headers:
-        x-test-header:     # this is the name used in the response
-          $ref: ../components/User.yaml#/components/headers/XTestHeader
-    '4xx':
-        description: error        
+      

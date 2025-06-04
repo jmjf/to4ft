@@ -71,52 +71,6 @@ components:
 
       schema:
         $ref: '#/components/schemas/ObjectForQuery' 
-    AllOfQuery:
-      in: query
-      name: allOfQuery
-      description: >
-        a query using all of, which includes a sub-object
-
-
-        This tests a case where query parameters get difficult for ref-maintaining RouteOptions.
-        Original RO code generates an object parameter, which doesn't play nice with query parsing.
-        
-        
-        The goal is to get the code to flatten the allOf or to get the code to properly flatten The
-        query parameters where one is from a schema object.
-      schema:
-        allOf:
-          - $ref: '#/components/schemas/ObjectForQuery'
-          - type: object
-            properties:
-              s2Prop1:
-                type: boolean
-              s2Prop2:
-                type: string
-                format: date
-    AllOfOneOfQuery:
-      in: query
-      name: allOfOneOfQuery
-      description: >
-        a query using all of with a nested oneOf
-      schema:
-        allOf:
-          - type: object
-            properties:
-              s2Prop1:
-                type: boolean
-              s2Prop2:
-                type: string
-                format: date                
-          - oneOf:
-            - $ref: '#/components/schemas/ObjectForQuery'
-            - $ref: Fields.yaml#/components/schemas/UserId
-            - type: object
-              properties:
-                oneOfProp1:
-                  type: string
-                oneOfProp2:
-                  type: number
   schemas:
     ObjectForQuery:
       type: object
