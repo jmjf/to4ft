@@ -1,0 +1,92 @@
+get:
+  operationId: testReqRes_Ref
+  description: >
+    This route exists to test a case where request and response objects 
+    are defined in the request body and response
+  tags:
+    - Test
+  security: []
+  requestBody:
+    $ref: ../components/TestReqRes.yaml#/components/requestBodies/TestRequest
+  responses:
+    '200':
+      description: result
+      $ref: ../components/TestReqRes.yaml#/components/responses/TestResponse
+    '4xx':
+        description: error
+patch:
+  operationId: testReqRes_RefWithRef
+  description: >
+    This route exists to test a case where request and response objects 
+    are referenced in the request body and response
+  tags:
+    - Test
+  security: []
+  requestBody:
+    $ref: ../components/TestReqRes.yaml#/components/requestBodies/TestRequestRef
+  responses:
+    '200':
+      description: result
+      $ref: ../components/TestReqRes.yaml#/components/responses/TestResponseRef
+    '4xx':
+        description: error
+post:
+  operationId: testReqRes_InlineSchemaObject
+  description: >
+    This route exists to test a case where request and response objects 
+    are inline in the operation object and schemas are defined in the object
+  tags:
+    - Test
+  security: []
+  requestBody:
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            req:
+              type: object
+              properties:
+                  userId:
+                    $ref: ../components/Fields.yaml#/components/schemas/UserId
+                  userNm:
+                    $ref: ../components/Fields.yaml#/components/schemas/UserNm
+  responses:
+    '200':
+      description: result
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              res:
+                type: object
+                properties:
+                  userId:
+                    $ref: ../components/Fields.yaml#/components/schemas/UserId
+                  userNm:
+                    $ref: ../components/Fields.yaml#/components/schemas/UserNm
+    '4xx':
+        description: error
+put:
+  operationId: testReqRes_InlineWithSchemaRef
+  description: >
+    This route exists to test a case where request and response objects 
+    are inline in the operation object and schemas are refed in the object
+  tags:
+    - Test
+  security: []
+  requestBody:
+    content:
+      application/json:
+        schema:
+          $ref: ../components/TestReqRes.yaml#/components/schemas/ObjectForTest
+  responses:
+    '200':
+      description: result
+      content:
+        application/json:
+          schema:
+            $ref: ../components/TestReqRes.yaml#/components/schemas/ObjectForTest
+    '4xx':
+        description: error 

@@ -1,0 +1,65 @@
+openapi: 3.1.0
+servers:
+  - url: http://127.0.0.0:3000
+info: 
+   title: Test API
+   version: 1.0.0
+   license:
+      name: MIT
+      identifier: MIT
+
+components:
+  schemas:
+    ObjectForTest:
+      type: object
+      required:
+        - s1Prop1
+      properties:
+        s1Prop1:
+          type: string
+        s1Prop2:
+          $ref: Fields.yaml#/components/schemas/GenericDt       
+  requestBodies:
+    TestRequest:
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              req:
+                type: object
+                properties:
+                   userId:
+                     $ref: Fields.yaml#/components/schemas/UserId
+                   userNm:
+                     $ref: Fields.yaml#/components/schemas/UserNm
+    TestRequestRef:
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              req:
+                $ref: '#/components/schemas/ObjectForTest'
+  responses:
+    TestResponse:
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              res:
+                type: object
+                properties:
+                  userId:
+                    $ref: Fields.yaml#/components/schemas/UserId
+                  userNm:
+                    $ref: Fields.yaml#/components/schemas/UserNm
+    TestResponseRef:
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              res:
+                $ref: '#/components/schemas/ObjectForTest'                   
