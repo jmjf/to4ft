@@ -1,5 +1,5 @@
 import { TestRequestRefSchema } from '../tbr/requestBodies_TestRequestRef.js';
-import { ObjectForTestSchema } from '../tbr/schemas_ObjectForTest.js';
+import { TestResponseRefSchema } from '../tbr/responses_TestResponseRef.js';
 
 export const testReqRes_RefWithRefRouteOptions = {
 	url: '/testreqres',
@@ -8,11 +8,6 @@ export const testReqRes_RefWithRefRouteOptions = {
 	tags: ['Test'],
 	schema: {
 		body: TestRequestRefSchema,
-		response: {
-			'200': {
-				content: { 'application/json': { schema: { type: 'object', properties: { res: ObjectForTestSchema } } } },
-			},
-			'4xx': {},
-		},
+		response: { '200': { content: { 'application/json': { schema: TestResponseRefSchema } } }, '4xx': {} },
 	},
 };

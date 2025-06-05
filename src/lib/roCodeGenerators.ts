@@ -30,6 +30,8 @@ export function genRouteOptionsForOperation(
 	let roCode = '';
 	const imports = new Set<string>();
 
+	// console.log('OPERATION ID', opObj.operationId)
+
 	const roNm = toCase.camel(getNameFor(opObj.operationId as string, nameTypes.routeOption, config));
 	roCode += `export const ${roNm} = {`;
 	roCode += `url: '${cleanPathURL(pathURL)}',`;
@@ -246,13 +248,16 @@ export function genRequestBodyCode(requestBody: OASRequestBodyObject, imports: S
 
 export function genResponsesCode(responses: OASResponsesObject, imports: Set<string>, config: StdConfig) {
 	if (!responses || Object.keys(responses).length === 0) return '';
+	// console.log('RESPONSES', responses)
 
 	if (isReferenceObject(responses)) {
 		// console.log('GEN RESPONSES REF', responses);
 		return genRefCodeAndImport(responses.$ref, imports, config);
 	}
 	// console.log('GEN RESPONSES NOREF', Object.entries(responses));
-	return `{ ${genEntriesCode(Object.entries(responses), imports, config)} }`;
+	const generatedCode = genEntriesCode(Object.entries(responses), imports, config);
+	// console.log('GEN RESPONSE - code', generatedCode)
+	return `{ ${generatedCode} }`;
 }
 
 export function getParamAnnotationsCode(parameter: OASParameterObject, config: StdConfig) {
@@ -285,7 +290,8 @@ export function stringArrayToCode(arr: string[]): string {
 	return `[${arr.map((s) => JSON.stringify(s)).join(',')}]`;
 }
 
-export function genValueCode(value: unknown, imports: Set<string>, config: StdConfig): string | unknown {
+// genValueCode gets ref to pass back to genEntriesCode
+export function genValueCode(value: unknown, imports: Set<string>, config: StdConfig, ref: string): string | unknown {
 	if (typeof value === 'string') {
 		return JSON.stringify(value);
 	}
@@ -297,7 +303,7 @@ export function genValueCode(value: unknown, imports: Set<string>, config: StdCo
 		}
 		if (typeof value[0] === 'object') {
 			const itemsCode = value.map((vItem) => {
-				const code = genEntriesCode(Object.entries(vItem as object), imports, config);
+				const code = genEntriesCode(Object.entries(vItem as object), imports, config, ref);
 				if (code.length > 0 && code[0] === "'") return `{ ${code} },\n`;
 				return `${code}\n`;
 			});
@@ -309,32 +315,58 @@ export function genValueCode(value: unknown, imports: Set<string>, config: StdCo
 	}
 
 	if (typeof value === 'object') {
-		if (isReferenceObject(value)) {
+		// console.log('GEN VALUE - object', value, imports)
+		if (isReferenceObject(value) && value.$ref !== ref) {
 			// console.log('GEN VALUE', v, imports);
 			const code = genRefCodeAndImport(value.$ref, imports, config);
 			return code;
 		}
-		return `{ ${genEntriesCode(Object.entries(value as object), imports, config)} }`;
+		return `{ ${genEntriesCode(Object.entries(value as object), imports, config, ref)} }`;
 	}
 
 	return value;
 }
 
-export function genEntriesCode(entries: [string, unknown][], imports: Set<string>, config: StdConfig) {
+// For response refs, we want to use the ref in the response's schema member, which is several levels down in the object from the ref.
+// ref holds the ref string to use as we recurse the entries
+export function genEntriesCode(entries: [string, unknown][], imports: Set<string>, config: StdConfig, ref = '') {
 	let entriesCode = '';
+	let localRef = ref; // assigning to a parameter gets linter gripes
 	const ignoreKeys = getSharedIgnoreKeys(config);
-	// console.log('GEN ENTRIES entries', entries);
+	// if (refSchema) console.log('GEN ENTRIES entries', entries);
+
 	for (const [key, value] of entries) {
-		// console.log('GEN ENTRIES', key, value);
+		// skip entries we can't or shouldn't use
 		if (value === undefined || ignoreKeys.includes(key)) continue;
-		if (key !== '$ref') {
+
+		if (isReferenceObject(value) && /^[1-5]/.test(key)) {
+			// if we have a references object for a response code, save the reference (for responses)
+			// a response code begins with a digit 1 - 5
+			// console.log('GEN ENTRIES set ref', key, value.$ref);
+			localRef = value.$ref;
+		}
+
+		if (
+			localRef.length > 0 &&
+			(key === 'schema' || key === 'array') &&
+			(value as OASSchemaObject)?.type === 'object'
+		) {
+			// we a saved reference and the entry is a schema with type object -> replace the schema body with a ref
+			// we check for type object because we don't want to use the ref on schemas that are already refs
+			const code = genRefCodeAndImport(localRef, imports, config);
+			// console.log('GEN ENTRIES refSchema', value, localRef, code)
+			entriesCode += `schema: ${code},`;
+		} else if (key !== '$ref') {
+			// the entry isn't a schema to ref and isn't a ref -> generate code for it
 			if ((value as OASSchemaObject)?.type === 'object' && (value as OASSchemaObject)?.default) {
 				(value as OASSchemaObject).default = undefined;
-				// console.log('GEN ENTRIES value', value);
 			}
-			entriesCode += `'${key}': ${genValueCode(value, imports, config)},`;
-		} else if (typeof value === 'string') {
-			// console.log('GEN ENTRIES ELSE', key, value);
+			// if (refSchema) console.log('GEN ENTRIES value', value);
+			entriesCode += `'${key}': ${genValueCode(value, imports, config, localRef)},`;
+		} else if (typeof value === 'string' && value !== localRef) {
+			// the entry is a ref and isn't the saved ref -> generate a ref for it
+			// because we don't save a ref for schema keys, we'll get a ref for a schema
+			// if (refSchema) console.log('GEN ENTRIES ref', key, value);
 			const code = genRefCodeAndImport(value as string, imports, config);
 			entriesCode += `${code},`;
 		}

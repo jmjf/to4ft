@@ -1,6 +1,5 @@
 import { TestRequestSchema } from '../tbr/requestBodies_TestRequest.js';
-import { UserIdSchema } from '../tbr/schemas_UserId.js';
-import { UserNmSchema } from '../tbr/schemas_UserNm.js';
+import { TestResponseSchema } from '../tbr/responses_TestResponse.js';
 
 export const testReqRes_RefRouteOptions = {
 	url: '/testreqres',
@@ -9,20 +8,6 @@ export const testReqRes_RefRouteOptions = {
 	tags: ['Test'],
 	schema: {
 		body: TestRequestSchema,
-		response: {
-			'200': {
-				content: {
-					'application/json': {
-						schema: {
-							type: 'object',
-							properties: {
-								res: { type: 'object', properties: { userId: UserIdSchema, userNm: UserNmSchema } },
-							},
-						},
-					},
-				},
-			},
-			'4xx': {},
-		},
+		response: { '200': { content: { 'application/json': { schema: TestResponseSchema } } }, '4xx': {} },
 	},
 };
