@@ -56,7 +56,7 @@ suite('oas2tb', () => {
 			const generatedFiles = readdirSync(outputPathNm);
 
 			await t.test('generates expected files', async (t: TestContext) => {
-				t.assert.deepStrictEqual(generatedFiles, tbFiles, 'files exist');
+				t.assert.deepStrictEqual(generatedFiles.sort(), tbFiles.sort(), 'files exist');
 			});
 
 			for (const filename of generatedFiles) {
@@ -106,7 +106,7 @@ suite('oas2ro', () => {
 			const generatedFiles = readdirSync(outputPathNm);
 
 			await t.test('generates expected files', async (t: TestContext) => {
-				t.assert.deepStrictEqual(generatedFiles, roFiles, 'files exist');
+				t.assert.deepStrictEqual(generatedFiles.sort(), roFiles.sort(), 'files exist');
 			});
 
 			for (const filename of generatedFiles) {

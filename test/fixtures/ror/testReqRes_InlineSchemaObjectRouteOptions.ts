@@ -1,0 +1,4 @@
+import {UserIdSchema } from '../fixtures/tbr/schemas_UserId.ts';
+import {UserNmSchema } from '../fixtures/tbr/schemas_UserNm.ts';
+
+export const testReqRes_InlineSchemaObjectRouteOptions = {url: '/testReqResResponseSchemas',method: 'POST',operationId: 'testReqRes_InlineSchemaObject',tags: ["Test"],description: "This route exists to test a case where request and response objects  are inline in the operation object and schemas are defined in the object\n",schema: {body: { 'content': { 'application/json': { 'schema': { 'type': "object",'properties': { 'req': { 'type': "object",'properties': { 'userId': UserIdSchema,'userNm': UserNmSchema, }, }, }, }, }, }, },response: { '200': { 'description': "result",'content': { 'application/json': { 'schema': { 'type': "object",'properties': { 'res': { 'type': "object",'properties': { 'userId': UserIdSchema,'userNm': UserNmSchema, }, }, }, }, }, }, },'4xx': { 'description': "error", }, },}};

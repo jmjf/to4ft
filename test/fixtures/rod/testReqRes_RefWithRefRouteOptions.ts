@@ -1,0 +1,3 @@
+;
+
+export const testReqRes_RefWithRefRouteOptions = {url: '/testReqResResponseSchemas',method: 'PATCH',operationId: 'testReqRes_RefWithRef',tags: ["Test"],schema: {body: { 'content': { 'application/json': { 'schema': { 'type': "object",'properties': { 'req': { 'type': "object",'properties': { 's1Prop1': { 'type': "string", },'s1Prop2': { 'type': "string",'minLength': 3, }, }, }, }, }, }, }, },response: { '200': { 'content': { 'application/json': { 'schema': { 'type': "object",'properties': { 'res': { 'type': "object",'properties': { 's1Prop1': { 'type': "string", },'s1Prop2': { 'type': "string",'minLength': 3, }, }, }, }, }, }, }, },'4xx': {  }, },}};

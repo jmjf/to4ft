@@ -1,0 +1,3 @@
+import {ObjectForTestSchema } from '../fixtures/tbr/schemas_ObjectForTest.ts';
+
+export const testReqRes_InlineWithSchemaRefRouteOptions = {url: '/testReqResResponseSchemas',method: 'PUT',operationId: 'testReqRes_InlineWithSchemaRef',tags: ["Test"],description: "This route exists to test a case where request and response objects  are inline in the operation object and schemas are refed in the object\n",schema: {body: { 'content': { 'application/json': { 'schema': ObjectForTestSchema, }, }, },response: { '200': { 'description': "result",'content': { 'application/json': { 'schema': ObjectForTestSchema, }, }, },'4xx': { 'description': "error", }, },}};
