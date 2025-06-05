@@ -155,7 +155,6 @@ async function partialDerefPaths(config: StdConfig, absDir: string, schema: OASP
 						oasPathItem[operationMethod].responses[responseKey] = {
 							...structuredClone(refedContent),
 							...responseObj, // keep anything from responseObj that overrides the refed content
-							$ref: undefined,
 						};
 					}
 				}
