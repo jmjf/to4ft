@@ -7,11 +7,11 @@
 A tool to convert OpenAPI schemas into TypeBox types (ref-maintaining or dereferenced) and convert OpenAPI paths into Fastify `RouteOptions` (with or without TypeBox schemas).
 
 - [to4ft](#to4ft)
+  - [Configuration file](#configuration-file)
   - [Motivation](#motivation)
   - [Limitations and compromises](#limitations-and-compromises)
     - [In `oas2tb`](#in-oas2tb)
     - [In `oas2ro`](#in-oas2ro)
-  - [Configuration file](#configuration-file)
     - [Configuration options](#configuration-options)
   - [Commands](#commands)
     - [`oas2tb`](#oas2tb)
@@ -23,10 +23,6 @@ A tool to convert OpenAPI schemas into TypeBox types (ref-maintaining or derefer
       - [Example ref-maintaining output from `npm run blog:ror`](#example-ref-maintaining-output-from-npm-run-blogror)\
   - [Demo servers](#demo-servers)
   - [Thanks](#thanks)
-  - [To do](#to-do)
-    - [Core/common](#corecommon)
-    - [`oas2tb` command](#oas2tb-command)
-    - [`oas2ro` command](#oas2ro-command)
 
 ## Configuration file
 
@@ -52,7 +48,8 @@ A tool to convert OpenAPI schemas into TypeBox types (ref-maintaining or derefer
       "suffixTx": "RouteOptions",
       "importExtensionTx": "js",
       "extensionTx": "ts",
-      "noAdditionalProperties": true
+      "noAdditionalProperties": false,
+      "noUnevaluatedProperties": false
    }
 }
 ```
@@ -61,7 +58,7 @@ A tool to convert OpenAPI schemas into TypeBox types (ref-maintaining or derefer
 
 - `keepAnnotationsFl` -- If true, keep annotation-type keywords in the output. See `annotationKeys` in `src/lib/consts.ts` for the list of annotation keywords. If you aren't generating API documentation from the server code, annotations add little value.
 
-- `allowUnsafeKeywordsFl` -- If true, keep keywords AJV may not recognize. See `ajvUnsafeKeys` in `src/lib/consts.ts` for the list of unsafe keywords. If you enable AJV unsafe keywords, output may not be usable with AJV.
+- `allowUnsafeKeywordsFl` -- If true, keep keywords Ajv may not recognize. See `ajvUnsafeKeys` in `src/lib/consts.ts` for the list of unsafe keywords. If you enable Ajv unsafe keywords, output may not be usable with Ajv.
 
 **NOTE:** `to4ft` always ignores keywords in `stdIgnoreKeys` (in `src/lib/consts.ts`) because they're handled by the code.
 
@@ -74,19 +71,30 @@ A tool to convert OpenAPI schemas into TypeBox types (ref-maintaining or derefer
   - `schemaPrefixTx` and `schemaSuffixTx` -- Text to add before and after (respectively) names for TypeBox schemas.
   - `typePrefixTx` and `TypeSuffixTx` -- Text to add before and after (respectively) names for TypeBox types (`Static<typeof Schema>`).
   - `derefFl` -- If true, generate dereferenced TypeBox schemas with sub-objects fully exploded in the schema.
-  - `importExtensionTx` -- The extension to use for import file names for referenced schemas -- NO DOT.
+  - `importExtensionTx` -- The extension to use for import file names for referenced schemas -- **NO DOT**.
     - If you aren't using TypeScript's `rewriteRelativeImportExtensions` option, you probably want `js`.
-  - `extensionTx` -- The extension to use for output file names -- NO DOT.
+  - `extensionTx` -- The extension to use for output file names -- **NO DOT**.
     - **NOTE:** `oas2tb` is writing TypeBox, which assumes TypeScript, so extension should be `ts`, `mts`, or `cts`.
 
 - `oas2ro` -- configuration specific to `oas2ro`
   - `derefFl` -- If true, generate dereferenced `RouteOptions` objects with fully exploded schemas for any referenced objects.
   - `prefixTx` and `suffixTx` -- Text to add before and after (respectively) names for `RouteOptions` objects.
-  - `importExtensionTx` -- The extension to use for import file names -- NO DOT.
+  - `importExtensionTx` -- The extension to use for import file names -- **NO DOT**.
     - If you aren't using TypeScript's `rewriteRelativeImportExtensions` option, you probably want `js`.
-  - `extensionTx` -- The extension to use for output file names -- NO DOT.
+  - `extensionTx` -- The extension to use for output file names -- **NO DOT**.
     - `RouteOptions` do not include type annotations, so can be written as `ts`, `mts`, `cts`, `js`, `mjs`, or `cjs`.
-  - `noAdditionalProperties` -- if true, adds `additionalProperties: false` to querystring parameters.
+  - `noAdditionalProperties` -- if true, adds `additionalProperties: false` to querystring parameters (default `false`).
+  - `noUnevaluatedProperties` -- if true, adds `unevaluatedProperties: false` to querystring parameters (default `false`).
+
+**NOTE:** Only one of `noAdditionalProperties` and `noUnevaluatedProperties` can be true. If using `noUnevaluatedProperties: true` you must configure Fastify to use Ajv with JSON Schema 2019-09 or 2020-12 support (see below). If you use query schemas that include `allOf`, `oneOf`, or `anyOf` choose `noUnevaluatedProperties: true` and build a single query parameter that uses `allOf` to merge any parts.
+
+```typescript
+// Using Ajv 2019 or 2020 with Fastify
+
+import Fastify from 'fastify';
+
+const fastify = Fastify( { ajv: { mode: '2019' } } )  // or '2020'
+```
 
 ## Motivation
 
@@ -114,7 +122,7 @@ Also see, `docs` for base assumptions and recommendations on how to build specs 
 ### In `oas2ro`
 
 - Do not generate schemas for `cookie` parameters. Fastify doesn't support them in `RouteOptions` schemas.
-- Exclude keywords AJV doesn't recognize. See `docs/experimentQuerystrings.md` and `experiments/querystrings` for more details.
+- Exclude keywords Ajv doesn't recognize. See `docs/experimentQuerystrings.md` and `experiments/querystrings` for more details.
   - You can override this choice in the configuration file at your own risk.
 
 ## Commands
