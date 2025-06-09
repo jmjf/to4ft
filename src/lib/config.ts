@@ -26,6 +26,7 @@ type ConfigFile = {
 		importExtensionTx?: string;
 		extensionTx?: string;
 		noAdditionalProperties: boolean;
+		noUnevaluatedProperties: boolean;
 	};
 };
 
@@ -125,15 +126,23 @@ export function loadConfig(opts: CommandOptions, commandNm: string): StdConfig {
 			suffixTx: configObj.oas2ro?.suffixTx ?? 'RouteOptions',
 			importExtensionTx: configObj.oas2ro?.importExtensionTx ?? 'js',
 			extensionTx: configObj.oas2ro?.extensionTx ?? 'ts',
-			noAdditionalProperties: configObj.oas2ro?.noAdditionalProperties ?? true,
+			noAdditionalProperties: configObj.oas2ro?.noAdditionalProperties ?? false,
+			noUnevaluatedProperties: configObj.oas2ro?.noUnevaluatedProperties ?? false,
 		},
 		...inputFiles,
 	};
 
-	if (commandNm === 'oas2ro' && config.oas2ro.derefFl === false) {
-		if (!opts.refDir) throw new Error(`${functionNm} FATAL: missing required option --refDir`);
-		if (!existsSync(opts.refDir)) throw new Error(`${functionNm} FATAL ${opts.refDir} does not exist`);
-		config.refPathTx = opts.refDir;
+	if (commandNm === 'oas2ro') {
+		if (config.oas2ro.derefFl === false) {
+			if (!opts.refDir) throw new Error(`${functionNm} FATAL: missing required option --refDir`);
+			if (!existsSync(opts.refDir)) throw new Error(`${functionNm} FATAL ${opts.refDir} does not exist`);
+			config.refPathTx = opts.refDir;
+		}
+		if (config.oas2ro.noAdditionalProperties && config.oas2ro.noUnevaluatedProperties) {
+			throw new Error(
+				`${functionNm} FATAL: noAdditionalProperties and noUnevaluatedProperties are mutually exclusive configuration options`,
+			);
+		}
 	}
 
 	// this is a destructive action, so wait to ensure other parts of config don't fail
