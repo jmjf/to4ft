@@ -228,7 +228,11 @@ export function genQueryParametersCode(parameters: OASParameterObject[], imports
 	const props = genEntriesCode(entries, imports, config);
 	const desc = config.keepAnnotationsFl && objectDe.length > 0 ? `description: '${objectDe}',` : '';
 	const req = required.length > 0 ? `required: ${stringArrayToCode(required)},` : '';
-	const addProps = config.oas2ro.noAdditionalProperties ? 'additionalProperties: false,' : '';
+	const addProps = config.oas2ro.noAdditionalProperties
+		? 'additionalProperties: false,'
+		: config.oas2ro.noUnevaluatedProperties
+			? 'unevaluatedProperties: false,'
+			: '';
 	const code = `type: 'object', properties: {${props}},${desc}${req}${addProps}`;
 
 	return code;
