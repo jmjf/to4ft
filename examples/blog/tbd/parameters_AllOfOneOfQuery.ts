@@ -22,9 +22,15 @@ const OneOf = <T extends TSchema[]>(oneOf: [...T], options: SchemaOptions = {}) 
 	Type.Unsafe<Static<TUnion<T>>>({ ...options, [Kind]: 'ExtendedOneOf', oneOf });
 
 export const AllOfOneOfQuerySchema = Type.Intersect([
-	Type.Object({ s2Prop1: Type.Optional(Type.Boolean()), s2Prop2: Type.Optional(Type.String({ format: 'date' })) }),
+	Type.Object({
+		s2Prop1: Type.Optional(Type.Boolean()),
+		s2Prop2: Type.Optional(Type.Union([Type.String({ format: 'date' }), Type.Date()])),
+	}),
 	OneOf([
-		Type.Object({ s1Prop1: Type.Optional(Type.String()), s1Prop2: Type.Optional(Type.String({ format: 'date' })) }),
+		Type.Object({
+			s1Prop1: Type.Optional(Type.String()),
+			s1Prop2: Type.Optional(Type.Union([Type.String({ format: 'date' }), Type.Date()])),
+		}),
 		Type.Number({ minimum: 1 }),
 		Type.Object({ oneOfProp1: Type.Optional(Type.String()), oneOfProp2: Type.Optional(Type.Number()) }),
 	]),

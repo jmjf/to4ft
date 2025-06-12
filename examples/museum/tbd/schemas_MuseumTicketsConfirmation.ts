@@ -3,7 +3,7 @@ import { type Static, Type } from '@sinclair/typebox';
 export const MuseumTicketsConfirmationSchema = Type.Intersect([
 	Type.Object({
 		ticketId: Type.Optional(Type.String({ format: 'uuid' })),
-		ticketDate: Type.String({ format: 'date' }),
+		ticketDate: Type.Union([Type.String({ format: 'date' }), Type.Date()]),
 		ticketType: Type.Union([Type.Literal('event'), Type.Literal('general')]),
 		eventId: Type.Optional(Type.String({ format: 'uuid' })),
 	}),
