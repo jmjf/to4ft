@@ -176,7 +176,7 @@ export function parseTypeName(
 		if (schemaOptionsTx === undefined) {
 			return 'Type.String()';
 		}
-		if (dateFormats.includes(schema.format ?? '')) {
+		if (opts.oas2tb.addDateFl && dateFormats.includes(schema.format ?? '')) {
 			return `Type.Union([Type.String(${schemaOptionsTx}), Type.Date()])`;
 		}
 		return `Type.String(${schemaOptionsTx})`;
