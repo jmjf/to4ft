@@ -11,7 +11,7 @@ export const GetPostsByQuery200ResponseSchema = Type.Array(Type.Object({"postId"
 "titleTx": Type.String({"default":"hello","minLength":3,"maxLength":100}),
 "postTx": Type.String({"minLength":1,"maxLength":1024}),
 "statusCd": Type.Optional(Type.Union([ Type.Literal("draft"), Type.Literal("published"), Type.Literal("deleted")], {"default":"draft"})),
-"statusTs": Type.Optional(Type.Union([Type.String({"format":"date-time"}), Type.Date()])),
+"statusTs": Type.Optional(Type.String({"format":"date-time"})),
 "testNot": Type.Optional(Type.Not(Type.String())),
 "testOneOf": Type.Optional(OneOf([ Type.Union([ Type.Literal("draft"), Type.Literal("published"), Type.Literal("deleted")]),
  Type.String({"default":"none","minLength":3,"maxLength":100})])),

@@ -4,5 +4,5 @@ import { Value } from "@sinclair/typebox/value";
 
 
 export const TestObjectRefQuerySchema = Type.Object({"postId": Type.Optional(Type.Number({"minimum":1})),
-"postedTs": Type.Optional(Type.Union([Type.String({"format":"date-time"}), Type.Date()]))})
+"postedTs": Type.Optional(Type.String({"format":"date-time"}))})
 export type TestObjectRefQuery = Static<typeof TestObjectRefQuerySchema>
