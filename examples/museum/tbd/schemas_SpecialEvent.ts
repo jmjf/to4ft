@@ -5,7 +5,7 @@ export const SpecialEventSchema = Type.Object({
 	name: Type.String(),
 	location: Type.String(),
 	eventDescription: Type.String(),
-	dates: Type.Array(Type.String({ format: 'date' })),
+	dates: Type.Array(Type.Union([Type.String({ format: 'date' }), Type.Date()])),
 	price: Type.Number({ format: 'float' }),
 });
 export type SpecialEvent = Static<typeof SpecialEventSchema>;

@@ -34,7 +34,7 @@ export const PostSchema = Type.Object(
 		statusCd: Type.Optional(
 			Type.Union([Type.Literal('draft'), Type.Literal('published'), Type.Literal('deleted')], { default: 'draft' }),
 		),
-		statusTs: Type.Optional(Type.String({ format: 'date-time' })),
+		statusTs: Type.Optional(Type.Union([Type.String({ format: 'date-time' }), Type.Date()])),
 	},
 	{ additionalProperties: false },
 );
