@@ -42,3 +42,6 @@ export const removeFromParameterKeywords = Object.keys(removeFromParameterEntrie
 
 // from https://spec.openapis.org/oas/latest.html#fixed-fields-6
 export const pathItemOperations = ['get', 'put', 'post', 'delete', 'options', 'head', 'patch', 'trace'];
+
+// Based on ajv-formats list of formats
+export const dateFormats = ['date', 'date-time', 'time', 'iso-time', 'iso-date-time'];

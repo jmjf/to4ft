@@ -1,5 +1,5 @@
 import type { JSONSchema7, JSONSchema7Type, JSONSchema7TypeName } from 'json-schema';
-import { stdIgnoreKeys } from './consts.ts';
+import { dateFormats, stdIgnoreKeys } from './consts.ts';
 import { type CodeGenOpts, recurseSchema } from './tbCodeGenerators.ts';
 import {
 	type AllOfSchema,
@@ -173,7 +173,13 @@ export function parseTypeName(
 		return schemaOptionsTx === undefined ? 'Type.Number()' : `Type.Number(${schemaOptionsTx})`;
 	}
 	if (typeNm === 'string') {
-		return schemaOptionsTx === undefined ? 'Type.String()' : `Type.String(${schemaOptionsTx})`;
+		if (schemaOptionsTx === undefined) {
+			return 'Type.String()';
+		}
+		if (dateFormats.includes(schema.format ?? '')) {
+			return `Type.Union([Type.String(${schemaOptionsTx}), Type.Date()])`;
+		}
+		return `Type.String(${schemaOptionsTx})`;
 	}
 	if (typeNm === 'boolean') {
 		return schemaOptionsTx === undefined ? 'Type.Boolean()' : `Type.Boolean(${schemaOptionsTx})`;
