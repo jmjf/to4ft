@@ -3,5 +3,5 @@ import { Value } from "@sinclair/typebox/value";
 
 
 
-export const GenericTsSchema = Type.String({"format":"date-time"})
+export const GenericTsSchema = Type.Union([Type.String({"format":"date-time"}), Type.Date()])
 export type GenericTs = Static<typeof GenericTsSchema>
