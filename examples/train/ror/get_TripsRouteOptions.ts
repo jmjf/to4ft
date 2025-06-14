@@ -1,15 +1,15 @@
-import { Cache_ControlSchema } from '../tbr/headers_Cache-Control.js';
-import { RateLimitSchema } from '../tbr/headers_RateLimit.js';
-import { Retry_AfterSchema } from '../tbr/headers_Retry-After.js';
-import { LimitSchema } from '../tbr/parameters_limit.js';
-import { PageSchema } from '../tbr/parameters_page.js';
-import { Links_DestinationSchema } from '../tbr/schemas_Links-Destination.js';
-import { Links_OriginSchema } from '../tbr/schemas_Links-Origin.js';
-import { Links_PaginationSchema } from '../tbr/schemas_Links-Pagination.js';
-import { Links_SelfSchema } from '../tbr/schemas_Links-Self.js';
-import { ProblemSchema } from '../tbr/schemas_Problem.js';
-import { TripSchema } from '../tbr/schemas_Trip.js';
-import { Wrapper_CollectionSchema } from '../tbr/schemas_Wrapper-Collection.js';
+import { Cache_ControlSchema } from '../tbr/headers_Cache-Control.ts';
+import { RateLimitSchema } from '../tbr/headers_RateLimit.ts';
+import { Retry_AfterSchema } from '../tbr/headers_Retry-After.ts';
+import { LimitSchema } from '../tbr/parameters_limit.ts';
+import { PageSchema } from '../tbr/parameters_page.ts';
+import { Links_DestinationSchema } from '../tbr/schemas_Links-Destination.ts';
+import { Links_OriginSchema } from '../tbr/schemas_Links-Origin.ts';
+import { Links_PaginationSchema } from '../tbr/schemas_Links-Pagination.ts';
+import { Links_SelfSchema } from '../tbr/schemas_Links-Self.ts';
+import { ProblemSchema } from '../tbr/schemas_Problem.ts';
+import { TripSchema } from '../tbr/schemas_Trip.ts';
+import { Wrapper_CollectionSchema } from '../tbr/schemas_Wrapper-Collection.ts';
 
 export const get_TripsRouteOptions = {
 	url: '/trips',

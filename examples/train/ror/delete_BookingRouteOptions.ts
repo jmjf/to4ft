@@ -1,6 +1,6 @@
-import { RateLimitSchema } from '../tbr/headers_RateLimit.js';
-import { Retry_AfterSchema } from '../tbr/headers_Retry-After.js';
-import { ProblemSchema } from '../tbr/schemas_Problem.js';
+import { RateLimitSchema } from '../tbr/headers_RateLimit.ts';
+import { Retry_AfterSchema } from '../tbr/headers_Retry-After.ts';
+import { ProblemSchema } from '../tbr/schemas_Problem.ts';
 
 export const delete_BookingRouteOptions = {
 	url: '/bookings/:bookingId',

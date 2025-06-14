@@ -1,7 +1,7 @@
-import { XTestHeaderSchema } from '../tbr/headers_XTestHeader.js';
-import { UserSchema } from '../tbr/schemas_User.js';
-import { UserIdSchema } from '../tbr/schemas_UserId.js';
-import { UserNmSchema } from '../tbr/schemas_UserNm.js';
+import { XTestHeaderSchema } from '../tbr/headers_XTestHeader.ts';
+import { UserSchema } from '../tbr/schemas_User.ts';
+import { UserIdSchema } from '../tbr/schemas_UserId.ts';
+import { UserNmSchema } from '../tbr/schemas_UserNm.ts';
 
 export const getUsersByQueryRouteOptions = {
 	url: '/users',

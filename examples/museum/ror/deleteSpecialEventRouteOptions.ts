@@ -1,4 +1,4 @@
-import { ErrorSchema } from '../tbr/schemas_Error.js';
+import { ErrorSchema } from '../tbr/schemas_Error.ts';
 
 export const deleteSpecialEventRouteOptions = {
 	url: '/special-events/:eventId',

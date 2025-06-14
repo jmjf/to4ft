@@ -37,7 +37,7 @@ export const PostsResponseSchema = Type.Array(
 					default: 'draft',
 				}),
 			),
-			statusTs: Type.Optional(Type.Union([Type.String({ format: 'date-time' }), Type.Date()])),
+			statusTs: Type.Optional(Type.Unsafe<Date | string>(Type.String({ format: 'date-time' }))),
 		},
 		{ additionalProperties: false },
 	),

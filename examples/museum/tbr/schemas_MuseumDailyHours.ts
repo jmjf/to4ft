@@ -1,5 +1,5 @@
 import { Clone, type Static, Type } from '@sinclair/typebox';
-import { DateSchema } from './schemas_Date.js';
+import { DateSchema } from './schemas_Date.ts';
 
 export const MuseumDailyHoursSchema = Type.Object({
 	date: Clone(DateSchema),

@@ -1,5 +1,5 @@
 import { Clone, type Static, Type } from '@sinclair/typebox';
-import { FooBARBazSchema } from './schemas_FooBARBaz.js';
+import { FooBARBazSchema } from './schemas_FooBARBaz.ts';
 
 export const ApiResponseSchema = Type.Object({
 	code: Type.Optional(Type.Number({ format: 'int32' })),

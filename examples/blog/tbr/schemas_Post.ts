@@ -1,11 +1,11 @@
 import { Clone, type Static, Type } from '@sinclair/typebox';
-import { CommentSchema } from './schemas_Comment.js';
-import { GenericTsSchema } from './schemas_GenericTs.js';
-import { PostIdSchema } from './schemas_PostId.js';
-import { PostStatusSchema } from './schemas_PostStatus.js';
-import { PostTxSchema } from './schemas_PostTx.js';
-import { TitleTxSchema } from './schemas_TitleTx.js';
-import { UserSchema } from './schemas_User.js';
+import { CommentSchema } from './schemas_Comment.ts';
+import { GenericTsSchema } from './schemas_GenericTs.ts';
+import { PostIdSchema } from './schemas_PostId.ts';
+import { PostStatusSchema } from './schemas_PostStatus.ts';
+import { PostTxSchema } from './schemas_PostTx.ts';
+import { TitleTxSchema } from './schemas_TitleTx.ts';
+import { UserSchema } from './schemas_User.ts';
 
 export const PostSchema = Type.Object(
 	{

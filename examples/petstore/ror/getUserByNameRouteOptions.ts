@@ -1,4 +1,4 @@
-import { UserSchema } from '../tbr/schemas_User.js';
+import { UserSchema } from '../tbr/schemas_User.ts';
 
 export const getUserByNameRouteOptions = {
 	url: '/user/:username',
