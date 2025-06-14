@@ -24,7 +24,7 @@ export async function oas2tb(opts: CommandOptions, command: Command) {
 }
 
 function genDerefTypeBox(schema: JSONSchema7, objNm: string, componentType: string, config: StdConfig) {
-	const tb = genTypeBoxForSchema(objNm, schema, config);
+	const tb = genTypeBoxForSchema(objNm, schema, { ...config, componentType });
 	const outFileNm = getTypeBoxFilenameFor(componentType, objNm, config);
 	writeFileSync(`${config.outPathTx}/${outFileNm}`, `${genDerefImportStatements()}\n\n${tb}`, { flush: true });
 }

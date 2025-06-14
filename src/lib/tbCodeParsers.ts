@@ -173,11 +173,21 @@ export function parseTypeName(
 		return schemaOptionsTx === undefined ? 'Type.Number()' : `Type.Number(${schemaOptionsTx})`;
 	}
 	if (typeNm === 'string') {
+		// no schemaOptionsTx means can't have format, so can't be date-like
 		if (schemaOptionsTx === undefined) {
 			return 'Type.String()';
 		}
-		if (opts.oas2tb.addDateFl && dateFormats.includes(schema.format ?? '')) {
-			return `Type.Union([Type.String(${schemaOptionsTx}), Type.Date()])`;
+		// date-like strings
+		if (dateFormats.includes(schema.format ?? '')) {
+			// in responses, we need Date only
+			if (opts.componentType === 'responses') {
+				return `Type.Unsafe<Date>(Type.String(${schemaOptionsTx}))`;
+			}
+			// in schemas, we need Date|string because we can't be sure it won't be used in a response
+			if (opts.componentType === 'schemas') {
+				return `Type.Unsafe<Date|string>(Type.String(${schemaOptionsTx}))`;
+			}
+			// for parameters and request bodies, we only need Type.String(), so fall through
 		}
 		return `Type.String(${schemaOptionsTx})`;
 	}
