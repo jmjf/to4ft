@@ -31,7 +31,7 @@ function genDerefTypeBox(schema: JSONSchema7, objNm: string, componentType: stri
 
 function genRefTypeBox(schema: JSONSchema7, objNm: string, componentType: string, config: StdConfig) {
 	const refImports: string[] = [];
-	const tb = genTypeBoxForSchema(objNm, schema, { ...config, refImports });
+	const tb = genTypeBoxForSchema(objNm, schema, { ...config, refImports, componentType });
 	const outFileNm = getTypeBoxFilenameFor(componentType, objNm, config);
 	writeFileSync(`${config.outPathTx}/${outFileNm}`, `${genRefImportStatements(refImports)}\n\n${tb}`, { flush: true });
 }
