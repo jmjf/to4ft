@@ -138,8 +138,8 @@ export function parseArray(opts: CodeGenOpts, schema: ArraySchema): string {
 			return `${acc}${acc === '' ? '' : ',\n'} ${recurseSchema(opts, schema)}`;
 		}, '');
 		return schemaOptionsTx === undefined
-			? `Type.Array(Type.Union(${codeTx}))`
-			: `Type.Array(Type.Union(${codeTx}),${schemaOptionsTx})`;
+			? `Type.Array(Type.Union([${codeTx}]))`
+			: `Type.Array(Type.Union([${codeTx}]),${schemaOptionsTx})`;
 	}
 	const itemsType = schema.items ? recurseSchema(opts, schema.items) : 'Type.Unknown()';
 	return schemaOptionsTx === undefined ? `Type.Array(${itemsType})` : `Type.Array(${itemsType},${schemaOptionsTx})`;
@@ -173,11 +173,21 @@ export function parseTypeName(
 		return schemaOptionsTx === undefined ? 'Type.Number()' : `Type.Number(${schemaOptionsTx})`;
 	}
 	if (typeNm === 'string') {
+		// no schemaOptionsTx means can't have format, so can't be date-like
 		if (schemaOptionsTx === undefined) {
 			return 'Type.String()';
 		}
-		if (opts.oas2tb.addDateFl && dateFormats.includes(schema.format ?? '')) {
-			return `Type.Union([Type.String(${schemaOptionsTx}), Type.Date()])`;
+		// date-like strings
+		if (dateFormats.includes(schema.format ?? '')) {
+			// in responses, we need Date because it's assign-only
+			if (opts.componentType === 'responses') {
+				return `Type.Unsafe<Date>(Type.String(${schemaOptionsTx}))`;
+			}
+			// in schemas and headers, we need Date|string because they may be read or assigned
+			if (opts.componentType === 'schemas' || opts.componentType === 'headers') {
+				return `Type.Unsafe<Date|string>(Type.String(${schemaOptionsTx}))`;
+			}
+			// parameters and request bodies are read-only, so fall through to plain string
 		}
 		return `Type.String(${schemaOptionsTx})`;
 	}

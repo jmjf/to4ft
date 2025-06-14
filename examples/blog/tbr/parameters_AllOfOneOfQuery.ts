@@ -9,8 +9,8 @@ import {
 	TypeRegistry,
 } from '@sinclair/typebox';
 import { Value } from '@sinclair/typebox/value';
-import { ObjectForQuerySchema } from './schemas_ObjectForQuery.js';
-import { UserIdSchema } from './schemas_UserId.js';
+import { ObjectForQuerySchema } from './schemas_ObjectForQuery.ts';
+import { UserIdSchema } from './schemas_UserId.ts';
 
 TypeRegistry.Set(
 	'ExtendedOneOf',

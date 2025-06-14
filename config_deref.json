@@ -9,8 +9,7 @@
 		"typeSuffixTx": "",
 		"derefFl": true,
 		"importExtensionTx": "ts",
-		"extensionTx": "ts",
-		"addDateFl": true
+		"extensionTx": "ts"
 	},
 	"oas2ro": {
 		"derefFl": true,

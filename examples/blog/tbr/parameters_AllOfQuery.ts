@@ -1,5 +1,5 @@
 import { Clone, type Static, Type } from '@sinclair/typebox';
-import { ObjectForQuerySchema } from './schemas_ObjectForQuery.js';
+import { ObjectForQuerySchema } from './schemas_ObjectForQuery.ts';
 
 export const AllOfQuerySchema = Type.Intersect([
 	Clone(ObjectForQuerySchema),

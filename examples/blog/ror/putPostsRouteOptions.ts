@@ -1,5 +1,5 @@
-import { PostRequestBodySchema } from '../tbr/requestBodies_PostRequestBody.js';
-import { PostsResponseSchema } from '../tbr/schemas_PostsResponse.js';
+import { PostRequestBodySchema } from '../tbr/requestBodies_PostRequestBody.ts';
+import { PostsResponseSchema } from '../tbr/schemas_PostsResponse.ts';
 
 export const putPostsRouteOptions = {
 	url: '/posts',

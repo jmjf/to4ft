@@ -1,9 +1,9 @@
-import { EndDateSchema } from '../tbr/parameters_EndDate.js';
-import { PaginationLimitSchema } from '../tbr/parameters_PaginationLimit.js';
-import { PaginationPageSchema } from '../tbr/parameters_PaginationPage.js';
-import { StartDateSchema } from '../tbr/parameters_StartDate.js';
-import { ErrorSchema } from '../tbr/schemas_Error.js';
-import { SpecialEventCollectionSchema } from '../tbr/schemas_SpecialEventCollection.js';
+import { EndDateSchema } from '../tbr/parameters_EndDate.ts';
+import { PaginationLimitSchema } from '../tbr/parameters_PaginationLimit.ts';
+import { PaginationPageSchema } from '../tbr/parameters_PaginationPage.ts';
+import { StartDateSchema } from '../tbr/parameters_StartDate.ts';
+import { ErrorSchema } from '../tbr/schemas_Error.ts';
+import { SpecialEventCollectionSchema } from '../tbr/schemas_SpecialEventCollection.ts';
 
 export const listSpecialEventsRouteOptions = {
 	url: '/special-events',

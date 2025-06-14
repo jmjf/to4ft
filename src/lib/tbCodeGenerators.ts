@@ -37,7 +37,7 @@ import {
 } from './typesAndGuards.ts';
 import { dedupeArray, getCasedNameFor, nameTypes } from './util.ts';
 
-export type CodeGenOpts = StdConfig & { refImports?: string[] };
+export type CodeGenOpts = StdConfig & { refImports?: string[]; componentType?: string };
 
 /*
  * SCHEMA GETTERS FOR COMMANDS

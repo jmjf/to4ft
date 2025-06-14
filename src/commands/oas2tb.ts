@@ -24,14 +24,14 @@ export async function oas2tb(opts: CommandOptions, command: Command) {
 }
 
 function genDerefTypeBox(schema: JSONSchema7, objNm: string, componentType: string, config: StdConfig) {
-	const tb = genTypeBoxForSchema(objNm, schema, config);
+	const tb = genTypeBoxForSchema(objNm, schema, { ...config, componentType });
 	const outFileNm = getTypeBoxFilenameFor(componentType, objNm, config);
 	writeFileSync(`${config.outPathTx}/${outFileNm}`, `${genDerefImportStatements()}\n\n${tb}`, { flush: true });
 }
 
 function genRefTypeBox(schema: JSONSchema7, objNm: string, componentType: string, config: StdConfig) {
 	const refImports: string[] = [];
-	const tb = genTypeBoxForSchema(objNm, schema, { ...config, refImports });
+	const tb = genTypeBoxForSchema(objNm, schema, { ...config, refImports, componentType });
 	const outFileNm = getTypeBoxFilenameFor(componentType, objNm, config);
 	writeFileSync(`${config.outPathTx}/${outFileNm}`, `${genRefImportStatements(refImports)}\n\n${tb}`, { flush: true });
 }

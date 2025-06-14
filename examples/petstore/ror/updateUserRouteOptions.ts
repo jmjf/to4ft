@@ -1,4 +1,4 @@
-import { UserBodySchema } from '../tbr/requestBodies_UserBody.js';
+import { UserBodySchema } from '../tbr/requestBodies_UserBody.ts';
 
 export const updateUserRouteOptions = {
 	url: '/user/:username',

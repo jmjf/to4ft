@@ -3,5 +3,5 @@ import { Value } from "@sinclair/typebox/value";
 
 
 
-export const GenericTsSchema = Type.Unsafe<Date|string>(Type.String({"format":"date-time"}))
-export type GenericTs = Static<typeof GenericTsSchema>
+export const XDateHeaderSchema = Type.Unsafe<Date|string>(Type.String({"format":"date"}))
+export type XDateHeader = Static<typeof XDateHeaderSchema>

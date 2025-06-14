@@ -79,9 +79,6 @@ A tool to convert OpenAPI schemas into TypeBox types (ref-maintaining or derefer
     - If you aren't using TypeScript's `rewriteRelativeImportExtensions` option, you probably want `js`.
   - `extensionTx` -- The extension to use for output file names -- NO DOT.
     - **NOTE:** `oas2tb` is writing TypeBox, which assumes TypeScript, so extension should be `ts`, `mts`, or `cts`.
-  - `addDateFl` -- If true, add `Type.Date()` in a union for strings with date-like formats
-    - Date-like formats are defined in `consts.ts` based on `ajv-formats`
-    - `['date', 'date-time', 'time', 'iso-time', 'iso-date-time']`
 
 - `oas2ro` -- configuration specific to `oas2ro`
   - `derefFl` -- If true, generate dereferenced `RouteOptions` objects with fully exploded schemas for any referenced objects.
@@ -114,6 +111,12 @@ Also see, `docs` for base assumptions and recommendations on how to build specs 
 - Prefix generated file names with the section from which they came. For example, `components.schemas.Users` writes to `schemas_Users.ts`. This choice reduces risk of conflicts between names in different sections.
 - Convert names to the case specified in the configuration file.
   - This compromise most affects custom headers like `x-my-custom-header`, which will become `XMyCustomHeaderSchema` and `XMyCustomHeader` (type) or similar, depending on name casing chosen.
+- Generate types for date-format strings to improve TypeScript type hints and to let Fastify format date-format response members based on component type.
+  - See [#20](https://github.com/jmjf/to4ft/issues/20) for details of how Fastify serializes date-format strings
+  - Read-only component types (`parameters`, `requestBodies`) -> `Type.String(...)`
+  - Assign-only component types (`responses`) -> `Type.Unsafe<Date>(Type.String(...))` so we can assign a Date and let Fastify format it.
+  - Mixed component types (`schemas`, `headers`) -> `Type.Unsafe<Date|string>(Type.String(...))` because we may read or write it.
+  - Recommendation: Prefer dereferenced TypeBox and read-only or assign-only component types in Operation Objects to get more accurate TypeScript hinting.
 
 ### In `oas2ro`
 

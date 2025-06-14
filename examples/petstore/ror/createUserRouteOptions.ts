@@ -1,5 +1,5 @@
-import { UserBodySchema } from '../tbr/requestBodies_UserBody.js';
-import { UserSchema } from '../tbr/schemas_User.js';
+import { UserBodySchema } from '../tbr/requestBodies_UserBody.ts';
+import { UserSchema } from '../tbr/schemas_User.ts';
 
 export const createUserRouteOptions = {
 	url: '/user',

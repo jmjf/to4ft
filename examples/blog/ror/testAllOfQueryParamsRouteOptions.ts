@@ -1,6 +1,6 @@
-import { XTestHeaderSchema } from '../tbr/headers_XTestHeader.js';
-import { AllOfQuerySchema } from '../tbr/parameters_AllOfQuery.js';
-import { UserSchema } from '../tbr/schemas_User.js';
+import { XTestHeaderSchema } from '../tbr/headers_XTestHeader.ts';
+import { AllOfQuerySchema } from '../tbr/parameters_AllOfQuery.ts';
+import { UserSchema } from '../tbr/schemas_User.ts';
 
 export const testAllOfQueryParamsRouteOptions = {
 	url: '/users',

@@ -1,4 +1,4 @@
-import { OrderSchema } from '../tbr/schemas_Order.js';
+import { OrderSchema } from '../tbr/schemas_Order.ts';
 
 export const getOrderByIdRouteOptions = {
 	url: '/store/order/:orderId',

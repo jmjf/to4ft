@@ -18,7 +18,6 @@ type ConfigFile = {
 		derefFl?: boolean;
 		importExtensionTx?: string;
 		extensionTx?: string;
-		addDateFl?: boolean;
 	};
 	oas2ro?: {
 		derefFl?: boolean;
@@ -119,7 +118,6 @@ export function loadConfig(opts: CommandOptions, commandNm: string): StdConfig {
 			derefFl: configObj.oas2tb?.derefFl ?? false,
 			importExtensionTx: configObj.oas2tb?.importExtensionTx ?? 'js',
 			extensionTx: configObj.oas2tb?.extensionTx ?? 'ts',
-			addDateFl: configObj.oas2tb?.addDateFl ?? false,
 		},
 		oas2ro: {
 			derefFl: configObj.oas2ro?.derefFl ?? false,
