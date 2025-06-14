@@ -18,5 +18,5 @@ export const PostBodySchema = Type.Object({"titleTx": Type.String({"default":"no
  Type.Unknown(),
  Type.Array(Type.Unknown())]))})),
 "statusCd": Type.Optional(Type.Union([ Type.Literal("draft"), Type.Literal("published"), Type.Literal("deleted")], {"default":"draft"})),
-"statusTs": Type.Optional(Type.String({"format":"date-time"}))}, {"additionalProperties":false})
+"statusTs": Type.Optional(Type.Unsafe<Date|string>(Type.String({"format":"date-time"})))}, {"additionalProperties":false})
 export type PostBody = Static<typeof PostBodySchema>
