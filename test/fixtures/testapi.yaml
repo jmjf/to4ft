@@ -187,6 +187,20 @@ paths:
                   $ref: '#/components/responses/GetUsersByQuery200Response'
         '4xx':
             description: error
+  /testDateResponseHeader:
+    get:
+      operationId: testDateResponseHeader
+      security: []
+      responses:
+        "200":
+          description: test date header
+          headers:
+            X-Test-Date-Header:
+              $ref: '#/components/headers/XDateHeader'
+            X-Test-Inline-Date-Header:
+              schema:
+                type: string
+                format: time
 components:
   pathItems:
     testPathItem:
@@ -548,3 +562,8 @@ components:
       description: test header in response
       schema:
         type: string
+    XDateHeader:
+      description: test header with a date format
+      schema:
+        type: string
+        format: date
