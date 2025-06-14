@@ -179,15 +179,15 @@ export function parseTypeName(
 		}
 		// date-like strings
 		if (dateFormats.includes(schema.format ?? '')) {
-			// in responses, we need Date only
+			// in responses, we need Date because it's assign-only
 			if (opts.componentType === 'responses') {
 				return `Type.Unsafe<Date>(Type.String(${schemaOptionsTx}))`;
 			}
-			// in schemas, we need Date|string because we can't be sure it won't be used in a response
-			if (opts.componentType === 'schemas') {
+			// in schemas and headers, we need Date|string because they may be read or assigned
+			if (opts.componentType === 'schemas' || opts.componentType === 'headers') {
 				return `Type.Unsafe<Date|string>(Type.String(${schemaOptionsTx}))`;
 			}
-			// for parameters and request bodies, we only need Type.String(), so fall through
+			// parameters and request bodies are read-only, so fall through to plain string
 		}
 		return `Type.String(${schemaOptionsTx})`;
 	}
