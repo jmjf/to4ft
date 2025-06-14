@@ -138,8 +138,8 @@ export function parseArray(opts: CodeGenOpts, schema: ArraySchema): string {
 			return `${acc}${acc === '' ? '' : ',\n'} ${recurseSchema(opts, schema)}`;
 		}, '');
 		return schemaOptionsTx === undefined
-			? `Type.Array(Type.Union(${codeTx}))`
-			: `Type.Array(Type.Union(${codeTx}),${schemaOptionsTx})`;
+			? `Type.Array(Type.Union([${codeTx}]))`
+			: `Type.Array(Type.Union([${codeTx}]),${schemaOptionsTx})`;
 	}
 	const itemsType = schema.items ? recurseSchema(opts, schema.items) : 'Type.Unknown()';
 	return schemaOptionsTx === undefined ? `Type.Array(${itemsType})` : `Type.Array(${itemsType},${schemaOptionsTx})`;
