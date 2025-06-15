@@ -1,0 +1,13 @@
+parameters:
+  - $ref: './openapi.yaml#/components/parameters/XTestHeaderParam'
+get:
+  operationId: testPathLevelParams
+  security: []
+  summary: test parameters defined above operations
+  parameters:
+    - $ref: './openapi.yaml#/components/parameters/UserQuery'
+  responses:
+    '200':
+      $ref: './openapi.yaml#/components/responses/GetUsersByQuery200Response'
+    4xx:
+      description: error
