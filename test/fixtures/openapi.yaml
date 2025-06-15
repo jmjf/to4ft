@@ -14,96 +14,26 @@ tags:
   - name: Other
     description: other stuff
 paths:
-  /posts/{postId}:
+  /testDateResponseHeader:
     get:
-      operationId: getPostById
-      tags:
-        - Posts
+      operationId: testDateResponseHeader
+      description: test date-formatted string response header (TB generation)
       security: []
-      summary: GET post endpoint for tson issue
-      parameters:
-        - $ref: '#/components/parameters/PostIdParam'
       responses:
-        $ref: '#/components/responses/TestCompleteResponse'
-  /posts:
-    get:
-      operationId: getPosts
-      tags:
-        - Posts
-      security: []
-      summary: GET all posts
-      parameters:
-        - $ref: '#/components/parameters/PaginationPage'
-        - $ref: '#/components/parameters/PaginationLimit'
-        - name: tags
-          in: query
-          description: Tags to filter by
-          required: true
-          explode: true
-          schema:
-            type: array
-            items:
-              type: string
-      responses:
-        '200':
-          $ref: '#/components/responses/GetPostsByQuery200Response'
-        4xx:
-          description: error
-    post:
-      operationId: putPosts
-      tags:
-        - Posts
-      security: []
-      summary: POST a post
-      requestBody:
-        $ref: '#/components/requestBodies/PostRequestBody'
-      responses:
-        '200':
-          description: result
-          content:
-            application/json:
+        "200":
+          description: test date header
+          headers:
+            X-Test-Date-Header:
+              $ref: '#/components/headers/XDateHeader'
+            X-Test-Inline-Date-Header:
               schema:
-                $ref: '#/components/schemas/Post'
-        4xx:
-          description: error
-  /users/{userId}:
-    get:
-      operationId: getUserById
-      tags:
-        - Users
-      security: []
-      summary: GET user by id
-      parameters:
-        - $ref: '#/components/parameters/UserIdParam'
-      responses:
-        '200':
-          description: result
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/User'
-        4xx:
-          description: error
-  /users:
-    get:
-      operationId: getUsersByQuery
-      tags:
-        - Users
-        - Other
-      security: []
-      summary: GET user endpoint
-      parameters:
-        - $ref: '#/components/parameters/UserQuery'
-        - $ref: '#/components/parameters/XTestHeaderParam'
-      responses:
-        '200':
-          $ref: '#/components/responses/GetUsersByQuery200Response'
-        4xx:
-          description: error
+                type: string
+                format: time
+  /testInlineMultiMediaRequestBodyAndMultiMediaRefResponse:
     post:
-      operationId: postUser
+      operationId: testInlineMultiMediaRequestBodyAndMultiMediaRefResponse
       security: []
-      summary: POST user endpoint
+      summary: responses inline 4xx and ref 200, request body inline array schema
       requestBody:
         required: true
         content:
@@ -118,14 +48,25 @@ paths:
               allOf:
                 - 'genValuesCode isArray string'
       responses:
-        '200':
-          $ref: '#/components/responses/GetUsersByQuery200Response'
-        4xx:
+        "200":
+          $ref: '#/components/responses/TestMultiMediaResponse'
+        "4xx":
           description: error
+          content:
+            application/json:
+              schema:
+                description: error response
+                type: object
+                properties:
+                  errorCd:
+                    type: number
+                  errorMessageTx:
+                    type: string
+  /testInlineRequestBodyRefToResponses:
     put:
-      operationId: putUser
+      operationId: testInlineRequestBodyRefToResponses
       security: []
-      summary: PUT user endpoint
+      summary: fully inline request body, response ref
       requestBody:
         required: true
         content:
@@ -139,14 +80,31 @@ paths:
               default:
                 prop1: 'test genEntriesCode type object default branch'
       responses:
-        '200':
+        "200":
           $ref: '#/components/responses/GetUsersByQuery200Response'
-        4xx:
+        "4xx":
           description: error
-
-  /testParamCode/{authorization}:
+  /testInlineResponseWithRefToSchema:
     get:
-      operationId: testParamErrors
+      operationId: testInlineResponseWithRefToSchema
+      tags:
+        - Users
+      security: []
+      summary: scalar query parameter and response with partial inline and schema ref
+      parameters:
+        - $ref: '#/components/parameters/UserIdParam'
+      responses:
+        "200":
+          description: result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        "4xx":
+          description: error
+  /testINVALID_ParamErrors/{authorization}:
+    get:
+      operationId: testINVALID_ParamErrors
       security: []
       summary: test parameter error cases
       parameters:
@@ -159,17 +117,68 @@ paths:
         - $ref: '#/components/parameters/TestNoPropsObjectPathParam'
         - $ref: '#/components/parameters/TestObjPropObjectPathParam'
       responses:
-        '200':
+        "200":
           $ref: '#/components/responses/GetUsersByQuery200Response'
-        4xx:
-          description: error
-  /testPathLevelParams:
-    $ref: 'pathItem.yaml'
-  /testQueryParameterRefSchemas:
+        "4xx":
+          description: error          
+  /testINVALID_PathParamAndCompleteResponse/{postId}:
     get:
-      operationId: testComboQueryParamsWithObject
-      description: >
-        This route exists to test a case where a query parameter is from an `allOf`
+      operationId: testINVALID_PathParamAndCompleteResponse
+      tags:
+        - Posts
+      security: []
+      summary: path parameter and a refed response
+      parameters:
+        - $ref: '#/components/parameters/PostIdParam'
+      responses:
+        # invalid OpenAPI because components.responses should not contain response codes
+        $ref: '#/components/responses/TestCompleteResponse'  
+  /testPathLevelParams:
+    $ref: 'pathItem.yaml'   
+  /testRefParametersQueryAndHeader:
+    get:
+      operationId: testRefParametersQueryAndHeader
+      tags:
+        - Users
+        - Other
+      security: []
+      summary: query parameter and header parameter, "4xx" response included
+      parameters:
+        - $ref: '#/components/parameters/UserQuery'
+        - $ref: '#/components/parameters/XTestHeaderParam'
+      responses:
+        "200":
+          $ref: '#/components/responses/GetUsersByQuery200Response'
+        "4xx":
+          description: error
+  /testRefParametersWithInlineParameter:
+    get:
+      operationId: testRefParametersWithInlineParameter
+      tags:
+        - Posts
+      security: []
+      summary: two scalar ref parameters and an inline array parameter
+      parameters:
+        - $ref: '#/components/parameters/PaginationPage'
+        - $ref: '#/components/parameters/PaginationLimit'
+        - name: tags
+          in: query
+          description: Tags to filter by
+          required: true
+          explode: true
+          schema:
+            type: array
+            items:
+              type: string
+      responses:
+        "200":
+          $ref: '#/components/responses/GetPostsByQuery200Response'
+        "4xx":
+          description: error
+  /testRefQueryParameterMultiObject:
+    get:
+      operationId: testRefQueryParameterMultiObject
+      description: test a case where a query combines two objects
       tags:
         - Test
       security: []
@@ -177,30 +186,28 @@ paths:
         - $ref: '#/components/parameters/UserQuery'
         - $ref: '#/components/parameters/TestObjectRefQuery'
       responses:
-        '200':
+        "200":
+          $ref: '#/components/responses/GetUsersByQuery200Response'
+        '"4xx"':
+            description: error     
+  /testRequestBodyRef:
+    post:
+      operationId: testRequestBodyRef
+      tags:
+        - Posts
+      security: []
+      summary: request body ref and response with partial inline and schema ref
+      requestBody:
+        $ref: '#/components/requestBodies/PostRequestBody'
+      responses:
+        "200":
           description: result
           content:
             application/json:
               schema:
-                type: array
-                items: 
-                  $ref: '#/components/responses/GetUsersByQuery200Response'
-        '4xx':
-            description: error
-  /testDateResponseHeader:
-    get:
-      operationId: testDateResponseHeader
-      security: []
-      responses:
-        "200":
-          description: test date header
-          headers:
-            X-Test-Date-Header:
-              $ref: '#/components/headers/XDateHeader'
-            X-Test-Inline-Date-Header:
-              schema:
-                type: string
-                format: time
+                $ref: '#/components/schemas/Post'
+        "4xx":
+          description: error
 components:
   pathItems:
     testPathItem:
@@ -331,9 +338,10 @@ components:
         testConstNumber:
           const: 123
         testConstArray:
+          # the type of the first const determines all, this is probably not valid OpenAPI
           const:
-            - 123
             - 'abc'
+            - 123
         testArrayItems:
           # this isn't valid OpenAPI, but code considers it, so including for coverage
           type: array
@@ -372,6 +380,8 @@ components:
         - postStatus
     ObjectSchemaForRef:
       type: object
+      required:
+        - postId
       properties:
         postId:
           $ref: '#/components/schemas/PostId'
@@ -539,14 +549,27 @@ components:
             items:
               $ref: '#/components/schemas/Post'
     TestCompleteResponse:
-      '200':
-        description: result
+      description: test a response definition with response codes
+      "200":
+        description: ok
         content:
           application/json:
             schema:
               $ref: '#/components/schemas/Post'
-      4xx:
+          application/xml:
+            schema:
+              $ref: '#/components/schemas/User'
+      "4xx":
         description: error
+    TestMultiMediaResponse:
+      description: result tests different schemas for different media types
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Post'
+        application/xml:
+          schema:
+            $ref: '#/components/schemas/User'
   requestBodies:
     PostRequestBody:
       description: post to add to the blog (from requestBodies)
