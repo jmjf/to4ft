@@ -24,14 +24,19 @@ export async function oas2tb(opts: CommandOptions, command: Command) {
 }
 
 function genDerefTypeBox(schema: JSONSchema7, objNm: string, componentType: string, config: StdConfig) {
-	const tb = genTypeBoxForSchema(objNm, schema, { ...config, componentType });
+	config.tbCodeGen = { componentType };
+	const tb = genTypeBoxForSchema(objNm, schema, config);
 	const outFileNm = getTypeBoxFilenameFor(componentType, objNm, config);
 	writeFileSync(`${config.outPathTx}/${outFileNm}`, `${genDerefImportStatements()}\n\n${tb}`, { flush: true });
 }
 
 function genRefTypeBox(schema: JSONSchema7, objNm: string, componentType: string, config: StdConfig) {
-	const refImports: string[] = [];
-	const tb = genTypeBoxForSchema(objNm, schema, { ...config, refImports, componentType });
+	config.tbCodeGen = { componentType, refImports: [] as string[] };
+	const tb = genTypeBoxForSchema(objNm, schema, config);
 	const outFileNm = getTypeBoxFilenameFor(componentType, objNm, config);
-	writeFileSync(`${config.outPathTx}/${outFileNm}`, `${genRefImportStatements(refImports)}\n\n${tb}`, { flush: true });
+	writeFileSync(
+		`${config.outPathTx}/${outFileNm}`,
+		`${genRefImportStatements(config.tbCodeGen.refImports ?? [])}\n\n${tb}`,
+		{ flush: true },
+	);
 }

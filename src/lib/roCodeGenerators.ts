@@ -21,8 +21,6 @@ import {
 	toCase,
 } from './util.ts';
 
-type ROGenConfig = StdConfig & { useRefFl?: boolean; refTx?: string };
-
 export function genRouteOptionsForOperation(
 	pathURL: string,
 	opMethod: string,
@@ -238,40 +236,40 @@ export function genQueryParametersCode(parameters: OASParameterObject[], imports
 	return code;
 }
 
-export function genRequestBodyCode(requestBody: OASRequestBodyObject, imports: Set<string>, config: ROGenConfig) {
+export function genRequestBodyCode(requestBody: OASRequestBodyObject, imports: Set<string>, config: StdConfig) {
 	if (!requestBody || Object.keys(requestBody).length === 0) return '';
 
-	config.refTx = undefined;
-	config.useRefFl = undefined;
+	config.roCodeGen.refTx = undefined;
+	config.roCodeGen.useRefFl = undefined;
 
 	if (isReferenceObject(requestBody)) {
 		// deref won't have references so this code can only run for ref-maintaining
-		config.refTx = requestBody.$ref;
+		config.roCodeGen.refTx = requestBody.$ref;
 		requestBody.$ref = undefined as unknown as string;
-		config.useRefFl = true;
+		config.roCodeGen.useRefFl = true;
 	}
 
 	return `{ ${genEntriesCode(Object.entries(requestBody), imports, config)} }`;
 }
 
-export function genResponsesCode(responses: OASResponsesObject, imports: Set<string>, config: ROGenConfig) {
+export function genResponsesCode(responses: OASResponsesObject, imports: Set<string>, config: StdConfig) {
 	if (!responses || Object.keys(responses).length === 0) return '';
 
 	let code = '';
 
 	const entries = Object.entries(responses);
 	for (const entry of entries) {
-		config.refTx = undefined;
-		config.useRefFl = undefined;
+		config.roCodeGen.refTx = undefined;
+		config.roCodeGen.useRefFl = undefined;
 
 		const resp = entry[1]; // this is the response structure
 
 		if (isReferenceObject(resp)) {
 			// deref won't have references so this code can only run for ref-maintaining
 			// console.log('GEN RESPONSES REF', entry);
-			config.refTx = resp.$ref;
+			config.roCodeGen.refTx = resp.$ref;
 			resp.$ref = undefined as unknown as string;
-			config.useRefFl = true;
+			config.roCodeGen.useRefFl = true;
 		}
 
 		// console.log('GEN RESPONSES ENTRIES', entry);
@@ -312,7 +310,7 @@ export function stringArrayToCode(arr: string[]): string {
 	return `[${arr.map((s) => JSON.stringify(s)).join(',')}]`;
 }
 
-export function genValueCode(value: unknown, imports: Set<string>, config: ROGenConfig): string | unknown {
+export function genValueCode(value: unknown, imports: Set<string>, config: StdConfig): string | unknown {
 	if (typeof value === 'string') {
 		return JSON.stringify(value);
 	}
@@ -347,15 +345,16 @@ export function genValueCode(value: unknown, imports: Set<string>, config: ROGen
 	return value;
 }
 
-export function genEntriesCode(entries: [string, unknown][], imports: Set<string>, config: ROGenConfig) {
+export function genEntriesCode(entries: [string, unknown][], imports: Set<string>, config: StdConfig) {
 	let entriesCode = '';
 	const ignoreKeys = getSharedIgnoreKeys(config);
 	// console.log('GEN ENTRIES entries', entries);
 	for (const [key, value] of entries) {
 		// console.log('GEN ENTRIES', key, value);
 		if (value === undefined || ignoreKeys.includes(key)) continue;
-		if (key === 'schema' && config.useRefFl && config.refTx && config.refTx.length > 0) {
-			const code = genRefCodeAndImport(config.refTx, imports, config);
+		const { useRefFl, refTx } = config.roCodeGen;
+		if (key === 'schema' && useRefFl && refTx && refTx.length > 0) {
+			const code = genRefCodeAndImport(refTx, imports, config);
 			entriesCode += `schema: ${code},`;
 			return entriesCode;
 		}
@@ -365,7 +364,7 @@ export function genEntriesCode(entries: [string, unknown][], imports: Set<string
 				// console.log('GEN ENTRIES value', value);
 			}
 			entriesCode += `'${key}': ${genValueCode(value, imports, config)},`;
-		} else if (!config.useRefFl && typeof value === 'string') {
+		} else if (!useRefFl && typeof value === 'string') {
 			// console.log('GEN ENTRIES ELSE', key, value);
 			const code = genRefCodeAndImport(value as string, imports, config);
 			entriesCode += `${code},`;

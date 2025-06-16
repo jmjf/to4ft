@@ -1,6 +1,7 @@
 import type { JSONSchema7, JSONSchema7Type, JSONSchema7TypeName } from 'json-schema';
+import type { StdConfig } from './config.ts';
 import { dateFormats, stdIgnoreKeys } from './consts.ts';
-import { type CodeGenOpts, recurseSchema } from './tbCodeGenerators.ts';
+import { recurseSchema } from './tbCodeGenerators.ts';
 import {
 	type AllOfSchema,
 	type AnyOfSchema,
@@ -19,7 +20,7 @@ import {
 } from './typesAndGuards.ts';
 import { getRefNames, getSharedIgnoreKeys, removeKeysFromObject, subConfigs } from './util.ts';
 
-export function parseObject(opts: CodeGenOpts, schema: ObjectSchema) {
+export function parseObject(opts: StdConfig, schema: ObjectSchema) {
 	// schema is ObjectSchema
 	schema.default = undefined; // Object schemas cannot have a default
 	const schemaOptionsTx = parseSchemaOptions(schema, opts);
@@ -43,7 +44,7 @@ export function parseObject(opts: CodeGenOpts, schema: ObjectSchema) {
 	return schemaOptionsTx === undefined ? `Type.Object({${codeTx}})` : `Type.Object({${codeTx}}, ${schemaOptionsTx})`;
 }
 
-export function parseEnum(opts: CodeGenOpts, schema: EnumSchema) {
+export function parseEnum(opts: StdConfig, schema: EnumSchema) {
 	const schemaOptionsTx = parseSchemaOptions(schema, opts);
 	const codeTx = schema.enum.reduce<string>((acc, schema) => {
 		return `${acc}${acc === '' ? '' : ','} ${parseType(schema)}`;
@@ -51,7 +52,7 @@ export function parseEnum(opts: CodeGenOpts, schema: EnumSchema) {
 	return schemaOptionsTx === undefined ? `Type.Union([${codeTx}])` : `Type.Union([${codeTx}], ${schemaOptionsTx})`;
 }
 
-export function parseConst(opts: CodeGenOpts, schema: ConstSchema): string {
+export function parseConst(opts: StdConfig, schema: ConstSchema): string {
 	const schemaOptionsTx = parseSchemaOptions(schema, opts);
 	if (Array.isArray(schema.const)) {
 		const codeTx = schema.const.reduce<string>((acc, schema) => {
@@ -73,7 +74,7 @@ export function parseConst(opts: CodeGenOpts, schema: ConstSchema): string {
 		: `Type.Literal(${schema.const}, ${schemaOptionsTx})`;
 }
 
-export function parseUnknown(opts: CodeGenOpts, schema: UnknownSchema): string {
+export function parseUnknown(opts: StdConfig, schema: UnknownSchema): string {
 	const schemaOptionsTx = parseSchemaOptions(schema, opts);
 	return schemaOptionsTx === undefined ? 'Type.Unknown()' : `Type.Unknown(${schemaOptionsTx})`;
 }
@@ -98,7 +99,7 @@ export function parseType(type: JSONSchema7Type): string {
 	return `Type.Object({${codeTx}})`;
 }
 
-export function parseAnyOf(opts: CodeGenOpts, schema: AnyOfSchema): string {
+export function parseAnyOf(opts: StdConfig, schema: AnyOfSchema): string {
 	const schemaOptionsTx = parseSchemaOptions(schema, opts);
 	const codeTx = schema.anyOf.reduce<string>((acc, schema) => {
 		return `${acc}${acc === '' ? '' : ',\n'} ${recurseSchema(opts, schema)}`;
@@ -106,7 +107,7 @@ export function parseAnyOf(opts: CodeGenOpts, schema: AnyOfSchema): string {
 	return schemaOptionsTx === undefined ? `Type.Union([${codeTx}])` : `Type.Union([${codeTx}], ${schemaOptionsTx})`;
 }
 
-export function parseAllOf(opts: CodeGenOpts, schema: AllOfSchema): string {
+export function parseAllOf(opts: StdConfig, schema: AllOfSchema): string {
 	const schemaOptionsTx = parseSchemaOptions(schema, opts);
 	const codeTx = schema.allOf.reduce<string>((acc, schema) => {
 		return `${acc}${acc === '' ? '' : ',\n'} ${recurseSchema(opts, schema)}`;
@@ -116,7 +117,7 @@ export function parseAllOf(opts: CodeGenOpts, schema: AllOfSchema): string {
 		: `Type.Intersect([${codeTx}], ${schemaOptionsTx})`;
 }
 
-export function parseOneOf(opts: CodeGenOpts, schema: OneOfSchema): string {
+export function parseOneOf(opts: StdConfig, schema: OneOfSchema): string {
 	const schemaOptionsTx = parseSchemaOptions(schema, opts);
 	const codeTx = schema.oneOf.reduce<string>((acc, schema) => {
 		return `${acc}${acc === '' ? '' : ',\n'} ${recurseSchema(opts, schema)}`;
@@ -124,14 +125,14 @@ export function parseOneOf(opts: CodeGenOpts, schema: OneOfSchema): string {
 	return schemaOptionsTx === undefined ? `OneOf([${codeTx}])` : `OneOf([${codeTx}], ${schemaOptionsTx})`;
 }
 
-export function parseNot(opts: CodeGenOpts, schema: NotSchema): string {
+export function parseNot(opts: StdConfig, schema: NotSchema): string {
 	const schemaOptionsTx = parseSchemaOptions(schema, opts);
 	return schemaOptionsTx === undefined
 		? `Type.Not(${recurseSchema(opts, schema.not)})`
 		: `Type.Not(${recurseSchema(opts, schema.not)}, ${schemaOptionsTx})`;
 }
 
-export function parseArray(opts: CodeGenOpts, schema: ArraySchema): string {
+export function parseArray(opts: StdConfig, schema: ArraySchema): string {
 	const schemaOptionsTx = parseSchemaOptions(schema, opts);
 	if (Array.isArray(schema.items)) {
 		const codeTx = schema.items.reduce<string>((acc, schema) => {
@@ -145,15 +146,15 @@ export function parseArray(opts: CodeGenOpts, schema: ArraySchema): string {
 	return schemaOptionsTx === undefined ? `Type.Array(${itemsType})` : `Type.Array(${itemsType},${schemaOptionsTx})`;
 }
 
-export function parseWithMultipleTypes(opts: CodeGenOpts, schema: MultipleTypesSchema): string {
+export function parseWithMultipleTypes(opts: StdConfig, schema: MultipleTypesSchema): string {
 	const codeTx = schema.type.reduce<string>((acc, typeName) => {
 		return `${acc}${acc === '' ? '' : ',\n'} ${parseTypeName(opts, typeName, schema)}`;
 	}, '');
 	return `Type.Union([${codeTx}])`;
 }
 
-export function parseRefName(opts: CodeGenOpts, schema: JSONSchema7 = {}): string {
-	const refImports = opts.refImports;
+export function parseRefName(opts: StdConfig, schema: JSONSchema7 = {}): string {
+	const refImports = opts.tbCodeGen.refImports;
 	if (!schema.$ref || schema.$ref.length === 0 || !Array.isArray(refImports)) return '';
 
 	const { refedNm, refPathNm } = getRefNames(schema.$ref, opts, '.', subConfigs.oas2tb);
@@ -164,7 +165,7 @@ export function parseRefName(opts: CodeGenOpts, schema: JSONSchema7 = {}): strin
 }
 
 export function parseTypeName(
-	opts: CodeGenOpts,
+	opts: StdConfig,
 	typeNm: JSONSchema7TypeName | undefined,
 	schema: JSONSchema7 = {},
 ): string {
@@ -180,11 +181,12 @@ export function parseTypeName(
 		// date-like strings
 		if (dateFormats.includes(schema.format ?? '')) {
 			// in responses, we need Date because it's assign-only
-			if (opts.componentType === 'responses') {
+			const componentType = opts.tbCodeGen.componentType;
+			if (componentType === 'responses') {
 				return `Type.Unsafe<Date>(Type.String(${schemaOptionsTx}))`;
 			}
 			// in schemas and headers, we need Date|string because they may be read or assigned
-			if (opts.componentType === 'schemas' || opts.componentType === 'headers') {
+			if (componentType === 'schemas' || componentType === 'headers') {
 				return `Type.Unsafe<Date|string>(Type.String(${schemaOptionsTx}))`;
 			}
 			// parameters and request bodies are read-only, so fall through to plain string
@@ -210,7 +212,7 @@ export function parseTypeName(
 // [x] AJV accepts default on properties but not on objects -- remove in parseObject
 // [x] AJV doesn't accept required on properties but accepts on objects -- parseObject handles this case by adding optional if not required
 // [ ] AJV doesn't accept content in headers, params, querystring, but may accept for body and definitely for responses
-function parseSchemaOptions(schema: JSONSchema7, config: CodeGenOpts): string | undefined {
+function parseSchemaOptions(schema: JSONSchema7, config: StdConfig): string | undefined {
 	const ignoreKeys = [...stdIgnoreKeys, ...getSharedIgnoreKeys(config)];
 
 	const propertiesEntries = Object.entries(removeKeysFromObject(schema, ignoreKeys));
