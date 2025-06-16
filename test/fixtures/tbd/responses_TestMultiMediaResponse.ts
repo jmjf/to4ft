@@ -7,11 +7,11 @@ const OneOf = <T extends TSchema[]>(oneOf: [...T], options: SchemaOptions = {}) 
 
 
 
-export const PostSchema = Type.Object({"postId": Type.Number({"minimum":1}),
+export const TestMultiMediaResponseSchema = Type.Object({"postId": Type.Number({"minimum":1}),
 "titleTx": Type.String({"default":"hello","minLength":3,"maxLength":100}),
 "postTx": Type.String({"minLength":1,"maxLength":1024}),
 "statusCd": Type.Optional(Type.Union([ Type.Literal("draft"), Type.Literal("published"), Type.Literal("deleted")], {"default":"draft"})),
-"statusTs": Type.Optional(Type.Unsafe<Date|string>(Type.String({"format":"date-time"}))),
+"statusTs": Type.Optional(Type.Unsafe<Date>(Type.String({"format":"date-time"}))),
 "testNot": Type.Optional(Type.Not(Type.String())),
 "testOneOf": Type.Optional(OneOf([ Type.Union([ Type.Literal("draft"), Type.Literal("published"), Type.Literal("deleted")]),
  Type.String({"default":"none","minLength":3,"maxLength":100})])),
@@ -25,4 +25,4 @@ export const PostSchema = Type.Object({"postId": Type.Number({"minimum":1}),
  Type.Literal(123)])),
 "testArrayItems": Type.Optional(Type.Array(Type.Union([ Type.String(),
  Type.Number()])))}, {"additionalProperties":false})
-export type Post = Static<typeof PostSchema>
+export type TestMultiMediaResponse = Static<typeof TestMultiMediaResponseSchema>

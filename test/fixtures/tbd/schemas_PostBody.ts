@@ -3,7 +3,7 @@ import { Value } from "@sinclair/typebox/value";
 
 
 
-export const PostBodySchema = Type.Object({"titleTx": Type.String({"default":"none","minLength":3,"maxLength":100}),
+export const PostBodySchema = Type.Object({"titleTx": Type.String({"default":"hello","minLength":3,"maxLength":100}),
 "postTx": Type.String({"minLength":1,"maxLength":1024}),
 "author": Type.Optional(Type.Object({"userId": Type.Number({"minimum":1}),
 "userNm": Type.String({"minLength":3}),

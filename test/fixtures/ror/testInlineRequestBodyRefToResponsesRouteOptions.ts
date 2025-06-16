@@ -1,0 +1,4 @@
+import {GetUsersByQuery200ResponseSchema } from '../fixtures/tbr/responses_GetUsersByQuery200Response.ts';
+import {XTestHeaderSchema } from '../fixtures/tbr/headers_XTestHeader.ts';
+
+export const testInlineRequestBodyRefToResponsesRouteOptions = {url: '/testInlineRequestBodyRefToResponses',method: 'PUT',operationId: 'testInlineRequestBodyRefToResponses',summary: "fully inline request body, response ref",schema: {body: { 'content': { 'application/json': { 'schema': { 'description': "allOf covers genEntriesCode tests genEntriesCode type object default branch",'type': "object",'properties': { 'prop1': { 'type': "string", }, }, }, }, }, },response: { '200': { 'description': "result",'content': { 'application/json': { schema: GetUsersByQuery200ResponseSchema, }, },'headers': { 'x-test-header': XTestHeaderSchema, }, },'4xx': { 'description': "error", }, },}};
