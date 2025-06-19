@@ -1,5 +1,6 @@
+import { BadRequestSchema } from '../tbr/responses_BadRequest.ts';
+import { NotFoundSchema } from '../tbr/responses_NotFound.ts';
 import { BuyMuseumTicketsSchema } from '../tbr/schemas_BuyMuseumTickets.ts';
-import { ErrorSchema } from '../tbr/schemas_Error.ts';
 import { MuseumTicketsConfirmationSchema } from '../tbr/schemas_MuseumTicketsConfirmation.ts';
 
 export const buyMuseumTicketsRouteOptions = {
@@ -11,8 +12,8 @@ export const buyMuseumTicketsRouteOptions = {
 		body: { content: { 'application/json': { schema: BuyMuseumTicketsSchema } } },
 		response: {
 			'201': { content: { 'application/json': { schema: MuseumTicketsConfirmationSchema } } },
-			'400': { content: { 'application/problem+json': { schema: ErrorSchema } } },
-			'404': { content: { 'application/problem+json': { schema: ErrorSchema } } },
+			'400': { content: { 'application/problem+json': { schema: BadRequestSchema } } },
+			'404': { content: { 'application/problem+json': { schema: NotFoundSchema } } },
 		},
 	},
 };

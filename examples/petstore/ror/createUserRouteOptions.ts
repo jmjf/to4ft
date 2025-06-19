@@ -7,7 +7,13 @@ export const createUserRouteOptions = {
 	operationId: 'createUser',
 	tags: ['user'],
 	schema: {
-		body: UserBodySchema,
+		body: {
+			content: {
+				'application/json': { schema: UserBodySchema },
+				'application/xml': { schema: UserBodySchema },
+				'application/x-www-form-urlencoded': { schema: UserBodySchema },
+			},
+		},
 		response: {
 			default: {
 				content: { 'application/json': { schema: UserSchema }, 'application/xml': { schema: UserSchema } },
