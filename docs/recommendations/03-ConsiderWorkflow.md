@@ -1,18 +1,16 @@
 # Recommendation: Consider your workflow carefully
 
-As the querystring experiment shows, AJV does not support the full set of OpenAPI keywords out of the box. NodeJS's querystring parser does not support some features of OpenAPI, for example `style` and `explode`. 
+As the querystring experiment shows, Ajv does not support the full set of OpenAPI keywords out of the box. NodeJS's querystring parser does not support some features of OpenAPI, for example `style` and `explode`.
 
 These limitations may encourage you to build your API spec in Fastify `RouteOptions` and/or TypeBox and generate API documentation from the `RouteOptions` to match what the server supports.
 
-But, if you (or your pointy-haired boss) decides to change API frameworks, your Fastify `RouteOptions` won't work and your new framework may not support generating an API spec or documentation. Or if you move from TypeBox to something that doesn't support documentation keywords (`description`, `examples`, etc.), your `RouteOptions` don't provide information API consumers need.
-
-Also, keeping the API spec separate from your code encourages you to think in terms of the interface independent of your code. The interface should be stable and break rarely. Your code could switch from TypeScript to Java to Go to Haskell. Draw clear boundaries between the outside world and your code and separate concerns.
+But, if you (or your pointy-haired boss) decides to change API frameworks, your Fastify `RouteOptions` won't work. Will your new framework may not support generating an API spec or documentation? Or if you move from TypeBox to something that doesn't support documentation keywords (`description`, `examples`, etc.), your `RouteOptions` no longer provide information API consumers need. Keeping the API spec separate from your code promotes thinking in terms of the interface independent of code. The interface should be stable and break rarely. Your code could switch from TypeScript to Java to Go to Haskell. Draw clear boundaries between the outside world and your code and separate concerns.
 
 Unlike a code-based spec, an OpenAPI spec remains when code changes and can serve as a reference point to ensure new code satisfies requirements.
 
-If you use an API gateway, it probably wants an OpenAPI spec and may require certain information in the spec that you need to maintain somewhere. Tools like `@redocly/cli` make linting OpenAPI specs against standards easy. They also support bundling multi-file specs, splitting single-file specs, transforming between YAML and JSON Schema, and generating documentation.
+If you use an API gateway, it probably wants an OpenAPI spec and may require certain information in the spec that you need to maintain somewhere. Tools like `@redocly/cli` can lint OpenAPI specs to ensure they comply with standards can bundle multi-file specs, split single-file specs, transform between YAML and JSON Schema, and generate documentation.
 
-Maintaining detailed, Markdown documentation is easier in YAML than JSON or JavaScript/TypeScript. For example, the `description` in YAML below is easier to read and maintain that the JSON or JavaScript/TypeScript version. Or use an OpenAPI editor that gives you a preview of the spec as your work and generates a complete spec.
+Writing detailed, Markdown documentation is easier in YAML than JSON or JavaScript/TypeScript. For example, the `description` in YAML below is easier to read and maintain that the JSON or JavaScript/TypeScript version. Or use an OpenAPI editor that gives you a preview of the spec as your work and generates a complete spec.
 
 ```yaml
 components:
@@ -53,6 +51,7 @@ components:
 ```
 
 ```javascript
+// with template strings
 {
    components: {
       schemas: {
@@ -76,16 +75,17 @@ Brand codes may apply to ...
 }
 ```
 
-For these reasons, consider:
+For these reasons, consider the following workflow recommendations.
 
 - Maintain an OpenAPI spec so you aren't tied to a specific framework, language, etc.
 - Use OpenAPI features your tools support and don't use features your tools don't support.
 - Generate types and `RouteOptions` from the spec so you aren't maintaining two sets of code.
 - Generate documentation from your OpenAPI spec, publish to your API gateway, etc.
+- Describe your API spec before writing code so it can be well thought out and consistent with other parts of your API.
 
 ## Example of exporting the API schema from Fastify and `@fastify/swagger`
 
-If you decide you want to generate documentation from Fastify, here's an example of how to do it.
+If you decide you want to generate documentation from Fastify, here's an example of how to do it without making `@fastify/swagger` a production dependency.
 
 ```typescript
 // saveSchema.ts
@@ -145,4 +145,4 @@ const doc = server.swagger();
 writeFileSync("api_spec.json", JSON.stringify(doc));
 ```
 
-Then you can `npx @redocly/cli build-docs api_spec.json -o api_spec.html` to get an HTML document that you can publish on a documentation route in non-production environments, or even in production if you wish.
+Make this script separate from your main server. Run it to extract `api_spec.json` as part of your development or build process. Use `npx @redocly/cli build-docs api_spec.json -o api_spec.html` to get an HTML document that you can publish on a documentation route in non-production environments, or even in production if you wish. Use `api_spec.json` for API gateways and other OpenAPI spec consumers.
