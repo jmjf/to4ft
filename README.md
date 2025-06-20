@@ -6,18 +6,17 @@
 
 A tool to convert OpenAPI schemas into TypeBox types (ref-maintaining or dereferenced) and convert OpenAPI paths into Fastify `RouteOptions` (with or without TypeBox schemas).
 
-- [to4ft](#to4ft)
-  - [Motivation](#motivation)
-  - [Limitations and compromises](#limitations-and-compromises)
-    - [In `oas2tb`](#in-oas2tb)
-    - [In `oas2ro`](#in-oas2ro)
-  - [Configuration file](./docs/ConfigurationFile.md)
-  - [Commands](./docs/Commands.md)
-  - [Example output](./docs/ExampleOutput.md)
-  - [Recommendations](./docs/recommendations)
-  - [Known issues](#known-issues)
-  - [Demo servers](#demo-servers)
-  - [Thanks](#thanks)
+- [Motivation](#motivation)
+- [Limitations and compromises](#limitations-and-compromises)
+  - [In `oas2tb`](#in-oas2tb)
+  - [In `oas2ro`](#in-oas2ro)
+- [Configuration file](./docs/ConfigurationFile.md)
+- [Commands](./docs/Commands.md)
+- [Example output](./docs/ExampleOutput.md)
+- [Recommendations](./docs/recommendations)
+- [Known issues](#known-issues)
+- [Demo servers](#demo-servers)
+- [Thanks](#thanks)
 
 ## Motivation
 
