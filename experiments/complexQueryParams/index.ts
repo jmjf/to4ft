@@ -1,11 +1,9 @@
+// Copied from `example/dtb/parametersUserQuery.ts`
+import { type Static, Type } from '@sinclair/typebox';
 import Fastify from 'fastify';
-
 import { ObjectQuerySchema } from '/workspace/examples/blog/tbd/parameters_ObjectQuery.ts';
 import { PaginationPageSchema } from '/workspace/examples/blog/tbd/parameters_PaginationPage.ts';
 import { UserQuerySchema } from '/workspace/examples/blog/tbd/parameters_UserQuery.ts';
-
-// Copied from `example/dtb/parametersUserQuery.ts`
-import { type Static, Type } from '@sinclair/typebox';
 
 export const tbUserQuery = Type.Object({
 	userId: Type.Number({ description: 'uniquely identifes a user', minimum: 1 }),
@@ -49,9 +47,9 @@ fastify.route({
 	schema: {
 		querystring: tbUserQuery,
 	},
-	handler: async (request, reply) => {
+	handler: async (request, _) => {
 		request.log.info({ url: request.url, query: request.query }, 'tb');
-		const userId = (request.query as TbUserQuery).userId; // type derived from the schema
+		const _userId = (request.query as TbUserQuery).userId; // type derived from the schema
 		return request.query;
 	},
 });
@@ -62,11 +60,11 @@ fastify.route({
 	schema: {
 		querystring: { ...AllOfQuerySchema, additionalProperties: false },
 	},
-	handler: async (request, reply) => {
+	handler: async (request, _) => {
 		request.log.info({ url: request.url, query: request.query }, 'tbAllOf');
 		request.log.info(request.routeOptions.schema, 'schema');
 		request.log.info({ s: JSON.stringify(AllOfQuerySchema) }, 'stringschema');
-		const userId = (request.query as TbUserQuery).userId; // type derived from the schema
+		const _userId = (request.query as TbUserQuery).userId; // type derived from the schema
 		return request.query;
 	},
 });
@@ -85,10 +83,10 @@ fastify.route({
 			required: [...(ObjectQuerySchema.required ?? []), ...(UserQuerySchema.required ?? [])],
 		},
 	},
-	handler: async (request, reply) => {
+	handler: async (request, _) => {
 		request.log.info({ url: request.url, query: request.query }, 'tb');
 		request.log.info(request.routeOptions.schema, 'schema');
-		const userId = (request.query as TbUserQuery).userId; // type derived from the schema
+		const _userId = (request.query as TbUserQuery).userId; // type derived from the schema
 		return request.query;
 	},
 });
@@ -125,10 +123,10 @@ fastify.route({
 			},
 		},
 	},
-	handler: async (request, reply) => {
+	handler: async (request, _) => {
 		request.log.info({ url: request.url, query: request.query }, 'tb');
 		request.log.info(request.routeOptions.schema, 'schema');
-		const userId = (request.query as TbUserQuery).userId; // type derived from the schema
+		const _userId = (request.query as TbUserQuery).userId; // type derived from the schema
 		return request.query;
 	},
 });
@@ -144,7 +142,7 @@ const start = async () => {
 
 start();
 
-const getUsersByQueryRouteOptions = {
+const _getUsersByQueryRouteOptions = {
 	url: '/users',
 	method: 'GET',
 	operationId: 'getUsersByQuery',

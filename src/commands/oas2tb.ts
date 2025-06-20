@@ -2,7 +2,7 @@ import { writeFileSync } from 'node:fs';
 import type { Command } from 'commander';
 import type { JSONSchema7 } from 'json-schema';
 import type { CommandOptions } from '../cli.ts';
-import { type StdConfig, getRefPathNms, loadConfig } from '../lib/config.ts';
+import { getRefPathNms, loadConfig, type StdConfig } from '../lib/config.ts';
 import {
 	genDerefImportStatements,
 	genRefImportStatements,

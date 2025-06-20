@@ -8,15 +8,15 @@ import {
 	type ArraySchema,
 	type ConstSchema,
 	type EnumSchema,
+	isBoolean,
+	isNullType,
+	isNumber,
+	isString,
 	type MultipleTypesSchema,
 	type NotSchema,
 	type ObjectSchema,
 	type OneOfSchema,
 	type UnknownSchema,
-	isBoolean,
-	isNullType,
-	isNumber,
-	isString,
 } from './typesAndGuards.ts';
 import { getRefNames, getSharedIgnoreKeys, removeKeysFromObject, subConfigs } from './util.ts';
 

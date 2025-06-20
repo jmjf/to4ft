@@ -1,7 +1,6 @@
 import Fastify, { type FastifyReply, type FastifyRequest } from 'fastify';
-
-import { create_BookingRouteOptions } from './rod/create_BookingRouteOptions.ts';
 import { create_Booking_PaymentRouteOptions } from './rod/create_Booking_PaymentRouteOptions.ts';
+import { create_BookingRouteOptions } from './rod/create_BookingRouteOptions.ts';
 import { delete_BookingRouteOptions } from './rod/delete_BookingRouteOptions.ts';
 import { get_BookingRouteOptions } from './rod/get_BookingRouteOptions.ts';
 import { get_BookingsRouteOptions } from './rod/get_BookingsRouteOptions.ts';

@@ -1,10 +1,9 @@
-import type { OpenAPIV3, OpenAPIV3_1 } from 'openapi-types';
-
 /**
  * Type guards for determining the type of schema we are currently working on.
  * E.g. an anyOf schema object, oneOf, enum, const, etc..
  */
 import type { JSONSchema7, JSONSchema7Definition, JSONSchema7Type, JSONSchema7TypeName } from 'json-schema';
+import type { OpenAPIV3, OpenAPIV3_1 } from 'openapi-types';
 
 // schema2typebox imported these from fp-ts. They didn't play nice with --experimental-strip-types, so I rewrote them.
 export function isBoolean(a: unknown) {
