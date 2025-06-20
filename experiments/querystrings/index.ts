@@ -1,7 +1,6 @@
-import Fastify from 'fastify';
-
 // Copied from `example/dtb/parametersUserQuery.ts`
 import { type Static, Type } from '@sinclair/typebox';
+import Fastify from 'fastify';
 
 export const tbUserQuery = Type.Object({
 	userId: Type.Optional(Type.Number({ description: 'uniquely identifes a user', minimum: 1 })),
@@ -38,10 +37,10 @@ fastify.route({
 			},
 		},
 	},
-	handler: async (request, reply) => {
+	handler: async (request, _) => {
 		request.log.info({ url: request.url, query: request.query }, 'single');
-		const p1a = request.query?.p1; // TypeScript doesn't know p1 exists
-		const p1b = (request.query as { p1: string }).p1; // duplicate type definition vs. schema
+		const _p1a = request.query?.p1; // TypeScript doesn't know p1 exists
+		const _p1b = (request.query as { p1: string }).p1; // duplicate type definition vs. schema
 		return request.query;
 	},
 });
@@ -99,7 +98,7 @@ fastify.route({
 			// default: { p1: 'hello'} // invalid
 		},
 	},
-	handler: async (request, reply) => {
+	handler: async (request, _) => {
 		request.log.info({ url: request.url, query: request.query }, 'object');
 		return request.query;
 	},
@@ -119,11 +118,11 @@ fastify.route({
 			},
 		},
 	},
-	handler: async (request, reply) => {
+	handler: async (request, _) => {
 		request.log.info({ url: request.url, query: request.query }, 'array');
 		return request.query;
 	},
-	preValidation: async (request, reply) => {
+	preValidation: async (request, _) => {
 		request.log.info({ query: request.query, type: typeof request.query }, 'preValidation');
 		if (request.query) {
 			// TypeScript complains, but it works with --experimental-strip-types
@@ -156,11 +155,11 @@ fastify.route({
 			},
 		},
 	},
-	handler: async (request, reply) => {
+	handler: async (request, _) => {
 		request.log.info({ url: request.url, query: request.query }, 'array');
 		return request.query;
 	},
-	preValidation: async (request, reply) => {
+	preValidation: async (request, _) => {
 		request.log.info({ query: request.query, type: typeof request.query }, 'preValidation');
 		// if (request.query) {
 		//    request.query.a1 = request.query?.a1 ? (request.query.a1 as string).split(',') : undefined
@@ -174,9 +173,9 @@ fastify.route({
 	schema: {
 		querystring: tbUserQuery,
 	},
-	handler: async (request, reply) => {
+	handler: async (request, _) => {
 		request.log.info({ url: request.url, query: request.query }, 'tb');
-		const userId = (request.query as TbUserQuery).userId; // type derived from the schema
+		const _userId = (request.query as TbUserQuery).userId; // type derived from the schema
 		return request.query;
 	},
 });
@@ -192,7 +191,7 @@ const start = async () => {
 
 start();
 
-const getUsersByQueryRouteOptions = {
+const _getUsersByQueryRouteOptions = {
 	url: '/users',
 	method: 'GET',
 	operationId: 'getUsersByQuery',

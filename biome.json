@@ -1,19 +1,20 @@
 {
 	"$schema": "node_modules/@biomejs/biome/configuration_schema.json",
 	"files": {
-		"ignore": [
-			".devcontainer",
-			".github",
-			".husky",
-			".private",
-			".vscode",
-			"bruno",
-			"coverage",
-			"dist",
-			"notes",
-			"docs",
-			"node_modules",
-			"test/fixtures"
+		"includes": [
+			"**",
+			"!**/.devcontainer",
+			"!**/.github",
+			"!**/.husky",
+			"!**/.private",
+			"!**/.vscode",
+			"!**/bruno",
+			"!**/coverage",
+			"!**/dist",
+			"!**/notes",
+			"!**/docs",
+			"!**/node_modules",
+			"!**/test/fixtures"
 		],
 		"ignoreUnknown": true
 	},
@@ -27,24 +28,54 @@
 			"correctness": {
 				"noConstantMathMinMaxClamp": "error",
 				"noUndeclaredVariables": "error",
-				"noUnusedImports": "error",
-				"useArrayLiterals": "warn",
-				"useImportExtensions": "warn"
+				"noUnusedImports": {
+					"level": "error",
+					"fix": "safe"
+				},
+				"useImportExtensions": "warn",
+				"noUnusedVariables": {
+					"level": "error",
+					"options": {
+						"ignoreRestSiblings": true
+					}
+				}
 			},
 			"style": {
 				"noDefaultExport": "error",
 				"noNamespace": "warn",
-				"noNamespaceImport": "warn",
 				"noYodaExpression": "error",
 				"useCollapsedElseIf": "error",
 				"useDefaultSwitchClause": "error",
 				"useForOf": "error",
-				"useShorthandArrayType": "error"
+				"noParameterAssign": "error",
+				"useAsConstAssertion": "error",
+				"useDefaultParameterLast": "error",
+				"useEnumInitializers": "error",
+				"useSelfClosingElements": "error",
+				"useSingleVarDeclarator": "error",
+				"noUnusedTemplateLiteral": "error",
+				"useNumberNamespace": "error",
+				"noInferrableTypes": "error",
+				"noUselessElse": "error",
+				"useArrayLiterals": "warn",
+				"useConsistentArrayType": {
+					"level": "error",
+					"options": {
+						"syntax": "shorthand"
+					}
+				}
+			},
+			"performance": {
+				"noNamespaceImport": "warn"
 			}
 		}
 	},
-	"organizeImports": {
-		"enabled": true
+	"assist": {
+		"actions": {
+			"source": {
+				"organizeImports": "on"
+			}
+		}
 	},
 	"formatter": {
 		"enabled": true,

@@ -16,12 +16,6 @@ import {
 	parseWithMultipleTypes,
 } from './tbCodeParsers.ts';
 import {
-	type OASDocument,
-	type OASHeaderObject,
-	type OASParameterObject,
-	type OASRequestBodyObject,
-	type OASResponseObject,
-	type OASSchemaObject,
 	isAllOfSchema,
 	isAnyOfSchema,
 	isArraySchema,
@@ -34,6 +28,12 @@ import {
 	isOneOfSchema,
 	isSchemaWithMultipleTypes,
 	isUnknownSchema,
+	type OASDocument,
+	type OASHeaderObject,
+	type OASParameterObject,
+	type OASRequestBodyObject,
+	type OASResponseObject,
+	type OASSchemaObject,
 } from './typesAndGuards.ts';
 import { dedupeArray, getCasedNameFor, nameTypes } from './util.ts';
 

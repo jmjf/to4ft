@@ -1,4 +1,4 @@
-import { existsSync, lstatSync, readFileSync, readdirSync } from 'node:fs';
+import { existsSync, lstatSync, readdirSync, readFileSync } from 'node:fs';
 import path from 'node:path/posix';
 import { $RefParser } from '@apidevtools/json-schema-ref-parser';
 import type { CommandOptions } from '../cli.ts';

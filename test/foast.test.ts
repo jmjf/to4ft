@@ -1,5 +1,5 @@
-import { mkdirSync, readFileSync, readdirSync, rmSync } from 'node:fs';
-import { type TestContext, suite, test } from 'node:test';
+import { mkdirSync, readdirSync, readFileSync, rmSync } from 'node:fs';
+import { suite, type TestContext, test } from 'node:test';
 import { setTimeout } from 'node:timers/promises';
 
 import type { Command } from 'commander';

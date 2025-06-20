@@ -18,7 +18,7 @@ server.get(
 			},
 		},
 	},
-	(request, reply) => {
+	(_request, reply) => {
 		reply.send({
 			f1: 'hello',
 			dt1: new Date(),
@@ -29,7 +29,7 @@ server.get(
 
 // server.get()
 
-server.listen({ port: 3000 }, (err, address) => {
+server.listen({ port: 3000 }, (err, _address) => {
 	if (err) {
 		server.log.error(err);
 		process.exit(1);

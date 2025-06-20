@@ -116,7 +116,7 @@ export const toCase = {
 		);
 	},
 };
-type CaseType = keyof typeof toCase;
+// type CaseType = keyof typeof toCase;
 
 /**
  * This Regex attempts to support JavaScripts Unicode-friendly naming rules. It should support
@@ -147,7 +147,7 @@ export function getNameFor(name: string, nameType: NameType, config: StdConfig):
 	// toCase.camel because we're selecting camel cased names from the config
 	const prefixTx = configToUse[`${toCase.camel(`${nameType}PrefixTx`)}`] ?? '';
 	const suffixTx = configToUse[`${toCase.camel(`${nameType}SuffixTx`)}`] ?? '';
-	const sanitizedName =
+	const _sanitizedName =
 		prefixTx.length > 0 ? toCase.pascal(sanitizeName(name)) : toCase[config.caseNm](sanitizeName(name));
 
 	return `${prefixTx}${sanitizeName(name)}${suffixTx}`;

@@ -2,14 +2,14 @@ import path from 'node:path/posix';
 import type { StdConfig } from './config.ts';
 import { annotationKeys, removeFromParameterKeywords } from './consts.ts';
 import {
+	isReferenceObject,
+	isSchemaObject,
 	type OASOperationObject,
 	type OASParameterObject,
 	type OASReferenceObject,
 	type OASRequestBodyObject,
 	type OASResponsesObject,
 	type OASSchemaObject,
-	isReferenceObject,
-	isSchemaObject,
 } from './typesAndGuards.ts';
 import {
 	getNameFor,
@@ -283,7 +283,7 @@ export function genResponsesCode(responses: OASResponsesObject, imports: Set<str
 export function getParamAnnotationsCode(parameter: OASParameterObject, config: StdConfig) {
 	if (!config.keepAnnotationsFl) return '';
 	const param = structuredClone(parameter);
-	const validEntries = Object.entries(param).filter(([key, value]) => annotationKeys.includes(key));
+	const validEntries = Object.entries(param).filter(([key, _value]) => annotationKeys.includes(key));
 	return `${JSON.stringify(Object.fromEntries(validEntries)).slice(1, -1)},`;
 }
 

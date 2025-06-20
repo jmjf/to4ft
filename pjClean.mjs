@@ -25,9 +25,7 @@ const packageJson = fs.readFileSync(path.resolve(import.meta.dirname, 'package.j
 
 const pj = JSON.parse(packageJson);
 
-// biome-ignore lint/performance/noDelete: performance isn't critical here
 if (pj.devDependencies !== undefined) delete pj.devDependencies;
-// biome-ignore lint/performance/noDelete: performance isn't critical here
 if (pj['lint-staged'] !== undefined) delete pj['lint-staged'];
 if (pj.scripts !== undefined) pj.scripts = { postpublish: structuredClone(pj.scripts.postpublish) };
 
