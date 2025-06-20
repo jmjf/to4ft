@@ -1,7 +1,8 @@
 import { PaginationLimitSchema } from '../tbr/parameters_PaginationLimit.ts';
 import { PaginationPageSchema } from '../tbr/parameters_PaginationPage.ts';
 import { StartDateSchema } from '../tbr/parameters_StartDate.ts';
-import { ErrorSchema } from '../tbr/schemas_Error.ts';
+import { BadRequestSchema } from '../tbr/responses_BadRequest.ts';
+import { NotFoundSchema } from '../tbr/responses_NotFound.ts';
 import { MuseumHoursSchema } from '../tbr/schemas_MuseumHours.ts';
 
 export const getMuseumHoursRouteOptions = {
@@ -17,8 +18,8 @@ export const getMuseumHoursRouteOptions = {
 		},
 		response: {
 			'200': { content: { 'application/json': { schema: MuseumHoursSchema } } },
-			'400': { content: { 'application/problem+json': { schema: ErrorSchema } } },
-			'404': { content: { 'application/problem+json': { schema: ErrorSchema } } },
+			'400': { content: { 'application/problem+json': { schema: BadRequestSchema } } },
+			'404': { content: { 'application/problem+json': { schema: NotFoundSchema } } },
 		},
 	},
 };

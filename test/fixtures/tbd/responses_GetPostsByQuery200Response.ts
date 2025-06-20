@@ -21,8 +21,8 @@ export const GetPostsByQuery200ResponseSchema = Type.Array(Type.Object({"postId"
  Type.String({"default":"none","minLength":3,"maxLength":100})])),
 "testConstString": Type.Optional(Type.Literal("abc")),
 "testConstNumber": Type.Optional(Type.Literal(123)),
-"testConstArray": Type.Optional(Type.Union([ Type.Literal(123),
- Type.Literal("abc")])),
+"testConstArray": Type.Optional(Type.Union([ Type.Literal("abc"),
+ Type.Literal(123)])),
 "testArrayItems": Type.Optional(Type.Array(Type.Union([ Type.String(),
  Type.Number()])))}, {"additionalProperties":false}))
 export type GetPostsByQuery200Response = Static<typeof GetPostsByQuery200ResponseSchema>

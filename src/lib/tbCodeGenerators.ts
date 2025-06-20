@@ -37,8 +37,6 @@ import {
 } from './typesAndGuards.ts';
 import { dedupeArray, getCasedNameFor, nameTypes } from './util.ts';
 
-export type CodeGenOpts = StdConfig & { refImports?: string[]; componentType?: string };
-
 /*
  * SCHEMA GETTERS FOR COMMANDS
  */
@@ -117,7 +115,7 @@ export async function genTypeBoxForPaths(
  * @param {JSONSchema7} schema - schema to process
  * @param {StdConfig} opts - options used in code generation
  */
-export function genTypeBoxForSchema(schemaNm: string, schema: JSONSchema7, opts: CodeGenOpts) {
+export function genTypeBoxForSchema(schemaNm: string, schema: JSONSchema7, opts: StdConfig) {
 	const exportSchemaNm = getCasedNameFor(schemaNm, nameTypes.schema, opts);
 	const exportTypeNm = getCasedNameFor(schemaNm, nameTypes.type, opts);
 
@@ -158,7 +156,7 @@ export function genRefImportStatements(refImports: string[]): string {
  *
  * @throws Error if an unexpected schema (one with no matching parser) was given
  */
-export function recurseSchema(opts: CodeGenOpts, schema: JSONSchema7Definition): string {
+export function recurseSchema(opts: StdConfig, schema: JSONSchema7Definition): string {
 	// TODO: boolean schema support..?
 	if (isBoolean(schema)) {
 		return JSON.stringify(schema);

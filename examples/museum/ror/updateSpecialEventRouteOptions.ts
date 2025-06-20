@@ -1,4 +1,5 @@
-import { ErrorSchema } from '../tbr/schemas_Error.ts';
+import { BadRequestSchema } from '../tbr/responses_BadRequest.ts';
+import { NotFoundSchema } from '../tbr/responses_NotFound.ts';
 import { SpecialEventSchema } from '../tbr/schemas_SpecialEvent.ts';
 import { SpecialEventFieldsSchema } from '../tbr/schemas_SpecialEventFields.ts';
 
@@ -12,8 +13,8 @@ export const updateSpecialEventRouteOptions = {
 		body: { content: { 'application/json': { schema: SpecialEventFieldsSchema } } },
 		response: {
 			'200': { content: { 'application/json': { schema: SpecialEventSchema } } },
-			'400': { content: { 'application/problem+json': { schema: ErrorSchema } } },
-			'404': { content: { 'application/problem+json': { schema: ErrorSchema } } },
+			'400': { content: { 'application/problem+json': { schema: BadRequestSchema } } },
+			'404': { content: { 'application/problem+json': { schema: NotFoundSchema } } },
 		},
 	},
 };

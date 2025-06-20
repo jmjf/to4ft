@@ -1,0 +1,4 @@
+import {GetUsersByQuery200ResponseSchema } from '../fixtures/tbr/responses_GetUsersByQuery200Response.ts';
+import {XTestHeaderSchema } from '../fixtures/tbr/headers_XTestHeader.ts';
+
+export const testInvalid_ParamErrorsRouteOptions = {url: '/testINVALID_ParamErrors/:authorization',method: 'GET',operationId: 'testINVALID_ParamErrors',summary: "test parameter error cases",schema: {params: {type: 'object', properties:{'Authorization': {"description":"invalid param authorization",'type': "number",},'objectParam': {"description":"covers hoistSchemas type object branch props.length > 1",'type': "string",},}, },querystring: {type: 'object', properties: {},additionalProperties: false,},response: { '200': { 'description': "result",'content': { 'application/json': { schema: GetUsersByQuery200ResponseSchema, }, },'headers': { 'x-test-header': XTestHeaderSchema, }, },'4xx': { 'description': "error", }, },}};

@@ -6,16 +6,11 @@ import type { Command } from 'commander';
 
 import { oas2ro } from '../src/commands/oas2ro.js';
 import { oas2tb } from '../src/commands/oas2tb.js';
-import { roFiles, tbFiles } from './fixtures/fileNames.js';
 
 const CURRENT_DIR = import.meta.dirname;
 
 const fixturesPathNm = `${CURRENT_DIR}/fixtures`;
-const openapiPathNm = `${fixturesPathNm}/testapi.yaml`;
-// const openapiPathNm = '/workspace/examples/blog/openapi/openapi.yaml';
-// const openapiPathNm = '/workspace/examples/museum/openapi/openapi.yaml';
-// const openapiPathNm = '/workspace/examples/train/openapi/openapi.yaml';
-// const openapiPathNm = '/workspace/examples/petstore/openapi/openapi.yaml';
+const openapiPathNm = `${fixturesPathNm}/openapi.yaml`;
 
 // Basic test strategy:
 // - run the command with the desired configuration
@@ -54,6 +49,7 @@ suite('oas2tb', () => {
 			await setTimeout(250);
 
 			const generatedFiles = readdirSync(outputPathNm);
+			const tbFiles = readdirSync(testConfig.expectedPathNm);
 
 			await t.test('generates expected files', async (t: TestContext) => {
 				t.assert.deepStrictEqual(generatedFiles, tbFiles, 'files exist');
@@ -104,6 +100,7 @@ suite('oas2ro', () => {
 			await setTimeout(250);
 
 			const generatedFiles = readdirSync(outputPathNm);
+			const roFiles = readdirSync(testConfig.expectedPathNm);
 
 			await t.test('generates expected files', async (t: TestContext) => {
 				t.assert.deepStrictEqual(generatedFiles, roFiles, 'files exist');

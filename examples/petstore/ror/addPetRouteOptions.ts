@@ -7,7 +7,13 @@ export const addPetRouteOptions = {
 	operationId: 'addPet',
 	tags: ['pet'],
 	schema: {
-		body: PetBodySchema,
+		body: {
+			content: {
+				'application/json': { schema: PetBodySchema },
+				'application/xml': { schema: PetBodySchema },
+				'application/x-www-form-urlencoded': { schema: PetBodySchema },
+			},
+		},
 		response: {
 			'200': { content: { 'application/json': { schema: PetSchema }, 'application/xml': { schema: PetSchema } } },
 			'405': {},

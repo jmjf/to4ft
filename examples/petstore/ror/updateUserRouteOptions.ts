@@ -7,7 +7,13 @@ export const updateUserRouteOptions = {
 	tags: ['user'],
 	schema: {
 		params: { type: 'object', properties: { username: { type: 'string' } }, required: ['username'] },
-		body: UserBodySchema,
+		body: {
+			content: {
+				'application/json': { schema: UserBodySchema },
+				'application/xml': { schema: UserBodySchema },
+				'application/x-www-form-urlencoded': { schema: UserBodySchema },
+			},
+		},
 		response: { default: {} },
 	},
 };

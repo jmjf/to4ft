@@ -30,6 +30,8 @@ export function genRouteOptionsForOperation(
 	let roCode = '';
 	const imports = new Set<string>();
 
+	// console.log('GROFO ', opObj.operationId);
+
 	const roNm = toCase.camel(getNameFor(opObj.operationId as string, nameTypes.routeOption, config));
 	roCode += `export const ${roNm} = {`;
 	roCode += `url: '${cleanPathURL(pathURL)}',`;
@@ -237,8 +239,14 @@ export function genQueryParametersCode(parameters: OASParameterObject[], imports
 export function genRequestBodyCode(requestBody: OASRequestBodyObject, imports: Set<string>, config: StdConfig) {
 	if (!requestBody || Object.keys(requestBody).length === 0) return '';
 
+	config.roCodeGen.refTx = undefined;
+	config.roCodeGen.useRefFl = undefined;
+
 	if (isReferenceObject(requestBody)) {
-		return genRefCodeAndImport(requestBody.$ref, imports, config);
+		// deref won't have references so this code can only run for ref-maintaining
+		config.roCodeGen.refTx = requestBody.$ref;
+		requestBody.$ref = undefined as unknown as string;
+		config.roCodeGen.useRefFl = true;
 	}
 
 	return `{ ${genEntriesCode(Object.entries(requestBody), imports, config)} }`;
@@ -247,12 +255,29 @@ export function genRequestBodyCode(requestBody: OASRequestBodyObject, imports: S
 export function genResponsesCode(responses: OASResponsesObject, imports: Set<string>, config: StdConfig) {
 	if (!responses || Object.keys(responses).length === 0) return '';
 
-	if (isReferenceObject(responses)) {
-		// console.log('GEN RESPONSES REF', responses);
-		return genRefCodeAndImport(responses.$ref, imports, config);
+	let code = '';
+
+	const entries = Object.entries(responses);
+	for (const entry of entries) {
+		config.roCodeGen.refTx = undefined;
+		config.roCodeGen.useRefFl = undefined;
+
+		const resp = entry[1]; // this is the response structure
+
+		if (isReferenceObject(resp)) {
+			// deref won't have references so this code can only run for ref-maintaining
+			// console.log('GEN RESPONSES REF', entry);
+			config.roCodeGen.refTx = resp.$ref;
+			resp.$ref = undefined as unknown as string;
+			config.roCodeGen.useRefFl = true;
+		}
+
+		// console.log('GEN RESPONSES ENTRIES', entry);
+		// pass the whole entry so genEntriesCode can include the response code part
+		code += genEntriesCode([entry], imports, config);
 	}
-	// console.log('GEN RESPONSES NOREF', Object.entries(responses));
-	return `{ ${genEntriesCode(Object.entries(responses), imports, config)} }`;
+
+	return `{ ${code} }`;
 }
 
 export function getParamAnnotationsCode(parameter: OASParameterObject, config: StdConfig) {
@@ -327,13 +352,19 @@ export function genEntriesCode(entries: [string, unknown][], imports: Set<string
 	for (const [key, value] of entries) {
 		// console.log('GEN ENTRIES', key, value);
 		if (value === undefined || ignoreKeys.includes(key)) continue;
+		const { useRefFl, refTx } = config.roCodeGen;
+		if (key === 'schema' && useRefFl && refTx && refTx.length > 0) {
+			const code = genRefCodeAndImport(refTx, imports, config);
+			entriesCode += `schema: ${code},`;
+			return entriesCode;
+		}
 		if (key !== '$ref') {
 			if ((value as OASSchemaObject)?.type === 'object' && (value as OASSchemaObject)?.default) {
 				(value as OASSchemaObject).default = undefined;
 				// console.log('GEN ENTRIES value', value);
 			}
 			entriesCode += `'${key}': ${genValueCode(value, imports, config)},`;
-		} else if (typeof value === 'string') {
+		} else if (!useRefFl && typeof value === 'string') {
 			// console.log('GEN ENTRIES ELSE', key, value);
 			const code = genRefCodeAndImport(value as string, imports, config);
 			entriesCode += `${code},`;

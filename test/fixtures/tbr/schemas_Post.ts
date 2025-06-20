@@ -26,8 +26,8 @@ export const PostSchema = Type.Object({"postId": Clone({...PostIdSchema, ...{"de
  Clone(TitleTxSchema)])),
 "testConstString": Type.Optional(Type.Literal("abc")),
 "testConstNumber": Type.Optional(Type.Literal(123)),
-"testConstArray": Type.Optional(Type.Union([ Type.Literal(123),
- Type.Literal("abc")])),
+"testConstArray": Type.Optional(Type.Union([ Type.Literal("abc"),
+ Type.Literal(123)])),
 "testArrayItems": Type.Optional(Type.Array(Type.Union([ Type.String(),
  Type.Number()])))}, {"title":"Post","additionalProperties":false})
 export type Post = Static<typeof PostSchema>

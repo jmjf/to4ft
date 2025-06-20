@@ -7,7 +7,12 @@ export const putPostsRouteOptions = {
 	operationId: 'putPosts',
 	tags: ['Posts'],
 	schema: {
-		body: PostRequestBodySchema,
+		body: {
+			content: {
+				'application/json': { schema: PostRequestBodySchema },
+				'application/xml': { schema: PostRequestBodySchema },
+			},
+		},
 		response: { '200': { content: { 'application/json': { schema: PostsResponseSchema } } }, '4xx': {} },
 	},
 };

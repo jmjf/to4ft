@@ -43,7 +43,10 @@ export type StdConfig = {
 	// set internally;
 	preserveKeywords: string[];
 } & InputFiles &
-	Required<ConfigFile>;
+	Required<ConfigFile> & {
+		roCodeGen: { useRefFl?: boolean; refTx?: string };
+		tbCodeGen: { refImports?: string[]; componentType?: string };
+	};
 
 export function getInputFiles(inPathNm: string): InputFiles {
 	const functionNm = 'getInputFiles';
@@ -128,6 +131,8 @@ export function loadConfig(opts: CommandOptions, commandNm: string): StdConfig {
 			noAdditionalProperties: configObj.oas2ro?.noAdditionalProperties ?? true,
 		},
 		...inputFiles,
+		roCodeGen: {},
+		tbCodeGen: {},
 	};
 
 	if (commandNm === 'oas2ro' && config.oas2ro.derefFl === false) {
