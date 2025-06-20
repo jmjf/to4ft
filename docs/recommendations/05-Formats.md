@@ -1,6 +1,6 @@
 # JSON Schema keywords and formats
 
-JSON Schema, and OpenAPI by extension, defines a set of formats for strings to ensure they meet certain patterns. We can use these patterns as part of Fastify/AJV validation to ensure we get values that meet those patterns.
+JSON Schema, and OpenAPI by extension, defines a set of formats for strings to ensure they meet certain patterns. We can use these patterns as part of Fastify/Ajv validation to ensure we get values that meet those patterns.
 
 For example:
 
@@ -21,23 +21,23 @@ components:
                format: email 
 ```
 
-AJV will fail if it finds a format it doesn't know. Add keywords formats to meet your needs.
+Ajv will fail if it finds a format it doesn't know. Add formats to meet your needs.
 
-## Formats included with Fastify's AJV implementation
+## Formats included with Fastify's Ajv implementation
 
-AJV does not include format support by default. It offers a plugin, [`ajv-formats`](https://ajv.js.org/packages/ajv-formats.html), that provides most JSON Schema standard formats. As of this writing, the current version is 3.0.1, which is compatible with AJV 8.x (current version 8.17.1).
+Ajv does not include format support by default. It offers a plugin, [`ajv-formats`](https://ajv.js.org/packages/ajv-formats.html), that provides most JSON Schema standard formats. As of this writing, the current version is 3.0.1, which is compatible with Ajv 8.x (current version 8.17.1).
 
-Looking at Fastify's [`package.json`](https://github.com/fastify/fastify/blob/main/package.json), as of this writing, it uses `@fastify/ajv-compiler@^4.0.0`. Checking [that repo's `package.json`](https://github.com/fastify/ajv-compiler/blob/main/package.json), it's dependencies include AJV at ^8.12.0 and `ajv-formats` at ^3.0.1.
+Looking at Fastify's [`package.json`](https://github.com/fastify/fastify/blob/main/package.json), as of this writing, it uses `@fastify/ajv-compiler@^4.0.0`. Checking [that repo's `package.json`](https://github.com/fastify/ajv-compiler/blob/main/package.json), it's dependencies include Ajv at ^8.12.0 and `ajv-formats` at ^3.0.1.
 
-Meaning, Fastify's AJV setup is on the current 8.x series and includes the current `ajv-formats`. 
+Meaning, Fastify's Ajv setup is on the current 8.x series and includes the current `ajv-formats`.
 
-Looking at the code, the AJV **validator** compiler `@fastify/ajv-compiler` creates gets `ajv-formats` UNLESS you register a `formatsPlugin` as a plugin option (to prevent AJV's formats plugin from competing with your chosen formats plugin.) Note you can [add plugins](https://fastify.dev/docs/latest/Reference/Validation-and-Serialization/#ajv-plugins) to Fastify's AJV without creating a custom instance and pass AJV options through the same structure.
+Looking at the code, the Ajv **validator** compiler `@fastify/ajv-compiler` creates gets `ajv-formats` UNLESS you register a `formatsPlugin` as a plugin option (to prevent Ajv's formats plugin from competing with your chosen formats plugin.) Also note you can [add plugins](https://fastify.dev/docs/latest/Reference/Validation-and-Serialization/#ajv-plugins) to Fastify's Ajv without creating a custom instance and pass Ajv options through the same structure. There is a PR on the `ajv-formats` repo to add the ability to choose Ajv2019 or Ajv2020 through options so you can use later versions of JSON Schema.
 
-The serializer compiler does not accept a formats plugin from what I can see.
+The serializer compiler (`fast-json-stringify`) does not accept a formats plugin and uses Ajv for certain, complex cases only.
 
 ## Adding custom keywords and formats
 
-If you need to add custom keywords or formats (for example, the train-travel-api uses `iso-country-code`), use Fastify's [`ajv.customOptions`](https://fastify.dev/docs/latest/Reference/Server/#ajv) when you create your Fastify instance. See also [AJV's options documentation](https://ajv.js.org/options.html) for a complete list of options, specifically the `keywords` and `formats` option and AJV's [addFormat documentation](https://ajv.js.org/api.html#ajv-addformat-name-string-format-format-ajv) for information on how formats get added.
+If you need to add custom keywords or formats (for example, the train-travel-api uses `iso-country-code`), use Fastify's [`ajv.customOptions`](https://fastify.dev/docs/latest/Reference/Server/#ajv) when you create your Fastify instance. See also [Ajv's options documentation](https://ajv.js.org/options.html) for a complete list of options, specifically the `keywords` and `formats` option and Ajv's [addFormat documentation](https://ajv.js.org/api.html#ajv-addformat-name-string-format-format-ajv) for information on how formats get added.
 
 For example, you might add the `example` keyword and an `iso-country-code` format like this.
 
