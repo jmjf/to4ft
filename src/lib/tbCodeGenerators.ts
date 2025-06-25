@@ -129,7 +129,7 @@ export function genTypeBoxForSchema(schemaNm: string, schema: JSONSchema7, opts:
 	const exportedTypeTx = `export type ${exportTypeNm} = Static<typeof ${exportSchemaNm}>`;
 	const hasOneOfFl = typeBoxSchemaTx.includes('OneOf([');
 
-	const tbCodeTx = `${hasOneOfFl ? genOneOfTypeboxSupportCode() : ''}\n\nexport const ${exportSchemaNm} = ${typeBoxSchemaTx}\n${exportedTypeTx}\n`;
+	const tbCodeTx = `\n\nexport const ${exportSchemaNm} = ${typeBoxSchemaTx}\n${exportedTypeTx}\n`;
 	return { tbCodeTx, exportSchemaNm, exportTypeNm, typeBoxSchemaTx, exportedTypeTx, hasOneOfFl };
 }
 
@@ -141,8 +141,22 @@ const typeboxImports = [
 	'import {type Static, Type, SchemaOptions, Clone, Kind, TypeRegistry, TSchema, TUnion} from "@sinclair/typebox"',
 	'import { Value } from "@sinclair/typebox/value";',
 ];
-export function genDerefImportStatements(): string {
-	return typeboxImports.join('\n');
+export function genDerefImportStatements(genOneOfFl: boolean, config: StdConfig): string {
+	const oneOfImportTx = genOneOfFl ? `${genOneOfImport(config)}\n` : '';
+	return `${typeboxImports.join('\n')}\n${oneOfImportTx}`;
+}
+/**
+ * Custom TypeBox code to support the JSON schema keyword 'oneOf'. Based on the
+ * suggestion here: https://github.com/xddq/schema2typebox/issues/16#issuecomment-1603731886
+ */
+export const typeBoxOneOfSupportCode = `TypeRegistry.Set('ExtendedOneOf', (schema: {oneOf: unknown[]}, value) => 1 === schema.oneOf.reduce((acc: number, schema: unknown) => acc + (Value.Check(schema as TSchema, value) ? 1 : 0), 0))
+
+export const OneOf = <T extends TSchema[]>(oneOf: [...T], options: SchemaOptions = {}) => Type.Unsafe<Static<TUnion<T>>>({ ...options, [Kind]: 'ExtendedOneOf', oneOf })
+
+`;
+
+export function genOneOfImport(config: StdConfig) {
+	return `import { OneOf } from './OneOf.${config.oas2tb.extensionTx}'`;
 }
 
 // one schema/type per file means no multi-imports from a single file, so we can use strings
@@ -201,17 +215,4 @@ export function recurseSchema(opts: StdConfig, schema: JSONSchema7Definition): s
 		return parseTypeName(opts, schema.type, schema);
 	}
 	throw new Error(`Unsupported schema. Did not match any type of the parsers. Schema was: ${JSON.stringify(schema)}`);
-}
-
-/**
- * Creates custom typebox code to support the JSON schema keyword 'oneOf'. Based
- * on the suggestion here: https://github.com/xddq/schema2typebox/issues/16#issuecomment-1603731886
- */
-export function genOneOfTypeboxSupportCode(): string {
-	return [
-		"TypeRegistry.Set('ExtendedOneOf', (schema: {oneOf: unknown[]}, value) => 1 === schema.oneOf.reduce((acc: number, schema: unknown) => acc + (Value.Check(schema as TSchema, value) ? 1 : 0), 0))",
-		"const OneOf = <T extends TSchema[]>(oneOf: [...T], options: SchemaOptions = {}) => Type.Unsafe<Static<TUnion<T>>>({ ...options, [Kind]: 'ExtendedOneOf', oneOf })",
-	].reduce((acc, curr) => {
-		return `${acc + curr}\n\n`;
-	}, '');
 }
