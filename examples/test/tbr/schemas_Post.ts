@@ -1,31 +1,10 @@
-import {
-	Clone,
-	Kind,
-	type SchemaOptions,
-	type Static,
-	type TSchema,
-	type TUnion,
-	Type,
-	TypeRegistry,
-} from '@sinclair/typebox';
-import { Value } from '@sinclair/typebox/value';
+import { Clone, type Static, Type } from '@sinclair/typebox';
+import { OneOf } from './OneOf.ts';
 import { GenericTsSchema } from './schemas_GenericTs.ts';
 import { PostIdSchema } from './schemas_PostId.ts';
 import { PostStatusSchema } from './schemas_PostStatus.ts';
 import { PostTxSchema } from './schemas_PostTx.ts';
 import { TitleTxSchema } from './schemas_TitleTx.ts';
-
-TypeRegistry.Set(
-	'ExtendedOneOf',
-	(schema: { oneOf: unknown[] }, value) =>
-		schema.oneOf.reduce(
-			(acc: number, schema: unknown) => acc + (Value.Check(schema as TSchema, value) ? 1 : 0),
-			0,
-		) === 1,
-);
-
-const OneOf = <T extends TSchema[]>(oneOf: [...T], options: SchemaOptions = {}) =>
-	Type.Unsafe<Static<TUnion<T>>>({ ...options, [Kind]: 'ExtendedOneOf', oneOf });
 
 export const PostSchema = Type.Object(
 	{
