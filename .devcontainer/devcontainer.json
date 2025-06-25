@@ -1,27 +1,23 @@
 {
-   "name": "oas2tb",
+	"name": "oas2tb",
 
-   "dockerComposeFile": [
-      "node-dc-compose.yaml"
-   ],
-   "service": "node-dc",
-   "workspaceFolder": "/workspace",
+	"dockerComposeFile": ["node-dc-compose.yaml"],
+	"service": "node-dc",
+	"workspaceFolder": "/workspace",
 
-   "customizations": {
-      "vscode": {
-         "extensions": [
-            "streetsidesoftware.code-spell-checker",
-            "mattdd.gitless",
-            "DavidAnson.vscode-markdownlint",
-            "ms-vscode.vscode-typescript-next",
-            "biomejs.biome"
-         ]
-      }
-   },
+	"customizations": {
+		"vscode": {
+			"extensions": [
+				"streetsidesoftware.code-spell-checker",
+				"mattdd.gitless",
+				"DavidAnson.vscode-markdownlint",
+				"ms-vscode.vscode-typescript-next",
+				"biomejs.biome"
+			]
+		}
+	},
 
-   "forwardPorts": [
-      3080
-   ],
+	"forwardPorts": [3080],
 
-   "remoteUser": "node",
+	"remoteUser": "node"
 }
