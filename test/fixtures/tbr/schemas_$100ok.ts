@@ -2,6 +2,5 @@ import {type Static, Type, SchemaOptions, Clone, Kind, TypeRegistry, TSchema, TU
 import { Value } from "@sinclair/typebox/value";
 
 
-
 export const $100OkSchema = Type.String({"title":"$100ok"})
 export type $100Ok = Static<typeof $100OkSchema>

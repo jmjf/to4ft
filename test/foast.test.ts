@@ -1,6 +1,5 @@
 import { mkdirSync, readdirSync, readFileSync, rmSync } from 'node:fs';
 import { suite, type TestContext, test } from 'node:test';
-import { setTimeout } from 'node:timers/promises';
 
 import type { Command } from 'commander';
 
@@ -44,9 +43,6 @@ suite('oas2tb', () => {
 			};
 
 			await oas2tb(commandOptions, { name: () => 'oas2tb' } as unknown as Command);
-
-			// there seems to be a delay between finishing the await above and writing data
-			await setTimeout(250);
 
 			const generatedFiles = readdirSync(outputPathNm);
 			const tbFiles = readdirSync(testConfig.expectedPathNm);
@@ -95,9 +91,6 @@ suite('oas2ro', () => {
 			};
 
 			await oas2ro(commandOptions, { name: () => 'oas2ro' } as unknown as Command);
-
-			// there seems to be a delay between finishing the await above and writing data
-			await setTimeout(250);
 
 			const generatedFiles = readdirSync(outputPathNm);
 			const roFiles = readdirSync(testConfig.expectedPathNm);

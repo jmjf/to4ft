@@ -2,6 +2,5 @@ import {type Static, Type, SchemaOptions, Clone, Kind, TypeRegistry, TSchema, TU
 import { Value } from "@sinclair/typebox/value";
 
 
-
 export const TestObjPropObjectPathParamSchema = Type.Object({"prop1": Type.Optional(Type.Array(Type.String()))})
 export type TestObjPropObjectPathParam = Static<typeof TestObjPropObjectPathParamSchema>

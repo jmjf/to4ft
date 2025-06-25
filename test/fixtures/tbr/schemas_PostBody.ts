@@ -7,7 +7,6 @@ import { PostStatusSchema } from './schemas_PostStatus.ts';
 import { GenericTsSchema } from './schemas_GenericTs.ts';
 
 
-
 export const PostBodySchema = Type.Object({"titleTx": Clone({...TitleTxSchema, ...{"default":"hello"}}),
 "postTx": Clone(PostTxSchema),
 "author": Type.Optional(Clone({...UserSchema, ...{"default":"joe"}})),

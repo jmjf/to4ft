@@ -2,6 +2,5 @@ import {type Static, Type, SchemaOptions, Clone, Kind, TypeRegistry, TSchema, TU
 import { Value } from "@sinclair/typebox/value";
 
 
-
 export const TestBooleanSchema = Type.Boolean({"description":"test boolean property"})
 export type TestBoolean = Static<typeof TestBooleanSchema>

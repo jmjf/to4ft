@@ -9,7 +9,6 @@ import { X𒐗Schema } from './schemas_x𒐗.ts';
 import { TestBooleanSchema } from './schemas_TestBoolean.ts';
 
 
-
 export const UserSchema = Type.Object({"userId": Clone({...UserIdSchema, ...{"description":"A unique identifier for a user (override)"}}),
 "userNm": Clone(UserNmSchema),
 "emailAddrTx": Type.Optional(Clone(EmailAddrTxSchema)),

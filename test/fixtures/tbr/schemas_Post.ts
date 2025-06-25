@@ -5,11 +5,7 @@ import { TitleTxSchema } from './schemas_TitleTx.ts';
 import { PostTxSchema } from './schemas_PostTx.ts';
 import { PostStatusSchema } from './schemas_PostStatus.ts';
 import { GenericTsSchema } from './schemas_GenericTs.ts';
-
-TypeRegistry.Set('ExtendedOneOf', (schema: {oneOf: unknown[]}, value) => 1 === schema.oneOf.reduce((acc: number, schema: unknown) => acc + (Value.Check(schema as TSchema, value) ? 1 : 0), 0))
-
-const OneOf = <T extends TSchema[]>(oneOf: [...T], options: SchemaOptions = {}) => Type.Unsafe<Static<TUnion<T>>>({ ...options, [Kind]: 'ExtendedOneOf', oneOf })
-
+import { OneOf } from './OneOf.ts'
 
 
 export const PostSchema = Type.Object({"postId": Clone({...PostIdSchema, ...{"description":"Uniquely identifies a blog post"}}),

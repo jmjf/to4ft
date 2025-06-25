@@ -2,6 +2,5 @@ import {type Static, Type, SchemaOptions, Clone, Kind, TypeRegistry, TSchema, TU
 import { Value } from "@sinclair/typebox/value";
 
 
-
 export const TestArrayPathParamSchema = Type.Array(Type.String())
 export type TestArrayPathParam = Static<typeof TestArrayPathParamSchema>

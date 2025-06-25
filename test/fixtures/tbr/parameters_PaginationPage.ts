@@ -2,6 +2,5 @@ import {type Static, Type, SchemaOptions, Clone, Kind, TypeRegistry, TSchema, TU
 import { Value } from "@sinclair/typebox/value";
 
 
-
 export const PaginationPageSchema = Type.Number({"default":1,"example":2})
 export type PaginationPage = Static<typeof PaginationPageSchema>
