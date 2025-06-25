@@ -125,10 +125,12 @@ export function genTypeBoxForSchema(schemaNm: string, schema: JSONSchema7, opts:
 	// if (typeof parsedSchema !== "boolean" && parsedSchema.$id === undefined) {
 	// 	parsedSchema.$id = exportedName;
 	// }
-	const typeBoxTypeTx = recurseSchema(opts, schema);
+	const typeBoxSchemaTx = recurseSchema(opts, schema);
 	const exportedTypeTx = `export type ${exportTypeNm} = Static<typeof ${exportSchemaNm}>`;
+	const hasOneOfFl = typeBoxSchemaTx.includes('OneOf([');
 
-	return `${typeBoxTypeTx.includes('OneOf([') ? genOneOfTypeboxSupportCode() : ''}\n\nexport const ${exportSchemaNm} = ${typeBoxTypeTx}\n${exportedTypeTx}\n`;
+	const tbCodeTx = `${hasOneOfFl ? genOneOfTypeboxSupportCode() : ''}\n\nexport const ${exportSchemaNm} = ${typeBoxSchemaTx}\n${exportedTypeTx}\n`;
+	return { tbCodeTx, exportSchemaNm, exportTypeNm, typeBoxSchemaTx, exportedTypeTx, hasOneOfFl };
 }
 
 /*

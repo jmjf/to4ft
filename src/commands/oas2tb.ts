@@ -25,18 +25,20 @@ export async function oas2tb(opts: CommandOptions, command: Command) {
 
 function genDerefTypeBox(schema: JSONSchema7, objNm: string, componentType: string, config: StdConfig) {
 	config.tbCodeGen = { componentType };
-	const tb = genTypeBoxForSchema(objNm, schema, config);
+	const tbForSchema = genTypeBoxForSchema(objNm, schema, config);
 	const outFileNm = getTypeBoxFilenameFor(componentType, objNm, config);
-	writeFileSync(`${config.outPathTx}/${outFileNm}`, `${genDerefImportStatements()}\n\n${tb}`, { flush: true });
+	writeFileSync(`${config.outPathTx}/${outFileNm}`, `${genDerefImportStatements()}\n\n${tbForSchema.tbCodeTx}`, {
+		flush: true,
+	});
 }
 
 function genRefTypeBox(schema: JSONSchema7, objNm: string, componentType: string, config: StdConfig) {
 	config.tbCodeGen = { componentType, refImports: [] as string[] };
-	const tb = genTypeBoxForSchema(objNm, schema, config);
+	const tbForSchema = genTypeBoxForSchema(objNm, schema, config);
 	const outFileNm = getTypeBoxFilenameFor(componentType, objNm, config);
 	writeFileSync(
 		`${config.outPathTx}/${outFileNm}`,
-		`${genRefImportStatements(config.tbCodeGen.refImports ?? [])}\n\n${tb}`,
+		`${genRefImportStatements(config.tbCodeGen.refImports ?? [])}\n\n${tbForSchema.tbCodeTx}`,
 		{ flush: true },
 	);
 }
