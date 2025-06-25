@@ -21,3 +21,9 @@ RUN apt-get update && export DEBIAN_FRONTEND=noninterfactive \
    && apt-get -y install --no-install-recommends sudo git iproute2 \
    && echo ${USERNAME} ALL=\(root\) NOPASSWD:ALL > /etc/sudoers.d/${USERNAME} \
    && chmod 0440 /etc/sudoers.d/${USERNAME}
+
+# ref: https://stackoverflow.com/a/3557165
+# in bash || means "if false", so if grep doesn't find the string in .bashrc, add the file to .bashrc
+COPY --chown=1000:1000 .addEnv /home/node
+RUN grep -qF '# from .addEnv' /home/node/.bashrc \
+   || cat /home/node/.addEnv >> /home/node/.bashrc   
