@@ -6,6 +6,7 @@ import type { CommandOptions } from '../cli.ts';
 import { loadConfig, type StdConfig } from '../lib/config.ts';
 import { pathItemOperations } from '../lib/consts.ts';
 import { genRouteOptionsForOperation } from '../lib/roCodeGenerators.ts';
+import { genDerefImportStatements, writeOneOfFile } from '../lib/tbCodeGenerators.ts';
 import type {
 	OASDocument,
 	OASOperationObject,
@@ -22,6 +23,7 @@ export async function oas2ro(opts: CommandOptions, command: Command) {
 	const config = loadConfig(opts, command.name());
 	const absDir = path.resolve(path.dirname(config.inPathTx));
 	const isDeref = config.oas2ro.derefFl === true;
+	let writeOneOfFl = false;
 
 	const rp = new $RefParser();
 	const oasDoc = (isDeref ? await rp.dereference(config.inPathTx) : await rp.parse(config.inPathTx)) as OASDocument;
@@ -47,11 +49,19 @@ export async function oas2ro(opts: CommandOptions, command: Command) {
 				opObj.parameters = [...pathParams, ...(opObj.parameters ?? [])];
 			}
 
-			const { roCode, roNm, imports } = genRouteOptionsForOperation(pathURL, opMethod, opObj, config);
+			const { roCode, roNm, imports, hasOneOfFl } = genRouteOptionsForOperation(pathURL, opMethod, opObj, config);
+			writeOneOfFl = writeOneOfFl || hasOneOfFl;
+			if (config.oas2ro.outTypeCd === 'TBDEREF') {
+				// exclude the oneOf import here because genEntriesCode will add it
+				imports.push(genDerefImportStatements(false, config.oas2ro.extensionTx));
+			}
 			writeFileSync(`${config.outPathTx}/${roNm}.ts`, `${dedupeArray(imports).join(';\n')};\n\n${roCode};\n`, {
 				flush: true,
 			});
 		}
+	}
+	if (writeOneOfFl) {
+		writeOneOfFile(config);
 	}
 }
 

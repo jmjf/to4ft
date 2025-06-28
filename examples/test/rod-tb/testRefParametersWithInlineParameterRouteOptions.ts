@@ -1,0 +1,81 @@
+import { Type } from '@sinclair/typebox';
+import { OneOf } from './OneOf.ts';
+
+export const testRefParametersWithInlineParameterRouteOptions = {
+	url: '/testRefParametersWithInlineParameter',
+	method: 'GET',
+	operationId: 'testRefParametersWithInlineParameter',
+	tags: ['Posts'],
+	schema: {
+		querystring: {
+			type: 'object',
+			properties: {
+				page: { type: 'integer', default: 1 },
+				limit: { type: 'integer', default: 10, maximum: 30 },
+				tags: { type: 'array', items: { type: 'string' } },
+			},
+			required: ['page', 'tags'],
+			additionalProperties: false,
+		},
+		response: {
+			'200': {
+				content: {
+					'application/json': {
+						schema: Type.Array(
+							Type.Object(
+								{
+									postId: Type.Number({ minimum: 1 }),
+									titleTx: Type.String({ default: 'hello', minLength: 3, maxLength: 100 }),
+									postTx: Type.String({ minLength: 1, maxLength: 1024 }),
+									statusCd: Type.Optional(
+										Type.Union([Type.Literal('draft'), Type.Literal('published'), Type.Literal('deleted')], {
+											default: 'draft',
+										}),
+									),
+									statusTs: Type.Optional(Type.String({ format: 'date-time' })),
+									testNot: Type.Optional(Type.Not(Type.String())),
+									testOneOf: Type.Optional(
+										OneOf([
+											Type.Union([
+												Type.Literal('draft'),
+												Type.Literal('published'),
+												Type.Literal('deleted'),
+											]),
+											Type.String({ default: 'none', minLength: 3, maxLength: 100 }),
+										]),
+									),
+									testAllOf: Type.Optional(
+										Type.Intersect([
+											Type.Union([
+												Type.Literal('draft'),
+												Type.Literal('published'),
+												Type.Literal('deleted'),
+											]),
+											Type.String({ default: 'none', minLength: 3, maxLength: 100 }),
+										]),
+									),
+									testAnyOf: Type.Optional(
+										Type.Union([
+											Type.Union([
+												Type.Literal('draft'),
+												Type.Literal('published'),
+												Type.Literal('deleted'),
+											]),
+											Type.String({ default: 'none', minLength: 3, maxLength: 100 }),
+										]),
+									),
+									testConstString: Type.Optional(Type.Literal('abc')),
+									testConstNumber: Type.Optional(Type.Literal(123)),
+									testConstArray: Type.Optional(Type.Union([Type.Literal('abc'), Type.Literal(123)])),
+									testArrayItems: Type.Optional(Type.Array(Type.Union([Type.String(), Type.Number()]))),
+								},
+								{ additionalProperties: false },
+							),
+						),
+					},
+				},
+			},
+			'4xx': {},
+		},
+	},
+};

@@ -9,7 +9,7 @@ import {
 	genRefImportStatements,
 	genTypeBoxForPaths,
 	genTypeBoxForSchema,
-	typeBoxOneOfSupportCode,
+	writeOneOfFile,
 } from '../lib/tbCodeGenerators.ts';
 import { getTypeBoxFilenameFor } from '../lib/util.ts';
 
@@ -26,10 +26,7 @@ export async function oas2tb(opts: CommandOptions, command: Command) {
 	}
 
 	if (writeOneOfFl) {
-		writeFileSync(
-			`${config.outPathTx}/OneOf.${config.oas2tb.extensionTx}`,
-			`${genDerefImportStatements(false, opts as unknown as StdConfig)}\n${typeBoxOneOfSupportCode}`,
-		);
+		writeOneOfFile(config);
 	}
 }
 
@@ -42,7 +39,7 @@ function genDerefTypeBox(schema: JSONSchema7, objNm: string, componentType: stri
 	}
 	writeFileSync(
 		`${config.outPathTx}/${outFileNm}`,
-		`${genDerefImportStatements(genResult.hasOneOfFl, config)}\n${genResult.tbCodeTx}`,
+		`${genDerefImportStatements(genResult.hasOneOfFl, config.oas2ro.extensionTx)}\n${genResult.tbCodeTx}`,
 		{ flush: true },
 	);
 }
@@ -52,7 +49,7 @@ function genRefTypeBox(schema: JSONSchema7, objNm: string, componentType: string
 	const genResult = genTypeBoxForSchema(objNm, schema, config);
 	const outFileNm = getTypeBoxFilenameFor(componentType, objNm, config);
 	if (genResult.hasOneOfFl) {
-		config.tbCodeGen.refImports?.push(genOneOfImport(config));
+		config.tbCodeGen.refImports?.push(genOneOfImport(config.oas2ro.extensionTx));
 		writeOneOfFl = true;
 	}
 	writeFileSync(

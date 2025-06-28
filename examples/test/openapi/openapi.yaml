@@ -44,9 +44,10 @@ paths:
                 - $ref: '#/components/schemas/PostBody'
           application/xml:
             schema:
-              description: allOf covers genValuesCode isArray string branch
-              allOf:
-                - 'genValuesCode isArray string'
+              description: covers case where we have an array of objects that are consts
+              anyOf:
+                - const: 'array of const 1'
+                - const: 'array of const 2'
       responses:
         "200":
           $ref: '#/components/responses/TestMultiMediaResponse'
@@ -285,6 +286,7 @@ components:
       description: Contents of a post
     PostStatus:
       type: string
+      # enum covers genValuesCode isArray string case
       enum:
         - draft
         - published

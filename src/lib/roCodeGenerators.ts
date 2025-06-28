@@ -1,6 +1,8 @@
 import path from 'node:path/posix';
+import type { JSONSchema7 } from 'json-schema';
 import type { StdConfig } from './config.ts';
 import { annotationKeys, removeFromParameterKeywords } from './consts.ts';
+import { genOneOfImport, genTypeBoxForSchema } from './tbCodeGenerators.ts';
 import {
 	isReferenceObject,
 	isSchemaObject,
@@ -64,7 +66,12 @@ export function genRouteOptionsForOperation(
 
 	roCode += '}}'; // schema + RouteOptions
 
-	return { roCode, roNm, imports: Array.from(imports) };
+	return {
+		roCode,
+		roNm,
+		imports: Array.from(imports),
+		hasOneOfFl: imports.has(genOneOfImport(config.oas2ro.extensionTx)),
+	};
 }
 
 // for object-type parameters, hoist the schema of the first property of the object
@@ -353,11 +360,24 @@ function genEntriesCode(entries: [string, unknown][], imports: Set<string>, conf
 		// console.log('GEN ENTRIES', key, value);
 		if (value === undefined || ignoreKeys.includes(key)) continue;
 		const { useRefFl, refTx } = config.roCodeGen;
+
+		// useRefFl and refTx set for reference objects only; can never enter when derefFl is true
 		if (key === 'schema' && useRefFl && refTx && refTx.length > 0) {
 			const code = genRefCodeAndImport(refTx, imports, config);
 			entriesCode += `schema: ${code},`;
 			return entriesCode;
 		}
+
+		if (key === 'schema' && config.oas2ro.outTypeCd === 'TBDEREF') {
+			// generate TB code and insert; value will be a JSON Schema structure
+			const genOutput = genTypeBoxForSchema('', value as JSONSchema7, config);
+			entriesCode += `schema: ${genOutput.tbSchemaTx},`;
+			if (genOutput.hasOneOfFl) {
+				imports.add(genOneOfImport(config.oas2ro.extensionTx));
+			}
+			return entriesCode;
+		}
+
 		if (key !== '$ref') {
 			if ((value as OASSchemaObject)?.type === 'object' && (value as OASSchemaObject)?.default) {
 				(value as OASSchemaObject).default = undefined;

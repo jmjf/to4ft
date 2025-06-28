@@ -1,3 +1,4 @@
+import { writeFileSync } from 'node:fs';
 import { $RefParser } from '@apidevtools/json-schema-ref-parser';
 import type { JSONSchema7, JSONSchema7Definition } from 'json-schema';
 import type { StdConfig } from './config.ts';
@@ -125,12 +126,12 @@ export function genTypeBoxForSchema(schemaNm: string, schema: JSONSchema7, opts:
 	// if (typeof parsedSchema !== "boolean" && parsedSchema.$id === undefined) {
 	// 	parsedSchema.$id = exportedName;
 	// }
-	const typeBoxSchemaTx = recurseSchema(opts, schema);
+	const tbSchemaTx = recurseSchema(opts, schema);
 	const exportedTypeTx = `export type ${exportTypeNm} = Static<typeof ${exportSchemaNm}>`;
-	const hasOneOfFl = typeBoxSchemaTx.includes('OneOf([');
+	const hasOneOfFl = tbSchemaTx.includes('OneOf([');
 
-	const tbCodeTx = `\n\nexport const ${exportSchemaNm} = ${typeBoxSchemaTx}\n${exportedTypeTx}\n`;
-	return { tbCodeTx, exportSchemaNm, exportTypeNm, typeBoxSchemaTx, exportedTypeTx, hasOneOfFl };
+	const tbCodeTx = `\n\nexport const ${exportSchemaNm} = ${tbSchemaTx}\n${exportedTypeTx}\n`;
+	return { tbCodeTx, exportSchemaNm, exportTypeNm, tbSchemaTx, exportedTypeTx, hasOneOfFl };
 }
 
 /*
@@ -141,22 +142,29 @@ const typeboxImports = [
 	'import {type Static, Type, SchemaOptions, Clone, Kind, TypeRegistry, TSchema, TUnion} from "@sinclair/typebox"',
 	'import { Value } from "@sinclair/typebox/value";',
 ];
-export function genDerefImportStatements(genOneOfFl: boolean, config: StdConfig): string {
-	const oneOfImportTx = genOneOfFl ? `${genOneOfImport(config)}\n` : '';
+export function genDerefImportStatements(genOneOfFl: boolean, extensionTx: string): string {
+	const oneOfImportTx = genOneOfFl ? `${genOneOfImport(extensionTx)}\n` : '';
 	return `${typeboxImports.join('\n')}\n${oneOfImportTx}`;
 }
 /**
  * Custom TypeBox code to support the JSON schema keyword 'oneOf'. Based on the
  * suggestion here: https://github.com/xddq/schema2typebox/issues/16#issuecomment-1603731886
  */
-export const typeBoxOneOfSupportCode = `TypeRegistry.Set('ExtendedOneOf', (schema: {oneOf: unknown[]}, value) => 1 === schema.oneOf.reduce((acc: number, schema: unknown) => acc + (Value.Check(schema as TSchema, value) ? 1 : 0), 0))
+const typeBoxOneOfSupportCode = `TypeRegistry.Set('ExtendedOneOf', (schema: {oneOf: unknown[]}, value) => 1 === schema.oneOf.reduce((acc: number, schema: unknown) => acc + (Value.Check(schema as TSchema, value) ? 1 : 0), 0))
 
 export const OneOf = <T extends TSchema[]>(oneOf: [...T], options: SchemaOptions = {}) => Type.Unsafe<Static<TUnion<T>>>({ ...options, [Kind]: 'ExtendedOneOf', oneOf })
 
 `;
 
-export function genOneOfImport(config: StdConfig) {
-	return `import { OneOf } from './OneOf.${config.oas2tb.extensionTx}'`;
+export function writeOneOfFile(config: StdConfig) {
+	writeFileSync(
+		`${config.outPathTx}/OneOf.${config.oas2tb.extensionTx}`,
+		`${genDerefImportStatements(false, config.oas2tb.extensionTx as string)}\n${typeBoxOneOfSupportCode}`,
+	);
+}
+
+export function genOneOfImport(extensionTx: string) {
+	return `import { OneOf } from './OneOf.${extensionTx}'`;
 }
 
 // one schema/type per file means no multi-imports from a single file, so we can use strings

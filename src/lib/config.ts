@@ -6,29 +6,36 @@ import { dedupeArray, ensureCleanDirectoryExists } from './util.ts';
 
 const defaultConfigFileNm = 'oas2tb4fastify.json';
 
-type ConfigFile = {
+type TBConfig = {
+	schemaPrefixTx: string;
+	schemaSuffixTx: string;
+	typePrefixTx: string;
+	typeSuffixTx: string;
+	derefFl: boolean;
+	importExtensionTx: string;
+	extensionTx: string;
+};
+
+type ROConfig = {
+	derefFl: boolean;
+	prefixTx: string;
+	suffixTx: string;
+	importExtensionTx: string;
+	extensionTx: string;
+	noAdditionalProperties: boolean;
+	outTypeCd: string;
+	useTBFl: boolean;
+};
+
+type ConfigFileBase = {
 	keepAnnotationsFl?: boolean;
 	allowUnsafeKeywordsFl?: boolean;
 	caseNm: string;
-	oas2tb?: {
-		schemaPrefixTx?: string;
-		schemaSuffixTx?: string;
-		typePrefixTx?: string;
-		typeSuffixTx?: string;
-		derefFl?: boolean;
-		importExtensionTx?: string;
-		extensionTx?: string;
-	};
-	oas2ro?: {
-		derefFl?: boolean;
-		prefixTx?: string;
-		suffixTx?: string;
-		importExtensionTx?: string;
-		extensionTx?: string;
-		noAdditionalProperties?: boolean;
-		outTypeCd?: string;
-		useTBFl?: boolean;
-	};
+};
+
+type ConfigFile = ConfigFileBase & {
+	oas2tb?: Partial<TBConfig>;
+	oas2ro?: Partial<ROConfig>;
 };
 
 type InputFiles = {
@@ -45,7 +52,10 @@ export type StdConfig = {
 	// set internally;
 	preserveKeywords: string[];
 } & InputFiles &
-	Required<ConfigFile> & {
+	Required<ConfigFileBase> & {
+		oas2tb: Required<TBConfig>;
+		oas2ro: Required<ROConfig>;
+	} & {
 		roCodeGen: { useRefFl?: boolean; refTx?: string };
 		tbCodeGen: { refImports?: string[]; componentType?: string };
 	};
@@ -105,7 +115,7 @@ export function loadConfig(opts: CommandOptions, commandNm: string): StdConfig {
 
 	// {...defaultConfig, ...configObj} would completely overwrite spread default values for
 	// oas2tb or oas2ro if any property of oas2tb or oas2ro is set, so we build it this way.
-	const config: StdConfig = {
+	const config = {
 		commandNm: commandNm ?? 'unknown',
 		preserveKeywords: ['description', 'summary'],
 		inPathTx: opts.input,
@@ -126,6 +136,7 @@ export function loadConfig(opts: CommandOptions, commandNm: string): StdConfig {
 		},
 		oas2ro: {
 			derefFl: configObj.oas2ro?.derefFl ?? false,
+			useTBFl: false,
 			prefixTx: configObj.oas2ro?.prefixTx ?? '',
 			suffixTx: configObj.oas2ro?.suffixTx ?? 'RouteOptions',
 			importExtensionTx: configObj.oas2ro?.importExtensionTx ?? 'js',
@@ -133,7 +144,7 @@ export function loadConfig(opts: CommandOptions, commandNm: string): StdConfig {
 			noAdditionalProperties: configObj.oas2ro?.noAdditionalProperties ?? true,
 			outTypeCd:
 				typeof configObj.oas2ro?.outTypeCd === 'string' &&
-				['JSONDEREF', 'TBREF'].includes(configObj.oas2ro.outTypeCd.toUpperCase())
+				['JSONDEREF', 'TBREF', 'TBDEREF'].includes(configObj.oas2ro.outTypeCd.toUpperCase())
 					? configObj.oas2ro.outTypeCd.toUpperCase()
 					: 'TBREF', // default
 		},
@@ -150,6 +161,10 @@ export function loadConfig(opts: CommandOptions, commandNm: string): StdConfig {
 			break;
 		case 'TBREF':
 			config.oas2ro.derefFl = false;
+			config.oas2ro.useTBFl = true;
+			break;
+		case 'TBDEREF':
+			config.oas2ro.derefFl = true;
 			config.oas2ro.useTBFl = true;
 			break;
 		default:
