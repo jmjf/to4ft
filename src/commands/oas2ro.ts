@@ -4,7 +4,7 @@ import { $RefParser } from '@apidevtools/json-schema-ref-parser';
 import type { Command } from 'commander';
 import type { CommandOptions } from '../cli.ts';
 import { loadConfig, type StdConfig } from '../lib/config.ts';
-import { pathItemOperations } from '../lib/consts.ts';
+import { OutTypeCdValues, pathItemOperations } from '../lib/consts.ts';
 import { genRouteOptionsForOperation } from '../lib/roCodeGenerators.ts';
 import { genDerefImportStatements, writeOneOfFile } from '../lib/tbCodeGenerators.ts';
 import type {
@@ -51,7 +51,7 @@ export async function oas2ro(opts: CommandOptions, command: Command) {
 
 			const { roCode, roNm, imports, hasOneOfFl } = genRouteOptionsForOperation(pathURL, opMethod, opObj, config);
 			writeOneOfFl = writeOneOfFl || hasOneOfFl;
-			if (config.oas2ro.outTypeCd === 'TBDEREF') {
+			if (config.oas2ro.outTypeCd === OutTypeCdValues.tbDeref) {
 				// exclude the oneOf import here because genEntriesCode will add it
 				imports.push(genDerefImportStatements(false, config.oas2ro.extensionTx));
 			}

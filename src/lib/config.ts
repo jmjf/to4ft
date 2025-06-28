@@ -2,6 +2,7 @@ import { existsSync, lstatSync, readdirSync, readFileSync } from 'node:fs';
 import path from 'node:path/posix';
 import { $RefParser } from '@apidevtools/json-schema-ref-parser';
 import type { CommandOptions } from '../cli.ts';
+import { type OutTypeCd, OutTypeCdValues, validOutTypeCdValues } from './consts.ts';
 import { dedupeArray, ensureCleanDirectoryExists } from './util.ts';
 
 const defaultConfigFileNm = 'oas2tb4fastify.json';
@@ -144,7 +145,7 @@ export function loadConfig(opts: CommandOptions, commandNm: string): StdConfig {
 			noAdditionalProperties: configObj.oas2ro?.noAdditionalProperties ?? true,
 			outTypeCd:
 				typeof configObj.oas2ro?.outTypeCd === 'string' &&
-				['JSONDEREF', 'TBREF', 'TBDEREF'].includes(configObj.oas2ro.outTypeCd.toUpperCase())
+				validOutTypeCdValues.includes(configObj.oas2ro.outTypeCd.toUpperCase() as OutTypeCd)
 					? configObj.oas2ro.outTypeCd.toUpperCase()
 					: 'TBREF', // default
 		},
@@ -155,15 +156,15 @@ export function loadConfig(opts: CommandOptions, commandNm: string): StdConfig {
 
 	// handle outTypeCd effects on setup; outTypeCd will be a valid value because we default if missing
 	switch (config.oas2ro.outTypeCd) {
-		case 'JSONDEREF':
+		case OutTypeCdValues.jsonDeref:
 			config.oas2ro.derefFl = true;
 			config.oas2ro.useTBFl = false;
 			break;
-		case 'TBREF':
+		case OutTypeCdValues.tbRef:
 			config.oas2ro.derefFl = false;
 			config.oas2ro.useTBFl = true;
 			break;
-		case 'TBDEREF':
+		case OutTypeCdValues.tbDeref:
 			config.oas2ro.derefFl = true;
 			config.oas2ro.useTBFl = true;
 			break;

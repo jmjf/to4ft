@@ -1,7 +1,7 @@
 import path from 'node:path/posix';
 import type { JSONSchema7 } from 'json-schema';
 import type { StdConfig } from './config.ts';
-import { annotationKeys, removeFromParameterKeywords } from './consts.ts';
+import { annotationKeys, OutTypeCdValues, removeFromParameterKeywords } from './consts.ts';
 import { genOneOfImport, genTypeBoxForSchema } from './tbCodeGenerators.ts';
 import {
 	isReferenceObject,
@@ -55,7 +55,7 @@ export function genRouteOptionsForOperation(
 		roCode += headersCode.length > 0 ? `headers: {${headersCode}},` : '';
 
 		const querystringCode = genQueryParametersCode(opObj.parameters as OASParameterObject[], imports, config);
-		roCode += querystringCode.length > 0 ? `querystring: {${querystringCode}},` : '';
+		roCode += querystringCode.length > 0 ? `querystring: ${querystringCode},` : '';
 	}
 
 	const bodyCode = genRequestBodyCode(opObj.requestBody as OASRequestBodyObject, imports, config);
@@ -154,7 +154,7 @@ function mergeParams(parameters: OASParameterObject[]) {
 function genParametersCode(
 	paramIn: string,
 	parameters: OASParameterObject[],
-	opts: StdConfig,
+	config: StdConfig,
 	imports: Set<string>,
 ): string {
 	const functionNm = 'genParameterCode';
@@ -183,13 +183,17 @@ function genParametersCode(
 		const schema = paramObj.schema as OASSchemaObject;
 
 		if (isReferenceObject(schema)) {
-			const code = genRefCodeAndImport(schema.$ref, imports, opts);
+			const code = genRefCodeAndImport(schema.$ref, imports, config);
 			paramCode += `${code},`;
 		} else {
-			paramCode += '{';
-			paramCode += opts.keepAnnotationsFl ? genParamAnnotationsCode(paramObj, opts) : '';
-			paramCode += genEntriesCode(Object.entries(schema), imports, opts);
-			paramCode += '},';
+			let code = config.keepAnnotationsFl ? genParamAnnotationsCode(paramObj, config) : '';
+			// genEntriesCode returns `schema: <TypeBox-Code>,` -- we need to remove the `schema: ` part (8 chars)
+			code += genEntriesCode(Object.entries({ schema }), imports, config).substring(8);
+			if (config.oas2ro.outTypeCd === OutTypeCdValues.tbDeref) {
+				paramCode += code;
+			} else {
+				paramCode += `{ ${code} }`;
+			}
 		}
 	}
 	if (paramCode.length > 0) {
@@ -210,6 +214,7 @@ function genQueryParametersCode(parameters: OASParameterObject[], imports: Set<s
 	let objectDe = '';
 
 	// build entries for individual parameters and object properties, flattening objects
+	// because RouteOptions requires a single object structure for all query params
 	for (const param of params) {
 		if (!param.schema) {
 			console.log(`${functionNm} ERROR: skipping no-schema parameter ${param.name}`);
@@ -234,11 +239,30 @@ function genQueryParametersCode(parameters: OASParameterObject[], imports: Set<s
 		}
 	}
 
-	const props = genEntriesCode(entries, imports, config);
+	// For TBDEREF, entries describes the set of attributes that make up the query in [key, value] tuples.
+	// We need to create an entry from { schema: { type: 'object', properties: { entries as object }}
+	// and remove `schema: ` (substring(8))
+	// For TBREF and JSONDEREF, we can use entries as is.
+	const props =
+		config.oas2ro.outTypeCd === OutTypeCdValues.tbDeref
+			? genEntriesCode(
+					Object.entries({ schema: { type: 'object', properties: Object.fromEntries(entries) } }),
+					imports,
+					config,
+				).substring(8)
+			: genEntriesCode(entries, imports, config);
+
 	const desc = config.keepAnnotationsFl && objectDe.length > 0 ? `description: '${objectDe}',` : '';
 	const req = required.length > 0 ? `required: ${stringArrayToCode(required)},` : '';
 	const addProps = config.oas2ro.noAdditionalProperties ? 'additionalProperties: false,' : '';
-	const code = `type: 'object', properties: {${props}},${desc}${req}${addProps}`;
+
+	// For TBDEREF, we don't need `{type: 'object...}`
+	// But we do need to desc, req, and addProps inside the TypeBox `Type.Object` parens
+	// So, cut off the paren+comma (slice), wrap the extras in {} and add the paren back
+	const code =
+		config.oas2ro.outTypeCd === OutTypeCdValues.tbDeref
+			? `${props.slice(0, -2)},{${desc}${req}${addProps}})`
+			: `{type: 'object', properties: {${props}},${desc}${req}${addProps}}`;
 
 	return code;
 }
@@ -368,7 +392,7 @@ function genEntriesCode(entries: [string, unknown][], imports: Set<string>, conf
 			return entriesCode;
 		}
 
-		if (key === 'schema' && config.oas2ro.outTypeCd === 'TBDEREF') {
+		if (key === 'schema' && config.oas2ro.outTypeCd === OutTypeCdValues.tbDeref) {
 			// generate TB code and insert; value will be a JSON Schema structure
 			const genOutput = genTypeBoxForSchema('', value as JSONSchema7, config);
 			entriesCode += `schema: ${genOutput.tbSchemaTx},`;

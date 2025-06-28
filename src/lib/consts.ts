@@ -45,3 +45,11 @@ export const pathItemOperations = ['get', 'put', 'post', 'delete', 'options', 'h
 
 // Based on ajv-formats list of formats
 export const dateFormats = ['date', 'date-time', 'time', 'iso-time', 'iso-date-time'];
+
+export const OutTypeCdValues = {
+	tbDeref: 'TBDEREF',
+	jsonDeref: 'JSONDEREF',
+	tbRef: 'TBREF',
+} as const;
+export type OutTypeCd = (typeof OutTypeCdValues)[keyof typeof OutTypeCdValues];
+export const validOutTypeCdValues = Object.values(OutTypeCdValues);
