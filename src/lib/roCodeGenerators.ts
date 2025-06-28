@@ -70,7 +70,7 @@ export function genRouteOptionsForOperation(
 // for object-type parameters, hoist the schema of the first property of the object
 // if the object has more than one properties log an error
 // if the parameter is an array, omit it and log an error
-export function hoistSchemas(parameters: OASParameterObject[]) {
+function hoistSchemas(parameters: OASParameterObject[]) {
 	const functionNm = 'hoistSchemas';
 	const params = structuredClone(parameters);
 
@@ -111,7 +111,7 @@ export function hoistSchemas(parameters: OASParameterObject[]) {
 
 // merge parameters into a single object so they're ready to convert
 // to a Fastify RouteOptions schema member
-export function mergeParams(parameters: OASParameterObject[]) {
+function mergeParams(parameters: OASParameterObject[]) {
 	const functionNm = 'mergeParameters';
 	const params = structuredClone(parameters);
 
@@ -144,7 +144,7 @@ export function mergeParams(parameters: OASParameterObject[]) {
 }
 
 // handles parameters that can be single-value -- in:path, in:header
-export function genParametersCode(
+function genParametersCode(
 	paramIn: string,
 	parameters: OASParameterObject[],
 	opts: StdConfig,
@@ -180,7 +180,7 @@ export function genParametersCode(
 			paramCode += `${code},`;
 		} else {
 			paramCode += '{';
-			paramCode += opts.keepAnnotationsFl ? getParamAnnotationsCode(paramObj, opts) : '';
+			paramCode += opts.keepAnnotationsFl ? genParamAnnotationsCode(paramObj, opts) : '';
 			paramCode += genEntriesCode(Object.entries(schema), imports, opts);
 			paramCode += '},';
 		}
@@ -193,7 +193,7 @@ export function genParametersCode(
 
 // Query parameters are different from path and header params because they may be objects whose
 // properties get flattened together
-export function genQueryParametersCode(parameters: OASParameterObject[], imports: Set<string>, config: StdConfig) {
+function genQueryParametersCode(parameters: OASParameterObject[], imports: Set<string>, config: StdConfig) {
 	const functionNm = 'genQueryParameterCode';
 
 	const params = parameters.filter((s) => s.in === 'query');
@@ -236,7 +236,7 @@ export function genQueryParametersCode(parameters: OASParameterObject[], imports
 	return code;
 }
 
-export function genRequestBodyCode(requestBody: OASRequestBodyObject, imports: Set<string>, config: StdConfig) {
+function genRequestBodyCode(requestBody: OASRequestBodyObject, imports: Set<string>, config: StdConfig) {
 	if (!requestBody || Object.keys(requestBody).length === 0) return '';
 
 	config.roCodeGen.refTx = undefined;
@@ -252,7 +252,7 @@ export function genRequestBodyCode(requestBody: OASRequestBodyObject, imports: S
 	return `{ ${genEntriesCode(Object.entries(requestBody), imports, config)} }`;
 }
 
-export function genResponsesCode(responses: OASResponsesObject, imports: Set<string>, config: StdConfig) {
+function genResponsesCode(responses: OASResponsesObject, imports: Set<string>, config: StdConfig) {
 	if (!responses || Object.keys(responses).length === 0) return '';
 
 	let code = '';
@@ -280,7 +280,7 @@ export function genResponsesCode(responses: OASResponsesObject, imports: Set<str
 	return `{ ${code} }`;
 }
 
-export function getParamAnnotationsCode(parameter: OASParameterObject, config: StdConfig) {
+function genParamAnnotationsCode(parameter: OASParameterObject, config: StdConfig) {
 	if (!config.keepAnnotationsFl) return '';
 	const param = structuredClone(parameter);
 	const validEntries = Object.entries(param).filter(([key, _value]) => annotationKeys.includes(key));
@@ -288,7 +288,7 @@ export function getParamAnnotationsCode(parameter: OASParameterObject, config: S
 }
 
 // generated array of required parameter names
-export function genParmRequiredCode(params: [string, OASParameterObject][]) {
+function genParmRequiredCode(params: [string, OASParameterObject][]) {
 	const required: string[] = [];
 	for (const [paramNm, paramObj] of params) {
 		// console.log('genParamRequiredCode param', paramNm, paramObj, params);
@@ -300,17 +300,17 @@ export function genParmRequiredCode(params: [string, OASParameterObject][]) {
 }
 
 // make OpenAPI path URL Fastify friendly
-export function cleanPathURL(pathURL: string): string {
+function cleanPathURL(pathURL: string): string {
 	let cleanPath = pathURL.replaceAll('{', ':');
 	cleanPath = cleanPath.replaceAll('}', '');
 	return cleanPath;
 }
 
-export function stringArrayToCode(arr: string[]): string {
+function stringArrayToCode(arr: string[]): string {
 	return `[${arr.map((s) => JSON.stringify(s)).join(',')}]`;
 }
 
-export function genValueCode(value: unknown, imports: Set<string>, config: StdConfig): string | unknown {
+function genValueCode(value: unknown, imports: Set<string>, config: StdConfig): string | unknown {
 	if (typeof value === 'string') {
 		return JSON.stringify(value);
 	}
@@ -345,7 +345,7 @@ export function genValueCode(value: unknown, imports: Set<string>, config: StdCo
 	return value;
 }
 
-export function genEntriesCode(entries: [string, unknown][], imports: Set<string>, config: StdConfig) {
+function genEntriesCode(entries: [string, unknown][], imports: Set<string>, config: StdConfig) {
 	let entriesCode = '';
 	const ignoreKeys = getSharedIgnoreKeys(config);
 	// console.log('GEN ENTRIES entries', entries);
@@ -373,7 +373,7 @@ export function genEntriesCode(entries: [string, unknown][], imports: Set<string
 	return entriesCode;
 }
 
-export function genRefCodeAndImport(ref: string, imports: Set<string>, config: StdConfig) {
+function genRefCodeAndImport(ref: string, imports: Set<string>, config: StdConfig) {
 	// console.log('genRefCodeAndImport 1', ref, config);
 	// importing schemas from TypeBox output files, so nameType is schema
 	const { refedNm, refPathNm } = getRefNames(
