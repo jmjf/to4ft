@@ -13,7 +13,6 @@
   - Exception: TypeBox schemas and types require `@sinclair/typebox`.
   - You may choose to use a type provider, custom query parser, etc., if you choose, but generated `RouteOptions` may not support certain features.
 
-
 - `in: path` parameters may have one and only one property. Even if the schema is declared as an object, there will be only one value in `properties`. If an `in: path` parameter's schema is `type: object`, only the first property will be read for the schema.
   - Reason: Building arrays and objects into a path parameter does not align with REST concepts and is difficult to use. Also, I doubt Fastify supports objects/arrays.
 

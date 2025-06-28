@@ -26,7 +26,7 @@ I've seen examples using TypeBox to define the API schema and exporting JSON Sch
 
 ## Limitations and compromises
 
-- Does not format output. You've already configured your preferred style for your preferred code formatter (`@biomejs/biome`, `prettier`, something else). You'll format the code to match your style anyway. So, `to4ft` avoids the overhead of a formatter dependency to format in a style you're going to reformat anyway. Write an npm script to generate and format generated code and lint-fix generated code (next point). See `check:ex` in `package.json` and the example scripts (`blog:*`, `train:*`, etc.) for examples.
+- Does not format output. You've already configured your preferred style for your preferred code formatter (`@biomejs/biome`, `prettier`, something else). You'll format the code to match your style anyway. So, `to4ft` avoids the overhead of a formatter dependency to format in a style you'll reformat anyway. Write an npm script to generate and format generated code and lint-fix generated code (next point). See `check:ex` in `package.json` and the example scripts (`blog:*`, `train:*`, etc.) for examples.
 
 - Writes a standard set of TypeBox imports to all output files. If your linter warns or errors on unused imports, run lint with fix on the output directory to strip unused imports. Ensure you enable fixing unsafe imports if your linter doesn't clean them by default. If your linter can't fix simple, safe issues like this, consider getting a linter that can.
 
@@ -46,7 +46,7 @@ I've seen examples using TypeBox to define the API schema and exporting JSON Sch
   - Read-only component types (`parameters`, `requestBodies`) generate `Type.String(...)` because they will be presented as strings from the query parser.
   - Assign-only component types (`responses`) generate `Type.Unsafe<Date>(Type.String(...))` so we can assign a Date and let Fastify format it according to the spec.
   - Mixed component types (`schemas`, `headers`) -> `Type.Unsafe<Date|string>(Type.String(...))` because we may read or write it.
-  - See [ExtractResponseSchemas.md](./docs/recommendations/06-ExtractResponseSchemas.md) for an approach to get types for response mapping functions.
+  - See [ExtractResponseSchemas.md](./docs/recommendations/06-ExtractResponseSchemas.md) to get types for response mapping functions.
 
 ### In `oas2ro`
 

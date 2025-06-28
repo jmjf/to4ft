@@ -32,9 +32,9 @@ paths:
                   $ref: '#/components/headers/XMyCustomHeader'
 ```
 
-The header named `XMyCustomHeader` is used in `responses` only. You cannot `ref` it in `parameters`. (You can, but it won't work.) The name of the header as it appears in the response is set in `responses.headers`
+The header named `XMyCustomHeader` is used in `responses` only. You cannot `ref` it in `parameters`. (You can, but it won't work.) The name of the header as it appears in the response is set in `responses.headers`.
 
 The parameter named `XMyCustomHeader` is used in `parameters` only. The name of the header expected in the request is set in `parameters.*.name`.
 
 - `parameters` use `components.parameters` and `parameters` require a `name` in the `parameter`.
-- `responses` use `components.headers` and `responses.headers` are named.
+- `responses` use `components.headers` and `responses.headers` are named in the response structure in `components.responses` or the operation object's `responses` section.

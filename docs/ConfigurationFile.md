@@ -18,12 +18,13 @@
       "addDateFl": false
    },
    "oas2ro": {
-      "derefFl": false,
+      ~~"derefFl": false,~~   // DEPRECATED: use outTypeCd instead
       "prefixTx": "",
       "suffixTx": "RouteOptions",
       "importExtensionTx": "js",
       "extensionTx": "ts",
-      "noAdditionalProperties": true
+      "noAdditionalProperties": true,
+      "outTypeCd": "TBREF"
    }
 }
 ```
@@ -52,7 +53,7 @@
     - **NOTE:** `oas2tb` is writing TypeBox, which assumes TypeScript, so extension should be `ts`, `mts`, or `cts`.
 
 - `oas2ro` -- configuration specific to `oas2ro`
-  - `derefFl` -- If true, generate dereferenced `RouteOptions` objects with fully exploded schemas for any referenced objects.
+  - ~~`derefFl` -- If true, generate dereferenced `RouteOptions` objects with fully exploded schemas for any referenced objects.~~
   - `prefixTx` and `suffixTx` -- Text to add before and after (respectively) names for `RouteOptions` objects.
   - `importExtensionTx` -- The extension to use for import file names -- NO DOT.
     - If you aren't using TypeScript's `rewriteRelativeImportExtensions` option, you probably want `js`.
@@ -60,3 +61,6 @@
   - `extensionTx` -- The extension to use for output file names -- NO DOT.
     - `RouteOptions` do not include type annotations, so can be written as `ts`, `mts`, `cts`, `js`, `mjs`, or `cjs`.
   - `noAdditionalProperties` -- if true, adds `additionalProperties: false` to querystring parameters.
+  - `outTypeCd` -- one of the values below, case insensitive
+    - `TBREF` -- generate `RouteOptions` with ref-maintaining TypeBox (see `examples/**/ror-tb` for examples)
+    - `JSONDEREF` -- generate `RouteOptions` with dereferenced JSON Schema (see `examples/**/rod-json` for examples)

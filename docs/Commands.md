@@ -10,7 +10,7 @@ Generate TypeBox schemas and types from an OpenAPI spec.
 
 Example: `to4ft oas2tb -i examples/openapi/openapi.yaml -o examples/dtb -c configFile`
 
-### Command line options
+### `oas2tb` Command line options
 
 `-i` (required) -- path to one of the following:
 
@@ -30,7 +30,7 @@ Generate partial Fastify `RouteOptions` objects based on OpenAPI `paths`.
 
 Example: `to4ft oas2ro -i input -o outDir -r refDir -c configFile`
 
-### Command line options
+### `oas2ro` Command line options
 
 `-i` (required) -- the root file of an OpenAPI spec; `to4ft` expects to find an OpenAPI Document Object
 
@@ -38,4 +38,4 @@ Example: `to4ft oas2ro -i input -o outDir -r refDir -c configFile`
 
 `-c` -- JSON configuration file to use. See `config_deref.json` and `config_ref.json` for examples.
 
-`--refDir` (required if `derefFl: false`) -- directory to reference for TypeBox types; `to4ft` assumes the directory and files it wants exist and exports the TypeBox schemas it wants to import.
+`--refDir` (required if `derefFl: false` or `outTypeCd: "TBREF"`) -- directory to reference for TypeBox types; `to4ft` does not check for existence, nor does it confirm files export the TypeBox schemas it wants to import. Those checks are lint checks.
