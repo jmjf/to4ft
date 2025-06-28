@@ -1,5 +1,5 @@
 {
-	"keepAnnotationsFl": false,
+	"keepAnnotationsFl": true,
 	"allowUnsafeKeywordsFl": false,
 	"caseNm": "go",
 	"oas2tb": {
@@ -7,16 +7,17 @@
 		"schemaSuffixTx": "Schema",
 		"typePrefixTx": "",
 		"typeSuffixTx": "",
-		"derefFl": true,
+		"derefFl": false,
 		"importExtensionTx": "ts",
-		"extensionTx": "ts"
+		"extensionTx": "ts",
+		"addDateFl": true
 	},
 	"oas2ro": {
-		"derefFl": true,
 		"prefixTx": "",
 		"suffixTx": "RouteOptions",
 		"importExtensionTx": "ts",
 		"extensionTx": "ts",
-		"noAdditionalProperties": true
+		"noAdditionalProperties": true,
+		"outTypeCd": "TBREF"
 	}
 }

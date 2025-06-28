@@ -1,5 +1,5 @@
 {
-	"keepAnnotationsFl": true,
+	"keepAnnotationsFl": false,
 	"allowUnsafeKeywordsFl": false,
 	"caseNm": "go",
 	"oas2tb": {
@@ -7,17 +7,16 @@
 		"schemaSuffixTx": "Schema",
 		"typePrefixTx": "",
 		"typeSuffixTx": "",
-		"derefFl": false,
+		"derefFl": true,
 		"importExtensionTx": "ts",
-		"extensionTx": "ts",
-		"addDateFl": true
+		"extensionTx": "ts"
 	},
 	"oas2ro": {
-		"derefFl": false,
 		"prefixTx": "",
 		"suffixTx": "RouteOptions",
 		"importExtensionTx": "ts",
 		"extensionTx": "ts",
-		"noAdditionalProperties": true
+		"noAdditionalProperties": true,
+		"outTypeCd": "JSONDEREF"
 	}
 }

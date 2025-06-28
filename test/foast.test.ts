@@ -21,13 +21,13 @@ suite('oas2tb', () => {
 	for (const testConfig of [
 		{
 			testNm: 'ref-maintaining',
-			configFileNm: `${fixturesPathNm}/ref.json`,
+			configFileNm: `${fixturesPathNm}/tbRef.json`,
 			expectedPathNm: `${fixturesPathNm}/tbr`,
 			injectNm: 'tbr',
 		},
 		{
 			testNm: 'dereferenced',
-			configFileNm: `${fixturesPathNm}/deref.json`,
+			configFileNm: `${fixturesPathNm}/jsonDeref.json`,
 			expectedPathNm: `${fixturesPathNm}/tbd`,
 			injectNm: 'tbd',
 		},
@@ -68,15 +68,15 @@ suite('oas2ro', () => {
 	for (const testConfig of [
 		{
 			testNm: 'ref-maintaining',
-			configFileNm: `${fixturesPathNm}/ref.json`,
-			expectedPathNm: `${fixturesPathNm}/ror`,
-			injectNm: 'ror',
+			configFileNm: `${fixturesPathNm}/tbRef.json`,
+			expectedPathNm: `${fixturesPathNm}/ror-tb`,
+			injectNm: 'ror-tb',
 		},
 		{
 			testNm: 'dereferenced',
-			configFileNm: `${fixturesPathNm}/deref.json`,
-			expectedPathNm: `${fixturesPathNm}/rod`,
-			injectNm: 'rod',
+			configFileNm: `${fixturesPathNm}/jsonDeref.json`,
+			expectedPathNm: `${fixturesPathNm}/rod-json`,
+			injectNm: 'rod-json',
 		},
 	]) {
 		test(testConfig.testNm, async (t: TestContext) => {
