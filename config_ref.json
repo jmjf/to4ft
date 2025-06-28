@@ -17,6 +17,7 @@
 		"suffixTx": "RouteOptions",
 		"importExtensionTx": "ts",
 		"extensionTx": "ts",
-		"noAdditionalProperties": true
+		"noAdditionalProperties": true,
+		"outTypeCd": "TBREF"
 	}
 }

@@ -25,7 +25,9 @@ type ConfigFile = {
 		suffixTx?: string;
 		importExtensionTx?: string;
 		extensionTx?: string;
-		noAdditionalProperties: boolean;
+		noAdditionalProperties?: boolean;
+		outTypeCd?: string;
+		useTBFl?: boolean;
 	};
 };
 
@@ -103,7 +105,7 @@ export function loadConfig(opts: CommandOptions, commandNm: string): StdConfig {
 
 	// {...defaultConfig, ...configObj} would completely overwrite spread default values for
 	// oas2tb or oas2ro if any property of oas2tb or oas2ro is set, so we build it this way.
-	const config = {
+	const config: StdConfig = {
 		commandNm: commandNm ?? 'unknown',
 		preserveKeywords: ['description', 'summary'],
 		inPathTx: opts.input,
@@ -129,12 +131,33 @@ export function loadConfig(opts: CommandOptions, commandNm: string): StdConfig {
 			importExtensionTx: configObj.oas2ro?.importExtensionTx ?? 'js',
 			extensionTx: configObj.oas2ro?.extensionTx ?? 'ts',
 			noAdditionalProperties: configObj.oas2ro?.noAdditionalProperties ?? true,
+			outTypeCd:
+				typeof configObj.oas2ro?.outTypeCd === 'string' &&
+				['JSONDEREF', 'TBREF'].includes(configObj.oas2ro.outTypeCd.toUpperCase())
+					? configObj.oas2ro.outTypeCd.toUpperCase()
+					: 'TBREF', // default
 		},
 		...inputFiles,
 		roCodeGen: {},
 		tbCodeGen: {},
 	};
 
+	// handle outTypeCd effects on setup; outTypeCd will be a valid value because we default if missing
+	switch (config.oas2ro.outTypeCd) {
+		case 'JSONDEREF':
+			config.oas2ro.derefFl = true;
+			config.oas2ro.useTBFl = false;
+			break;
+		case 'TBREF':
+			config.oas2ro.derefFl = false;
+			config.oas2ro.useTBFl = true;
+			break;
+		default:
+			// will never hit this case because we default to TBREF if unknown
+			break;
+	}
+
+	// Do we need refDir?
 	if (commandNm === 'oas2ro' && config.oas2ro.derefFl === false) {
 		if (!opts.refDir) throw new Error(`${functionNm} FATAL: missing required option --refDir`);
 		if (!existsSync(opts.refDir)) throw new Error(`${functionNm} FATAL ${opts.refDir} does not exist`);
