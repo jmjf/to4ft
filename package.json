@@ -69,7 +69,7 @@
 		"commitlint": "commitlint --edit"
 	},
 	"dependencies": {
-		"@apidevtools/json-schema-ref-parser": "^14.0.2",
+		"@apidevtools/json-schema-ref-parser": "^15.1.3",
 		"commander": "^14.0.0",
 		"openapi-types": "^12.1.3"
 	},
