@@ -4,7 +4,7 @@ services:
          context: .
          dockerfile: node-dockerfile
          args:
-            VARIANT: 22-bookworm
+            VARIANT: 24-bookworm
       image: node-dc
       ports:
       - "3080"

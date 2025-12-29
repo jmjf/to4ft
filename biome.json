@@ -14,7 +14,8 @@
 			"!**/notes",
 			"!**/docs",
 			"!**/node_modules",
-			"!**/test/fixtures"
+			"!**/test/fixtures",
+			"!!**/*.html"
 		],
 		"ignoreUnknown": true
 	},
