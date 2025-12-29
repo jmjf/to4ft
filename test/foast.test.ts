@@ -4,8 +4,8 @@ import { setTimeout } from 'node:timers/promises';
 
 import type { Command } from 'commander';
 
-import { oas2ro } from '../src/commands/oas2ro.js';
-import { oas2tb } from '../src/commands/oas2tb.js';
+import { oas2ro } from '../src/commands/oas2ro.ts';
+import { oas2tb } from '../src/commands/oas2tb.ts';
 
 const CURRENT_DIR = import.meta.dirname;
 
